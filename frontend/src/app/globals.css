@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0f0f1a;
+  --color-background-secondary: #1a1a2e;
+  --color-background-card: #16213e;
+  --color-background-hover: #1e2a45;
+  
+  --color-border: #2a2a4a;
+  --color-border-light: #3a3a5a;
+  
+  --color-primary: #6c63ff;
+  --color-primary-dark: #5a52d5;
+  --color-primary-light: #8b85ff;
+  --color-primary-glow: rgba(108, 99, 255, 0.3);
+
+  --color-accent: #ff6584;
+  --color-accent-dark: #e0506e;
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+
+  --color-text-primary: #e8e8f0;
+  --color-text-secondary: #9494b8;
+  --color-text-muted: #5a5a7a;
+  --color-text-inverse: #0f0f1a;
+
+  --background-image-gradient-primary: linear-gradient(135deg, #6c63ff 0%, #ff6584 100%);
+  --background-image-gradient-card: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  --background-image-gradient-hero: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --shadow-glow: 0 0 30px rgba(108, 99, 255, 0.3);
+
+  --animate-fade-in: fadeIn 0.3s ease forwards;
+  --animate-slide-in: slideIn 0.3s ease forwards;
+  --animate-pulse: pulse 2s ease infinite;
+  --animate-shimmer: shimmer 1.5s infinite;
+  --animate-slow-spin: spin 3s linear infinite;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideIn {
+    0% { transform: translateX(-20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  --z-index-dropdown: 100;
+  --z-index-sticky: 200;
+  --z-index-modal: 300;
+  --z-index-toast: 400;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-text-primary font-sans min-h-screen antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  .section {
+    @apply py-16;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #1a1a2e 25%, #1e2a45 50%, #1a1a2e 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-md;
+  }
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6c63ff;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(108, 99, 255, 0.3);
+  color: #e8e8f0;
+}
