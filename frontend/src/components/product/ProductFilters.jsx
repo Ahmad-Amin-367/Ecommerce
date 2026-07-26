@@ -7,7 +7,7 @@ export default function ProductFilters({ filters, onFilterChange }) {
   return (
     <aside>
       {/* Categories, price range, sort — implement as needed */}
-      <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+      <p className="text-text-muted text-sm">
         Filters component — ready to implement
       </p>
     </aside>

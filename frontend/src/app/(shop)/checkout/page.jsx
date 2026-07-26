@@ -1,12 +1,12 @@
 export const metadata = { title: 'Checkout' };
 export default function CheckoutPage() {
   return (
-    <div className="container section">
-      <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, marginBottom: 'var(--space-xl)' }}>
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="font-serif text-3xl font-semibold text-charcoal mb-8">
         Checkout
       </h1>
       {/* Wire up CheckoutForm and OrderSummary components, usePlaceOrder hook */}
-      <p style={{ color: 'var(--color-text-secondary)' }}>Checkout form appears here.</p>
+      <p className="text-warm-gray">Checkout form appears here.</p>
     </div>
   );
 }

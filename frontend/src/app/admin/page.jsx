@@ -3,11 +3,11 @@ export const metadata = { title: 'Admin Dashboard' };
 export default function AdminDashboardPage() {
   return (
     <div>
-      <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: 'var(--space-xl)' }}>
+      <h1 className="font-serif text-2xl font-semibold text-charcoal mb-6">
         Dashboard
       </h1>
       {/* Wire up stats cards, recent orders table, etc. */}
-      <p style={{ color: 'var(--color-text-secondary)' }}>
+      <p className="text-warm-gray">
         Admin dashboard — wire up stats and recent orders here.
       </p>
     </div>

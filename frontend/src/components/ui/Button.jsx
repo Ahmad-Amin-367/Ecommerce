@@ -18,14 +18,14 @@ export default function Button({
   type = 'button',
   ...props
 }) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-full font-semibold font-sans cursor-pointer border-none transition-all duration-150 whitespace-nowrap';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-full font-semibold font-sans cursor-pointer border-none transition-all duration-200 whitespace-nowrap tracking-wide';
   const disabledStyles = 'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none';
   
   const variants = {
-    primary: 'bg-gradient-primary text-white hover:not-disabled:-translate-y-[2px] hover:not-disabled:shadow-glow',
-    secondary: 'bg-transparent text-text-primary border border-border-light hover:not-disabled:border-primary hover:not-disabled:bg-primary-glow',
-    ghost: 'bg-transparent text-text-secondary hover:not-disabled:bg-background-hover hover:not-disabled:text-text-primary',
-    danger: 'bg-error text-white hover:not-disabled:opacity-85 hover:not-disabled:-translate-y-[1px]',
+    primary: 'bg-primary text-white hover:not-disabled:bg-primary-dark hover:not-disabled:-translate-y-[1px] hover:not-disabled:shadow-glow',
+    secondary: 'bg-transparent text-charcoal border-2 border-cloud hover:not-disabled:border-primary hover:not-disabled:bg-primary-glow hover:not-disabled:text-primary',
+    ghost: 'bg-transparent text-warm-gray hover:not-disabled:bg-background-hover hover:not-disabled:text-charcoal',
+    danger: 'bg-error text-white hover:not-disabled:opacity-90 hover:not-disabled:-translate-y-[1px]',
   };
 
   const sizes = {

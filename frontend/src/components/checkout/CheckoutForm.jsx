@@ -1,5 +1,5 @@
 'use client';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { checkoutSchema } from '@/validations/checkoutValidation';
 import { usePlaceOrder } from '@/hooks/useOrders';
@@ -14,7 +14,7 @@ export default function CheckoutForm({ addresses = [], onAddressSelect }) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
+    control,
   } = useForm({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -23,8 +23,8 @@ export default function CheckoutForm({ addresses = [], onAddressSelect }) {
     },
   });
 
-  const selectedMethod = watch('paymentMethod');
-  const selectedAddress = watch('addressId');
+  const selectedMethod = useWatch({ control, name: 'paymentMethod' });
+  const selectedAddress = useWatch({ control, name: 'addressId' });
 
   const onSubmit = async (data) => {
     placeOrder.mutate(data);
@@ -34,22 +34,22 @@ export default function CheckoutForm({ addresses = [], onAddressSelect }) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-12">
       {/* Address Selection */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-bold pb-2 border-b border-border">Delivery Address</h2>
+        <h2 className="font-serif text-lg font-bold text-charcoal pb-3 border-b border-cloud">Delivery Address</h2>
         <div className="grid gap-4">
           {addresses.map((address) => (
-            <label key={address.id} className="group flex items-start gap-4 p-6 bg-background-secondary border border-border rounded-2xl cursor-pointer transition-colors duration-150 hover:bg-background-hover has-[:checked]:border-primary has-[:checked]:bg-primary-glow">
+            <label key={address.id} className="group flex items-start gap-4 p-6 bg-white border border-cloud rounded-2xl cursor-pointer transition-all duration-200 hover:bg-background-hover has-[:checked]:border-primary has-[:checked]:bg-primary-glow">
               <input
                 type="radio"
                 value={address.id}
                 {...register('addressId')}
-                className="mt-1 accent-primary w-[18px] h-[18px] cursor-pointer"
+                className="mt-1 accent-[#C67D5C] w-[18px] h-[18px] cursor-pointer"
                 onChange={(e) => {
                   register('addressId').onChange(e);
                   if (onAddressSelect) onAddressSelect(address);
                 }}
               />
-              <div className="flex flex-col gap-[2px] text-sm text-text-secondary">
-                <span className="font-bold text-base text-text-primary mb-1">{address.label}</span>
+              <div className="flex flex-col gap-[2px] text-sm text-warm-gray">
+                <span className="font-bold text-base text-charcoal mb-1">{address.label}</span>
                 <p>{address.street}, {address.city}, {address.state}</p>
                 <p>{address.country} - {address.postalCode}</p>
               </div>
@@ -64,17 +64,17 @@ export default function CheckoutForm({ addresses = [], onAddressSelect }) {
 
       {/* Payment Method */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-bold pb-2 border-b border-border">Payment Method</h2>
+        <h2 className="font-serif text-lg font-bold text-charcoal pb-3 border-b border-cloud">Payment Method</h2>
         <div className="grid gap-4">
           {PAYMENT_METHODS.map((method) => (
-            <label key={method.value} className="group flex items-start gap-4 p-6 bg-background-secondary border border-border rounded-2xl cursor-pointer transition-colors duration-150 hover:bg-background-hover has-[:checked]:border-primary has-[:checked]:bg-primary-glow">
+            <label key={method.value} className="group flex items-start gap-4 p-6 bg-white border border-cloud rounded-2xl cursor-pointer transition-all duration-200 hover:bg-background-hover has-[:checked]:border-primary has-[:checked]:bg-primary-glow">
               <input
                 type="radio"
                 value={method.value}
                 {...register('paymentMethod')}
-                className="mt-1 accent-primary w-[18px] h-[18px] cursor-pointer"
+                className="mt-1 accent-[#C67D5C] w-[18px] h-[18px] cursor-pointer"
               />
-              <span className="text-base font-semibold text-text-primary">{method.label}</span>
+              <span className="text-base font-semibold text-charcoal">{method.label}</span>
             </label>
           ))}
         </div>
@@ -83,9 +83,9 @@ export default function CheckoutForm({ addresses = [], onAddressSelect }) {
 
       {/* Order Notes */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-bold pb-2 border-b border-border">Order Notes (Optional)</h2>
+        <h2 className="font-serif text-lg font-bold text-charcoal pb-3 border-b border-cloud">Order Notes (Optional)</h2>
         <Input
-          placeholder="Any special instructions for delivery..."
+          placeholder="Any special instructions for delivery or gift wrapping..."
           error={errors.notes?.message}
           {...register('notes')}
         />

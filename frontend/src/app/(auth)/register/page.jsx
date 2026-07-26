@@ -1,17 +1,28 @@
 import RegisterForm from '@/components/auth/RegisterForm';
+import { Gift } from 'lucide-react';
+import Link from 'next/link';
 
 export const metadata = { title: 'Create Account' };
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-6 relative overflow-hidden">
-      {/* Decorative background glow */}
-      <div className="absolute w-[500px] h-[500px] bg-primary-glow rounded-full blur-[120px] -top-[100px] -right-[100px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-ivory p-6 relative overflow-hidden">
+      {/* Decorative background shapes */}
+      <div className="absolute w-[400px] h-[400px] bg-blush/20 rounded-full blur-[100px] -top-[80px] -right-[80px] pointer-events-none" />
+      <div className="absolute w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px] -bottom-[60px] -left-[60px] pointer-events-none" />
       
-      <div className="bg-gradient-card border border-border rounded-3xl p-12 w-full max-w-[440px] relative animate-fade-in shadow-lg">
+      <div className="bg-white border border-cloud rounded-3xl p-10 sm:p-12 w-full max-w-[440px] relative animate-fade-in shadow-card">
+        {/* Brand */}
+        <Link href="/" className="flex items-center justify-center gap-2 mb-8 group">
+          <Gift size={22} className="text-primary transition-transform duration-300 group-hover:rotate-12" />
+          <span className="font-serif text-xl font-bold tracking-tight text-charcoal">
+            Hisna <span className="text-primary">Gifts</span>
+          </span>
+        </Link>
+
         <div className="text-center mb-8">
-          <h1 className="text-[32px] font-extrabold text-text-primary mb-2">Create Account</h1>
-          <p className="text-base text-text-secondary">Join ShopZone today</p>
+          <h1 className="font-serif text-[28px] font-bold text-charcoal mb-2">Join Hisna Gifts</h1>
+          <p className="text-sm text-warm-gray">Create your account to start shopping</p>
         </div>
         <RegisterForm />
       </div>

@@ -49,9 +49,9 @@ export default function LoginForm() {
         Sign In
       </Button>
 
-      <p className="text-center text-sm text-text-secondary">
+      <p className="text-center text-sm text-warm-gray">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="text-primary-light font-semibold transition-colors duration-150 hover:text-primary hover:underline">
+        <Link href="/register" className="text-primary font-semibold transition-colors duration-200 hover:text-primary-dark hover:underline">
           Create one
         </Link>
       </p>

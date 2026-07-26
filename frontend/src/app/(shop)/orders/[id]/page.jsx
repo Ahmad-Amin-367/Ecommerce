@@ -1,12 +1,12 @@
 export const metadata = { title: 'Order Detail' };
 export default function OrderDetailPage({ params }) {
   return (
-    <div className="container section">
-      <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 800, marginBottom: 'var(--space-lg)' }}>
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="font-serif text-2xl font-semibold text-charcoal mb-6">
         Order Detail
       </h1>
       {/* Wire up useOrder(params.id) hook */}
-      <p style={{ color: 'var(--color-text-secondary)' }}>Order ID: {params.id}</p>
+      <p className="text-warm-gray">Order ID: <strong className="text-charcoal">{params.id}</strong></p>
     </div>
   );
 }

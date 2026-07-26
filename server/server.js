@@ -8,15 +8,21 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     // Test database connection
+    console.log('⏳ Connecting to database...');
     await prisma.$connect();
+    console.log('✅ Database connected successfully');
     logger.info('✅ Database connected successfully');
 
     app.listen(PORT, () => {
+      console.log(`🚀 Server is running on http://localhost:${PORT}`);
+      console.log(`📡 API base URL: http://localhost:${PORT}/api/v1`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`🚀 Server is running on http://localhost:${PORT}`);
       logger.info(`📡 API base URL: http://localhost:${PORT}/api/v1`);
       logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
     logger.error('❌ Failed to start server:', error);
     await prisma.$disconnect();
     process.exit(1);

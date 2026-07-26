@@ -11,14 +11,14 @@ const create = Joi.object({
     .messages({
       'string.pattern.base': 'Slug can only contain lowercase letters, numbers, and hyphens',
     }),
-  description: Joi.string().max(5000).optional(),
+  description: Joi.string().max(5000).optional().allow(''),
   price: Joi.number().positive().precision(2).required().messages({
     'any.required': 'Price is required',
     'number.positive': 'Price must be a positive number',
   }),
   comparePrice: Joi.number().positive().precision(2).optional(),
   stock: Joi.number().integer().min(0).default(0),
-  sku: Joi.string().max(100).optional(),
+  sku: Joi.string().max(100).optional().allow(''),
   categoryId: Joi.string().required().messages({
     'any.required': 'Category is required',
   }),
@@ -34,11 +34,11 @@ const update = Joi.object({
     .lowercase()
     .pattern(/^[a-z0-9-]+$/)
     .optional(),
-  description: Joi.string().max(5000).optional(),
+  description: Joi.string().max(5000).optional().allow(''),
   price: Joi.number().positive().precision(2).optional(),
   comparePrice: Joi.number().positive().precision(2).optional().allow(null),
   stock: Joi.number().integer().min(0).optional(),
-  sku: Joi.string().max(100).optional().allow(null),
+  sku: Joi.string().max(100).optional().allow(null, ''),
   categoryId: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
   isFeatured: Joi.boolean().optional(),

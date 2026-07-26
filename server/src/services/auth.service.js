@@ -55,7 +55,7 @@ const login = async (data, res) => {
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
   const refreshToken = generateRefreshToken({ id: user.id });
 
-  setRefreshTokenCookie(res, refreshToken);
+  setRefreshTokenCookie(res, refreshToken, user.role);
 
   const { password: _, ...userWithoutPassword } = user;
   return { accessToken, user: userWithoutPassword };

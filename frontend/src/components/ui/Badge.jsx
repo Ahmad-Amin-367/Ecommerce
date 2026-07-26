@@ -5,12 +5,12 @@ import clsx from 'clsx';
  */
 export default function Badge({ children, variant = 'default', className }) {
   const variants = {
-    default: 'bg-background-hover text-text-secondary',
-    primary: 'bg-primary-glow text-primary-light',
-    success: 'bg-success/15 text-success',
-    warning: 'bg-warning/15 text-warning',
-    error: 'bg-error/15 text-error',
-    info: 'bg-info/15 text-info',
+    default: 'bg-cloud text-warm-gray',
+    primary: 'bg-accent/10 text-accent',
+    success: 'bg-success/10 text-success',
+    warning: 'bg-warning/10 text-warning',
+    error: 'bg-primary/10 text-primary',
+    info: 'bg-info/10 text-info',
   };
 
   return (

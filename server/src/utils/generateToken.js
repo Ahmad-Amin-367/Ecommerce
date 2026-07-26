@@ -27,13 +27,19 @@ const generateRefreshToken = (payload) => {
  * @param {object} res - Express response object
  * @param {string} token - Refresh token string
  */
-const setRefreshTokenCookie = (res, token) => {
-  res.cookie('refreshToken', token, {
+const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax', // Use lax so it works smoothly between port 3000 and 5000
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-  });
+  };
+  
+  res.cookie('refreshToken', token, cookieOptions);
+  
+  // Non-httpOnly or httpOnly cookies for Next.js middleware
+  res.cookie('auth-status', 'authenticated', { ...cookieOptions, httpOnly: false });
+  res.cookie('user-role', userRole, { ...cookieOptions, httpOnly: false });
 };
 
 /**
@@ -41,11 +47,14 @@ const setRefreshTokenCookie = (res, token) => {
  * @param {object} res - Express response object
  */
 const clearRefreshTokenCookie = (res) => {
-  res.clearCookie('refreshToken', {
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
+    sameSite: 'lax',
+  };
+  res.clearCookie('refreshToken', cookieOptions);
+  res.clearCookie('auth-status', { ...cookieOptions, httpOnly: false });
+  res.clearCookie('user-role', { ...cookieOptions, httpOnly: false });
 };
 
 module.exports = {

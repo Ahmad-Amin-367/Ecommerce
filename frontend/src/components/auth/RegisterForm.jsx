@@ -29,7 +29,7 @@ export default function RegisterForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
       <Input
         label="Full Name"
-        placeholder="John Doe"
+        placeholder="Your name"
         leftIcon={<User size={16} />}
         error={errors.name?.message}
         {...register('name')}
@@ -56,7 +56,7 @@ export default function RegisterForm() {
       <Input
         label="Phone (optional)"
         type="tel"
-        placeholder="+1 234 567 8900"
+        placeholder="+92 300 1234567"
         leftIcon={<Phone size={16} />}
         error={errors.phone?.message}
         {...register('phone')}
@@ -66,9 +66,9 @@ export default function RegisterForm() {
         Create Account
       </Button>
 
-      <p className="text-center text-sm text-text-secondary">
+      <p className="text-center text-sm text-warm-gray">
         Already have an account?{' '}
-        <Link href="/login" className="text-primary-light font-semibold transition-colors duration-150 hover:text-primary hover:underline">
+        <Link href="/login" className="text-primary font-semibold transition-colors duration-200 hover:text-primary-dark hover:underline">
           Sign in
         </Link>
       </p>

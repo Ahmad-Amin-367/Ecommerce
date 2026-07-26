@@ -13,7 +13,7 @@ export default function Spinner({ size = 'md', fullPage = false }) {
 
   const spinner = (
     <div className={clsx(
-      "rounded-full border-border border-t-primary animate-slow-spin",
+      "rounded-full border-cloud border-t-primary animate-slow-spin",
       sizes[size]
     )} />
   );

@@ -1,12 +1,12 @@
 export const metadata = { title: 'My Orders' };
 export default function OrdersPage() {
   return (
-    <div className="container section">
-      <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: 800, marginBottom: 'var(--space-xl)' }}>
+    <div className="container mx-auto px-6 py-12">
+      <h1 className="font-serif text-3xl font-semibold text-charcoal mb-8">
         My Orders
       </h1>
       {/* Wire up useMyOrders hook */}
-      <p style={{ color: 'var(--color-text-secondary)' }}>Your order history appears here.</p>
+      <p className="text-warm-gray">Your order history appears here.</p>
     </div>
   );
 }
