@@ -4,6 +4,9 @@ import { ShoppingCart, User, Menu, X, Search, Gift } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
+import CartDrawer from '@/components/cart/CartDrawer';
+import { useState, useRef, useEffect } from 'react';
+import useAuth from '@/hooks/useAuth';
 
 const announcements = [
   '🎁 Free gift wrapping on orders above Rs.2,000',
@@ -14,8 +17,23 @@ const announcements = [
 
 export default function Navbar() {
   const { isAuthenticated, user } = useAuthStore();
-  const itemCount = useCartStore((s) => s.itemCount);
+  const { logout } = useAuth();
+  const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
+  
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-sticky">
@@ -92,8 +110,8 @@ export default function Navbar() {
             </button>
 
             {/* Cart */}
-            <Link
-              href="/cart"
+            <button
+              onClick={openCart}
               className="relative flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
               aria-label="Shopping cart"
             >
@@ -103,17 +121,56 @@ export default function Navbar() {
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Auth */}
             {isAuthenticated ? (
-              <Link
-                href={user?.role === 'ADMIN' ? '/admin' : '/profile'}
-                className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
-                aria-label="Profile"
-              >
-                <User size={20} />
-              </Link>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
+                  aria-label="Profile"
+                >
+                  <User size={20} />
+                </button>
+
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-cloud rounded-xl shadow-card py-2 animate-fade-in z-50">
+                    <div className="px-4 py-2 border-b border-cloud mb-2">
+                      <p className="text-sm font-semibold text-charcoal truncate">{user?.name}</p>
+                      <p className="text-xs text-text-muted truncate">{user?.email}</p>
+                    </div>
+                    
+                    {user?.role === 'ADMIN' ? (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-charcoal hover:bg-cream hover:text-primary transition-colors"
+                      >
+                        Dashboard
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                        className="block px-4 py-2 text-sm text-charcoal hover:bg-cream hover:text-primary transition-colors"
+                      >
+                        Profile
+                      </Link>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error/10 transition-colors mt-1 border-t border-cloud pt-2"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 href="/login"
@@ -154,13 +211,15 @@ export default function Navbar() {
               </li>
             ))}
             <li className="border-t border-cloud mt-2 pt-2">
-              <Link
-                href="/cart"
-                className="block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200"
-                onClick={closeMobileMenu}
+              <button
+                onClick={() => {
+                  closeMobileMenu();
+                  openCart();
+                }}
+                className="w-full text-left block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200"
               >
                 Cart {itemCount > 0 && `(${itemCount})`}
-              </Link>
+              </button>
             </li>
             {isAuthenticated ? (
               <li>
@@ -197,6 +256,9 @@ export default function Navbar() {
           </ul>
         </div>
       )}
+      
+      {/* ─── Cart Drawer ──────────────────────────────────────────────── */}
+      <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
     </header>
   );
 }

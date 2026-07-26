@@ -12,6 +12,11 @@ const useCartStore = create(
       items: [],       // [{ product, quantity }]
       subtotal: 0,
       itemCount: 0,
+      isCartOpen: false,
+
+      // UI Actions
+      openCart: () => set({ isCartOpen: true }),
+      closeCart: () => set({ isCartOpen: false }),
 
       // Replace entire cart (from server response)
       setCart: (cart) => {

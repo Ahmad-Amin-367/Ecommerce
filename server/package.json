@@ -11,12 +11,19 @@
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset"
   },
-  "keywords": ["ecommerce", "api", "express", "prisma", "postgresql"],
+  "keywords": [
+    "ecommerce",
+    "api",
+    "express",
+    "prisma",
+    "postgresql"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.10.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -28,6 +35,7 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.2.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {

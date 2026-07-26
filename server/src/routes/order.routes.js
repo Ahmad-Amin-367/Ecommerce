@@ -3,19 +3,14 @@ const router = express.Router();
 const orderController = require('../controllers/order.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
-const { validate } = require('../middlewares/validate.middleware');
-const orderValidation = require('../validations/order.validation');
 
-// ─── Customer routes ──────────────────────────────────────────────────────────
-router.use(protect);
+router.post('/', orderController.createOrder);
 
-router.post('/', validate(orderValidation.placeOrder), orderController.placeOrder);
-router.get('/my-orders', validate(orderValidation.query, 'query'), orderController.getUserOrders);
-router.get('/:id', orderController.getOrder);
-router.patch('/:id/cancel', orderController.cancelOrder);
+// Private route for customers to get their own orders
+router.get('/my-orders', protect, orderController.getMyOrders);
 
-// ─── Admin routes ─────────────────────────────────────────────────────────────
-router.get('/', restrictTo('ADMIN'), validate(orderValidation.query, 'query'), orderController.getAllOrders);
-router.patch('/:id/status', restrictTo('ADMIN'), validate(orderValidation.updateStatus), orderController.updateOrderStatus);
+// Admin routes
+router.get('/', protect, restrictTo('ADMIN'), orderController.getOrders);
+router.patch('/:id/status', protect, restrictTo('ADMIN'), orderController.updateOrderStatus);
 
 module.exports = router;

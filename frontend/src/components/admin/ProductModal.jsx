@@ -4,11 +4,12 @@ import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X } from 'lucide-react';
+import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
+import uploadService from '@/services/uploadService';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Name is required'),
@@ -26,6 +27,9 @@ const productSchema = z.object({
 export default function ProductModal({ isOpen, onClose, product = null }) {
   const isEditing = !!product;
   const [mounted, setMounted] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -73,6 +77,8 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
         isActive: product.isActive,
         isFeatured: product.isFeatured,
       });
+      setImagePreview(product.images?.[0] || '');
+      setImageFile(null);
     } else if (isOpen) {
       reset({
         name: '',
@@ -86,21 +92,43 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
         isActive: true,
         isFeatured: false,
       });
+      setImagePreview('');
+      setImageFile(null);
     }
   }, [product, isOpen, reset]);
 
   if (!isOpen || !mounted) return null;
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
+      setIsUploading(true);
+      let images = product?.images || [];
+
+      if (imageFile) {
+        const uploadRes = await uploadService.uploadImage(imageFile);
+        images = [uploadRes.data.data.url];
+      }
+
+      const payload = { ...data, images };
+
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: product.id, data });
+        await updateMutation.mutateAsync({ id: product.id, data: payload });
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync(payload);
       }
       onClose();
     } catch (err) {
       // Error handled by mutation hook toasts
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -120,6 +148,30 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
         {/* Form Body */}
         <div className="p-6 overflow-y-auto flex-1">
           <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+            {/* Image Upload Area */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-warm-gray">Product Image</label>
+              <div className="relative w-full h-40 border-2 border-dashed border-cloud rounded-2xl flex flex-col items-center justify-center bg-cream/50 overflow-hidden hover:bg-cream transition-colors group">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="absolute inset-0 w-full h-full object-contain" />
+                ) : (
+                  <>
+                    <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-primary mb-3 group-hover:scale-110 transition-transform">
+                      <UploadCloud size={24} />
+                    </div>
+                    <p className="text-sm font-medium text-charcoal">Click or drag image to upload</p>
+                    <p className="text-xs text-text-muted mt-1">PNG, JPG up to 5MB</p>
+                  </>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <Input label="Product Name" error={errors.name?.message} {...register('name')} />
               <Input label="Slug" error={errors.slug?.message} {...register('slug')} />
@@ -174,10 +226,10 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
 
         {/* Footer */}
         <div className="p-6 border-t border-cloud flex justify-end gap-3 shrink-0">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting}>
+          <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isUploading}>
             Cancel
           </Button>
-          <Button type="submit" form="product-form" isLoading={isSubmitting || createMutation.isPending || updateMutation.isPending}>
+          <Button type="submit" form="product-form" isLoading={isSubmitting || isUploading || createMutation.isPending || updateMutation.isPending}>
             {isEditing ? 'Save Changes' : 'Create Product'}
           </Button>
         </div>

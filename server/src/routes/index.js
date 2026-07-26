@@ -8,6 +8,7 @@ const categoryRoutes = require('./category.routes');
 const cartRoutes = require('./cart.routes');
 const orderRoutes = require('./order.routes');
 const reviewRoutes = require('./review.routes');
+const uploadRoutes = require('./upload.routes');
 const reviewController = require('../controllers/review.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
@@ -19,6 +20,7 @@ router.use('/products/:productId/reviews', reviewRoutes);  // Nested reviews
 router.use('/categories', categoryRoutes);
 router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
+router.use('/upload', uploadRoutes);
 
 // ─── Standalone review update/delete ─────────────────────────────────────────
 router.patch('/reviews/:id', protect, reviewController.updateReview);

@@ -64,7 +64,7 @@ model User {
 
 model Address {
   id         String  @id @default(cuid())
-  userId     String
+  userId     String?
   label      String  @default("Home") // Home, Work, Other
   street     String
   city       String
@@ -76,7 +76,7 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
 
   @@map("addresses")
@@ -157,8 +157,11 @@ model CartItem {
 model Order {
   id              String        @id @default(cuid())
   orderNumber     String        @unique
-  userId          String
+  userId          String?
   addressId       String?
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(UNPAID)
   paymentMethod   PaymentMethod @default(CASH_ON_DELIVERY)
@@ -171,7 +174,7 @@ model Order {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user       User        @relation(fields: [userId], references: [id])
+  user       User?       @relation(fields: [userId], references: [id])
   address    Address?    @relation(fields: [addressId], references: [id])
   items      OrderItem[]
 
