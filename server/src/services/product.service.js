@@ -33,7 +33,7 @@ const ensureUniqueSlug = async (slug, excludeId = null) => {
  * Get paginated product list with filters
  */
 const getProducts = async (query) => {
-  const { page, limit, search, categoryId, minPrice, maxPrice, isActive, isFeatured, sortBy, sortOrder } = query;
+  const { page, limit, search, categoryId, category, minPrice, maxPrice, isActive, isFeatured, sortBy, sortOrder } = query;
 
   const where = {};
   if (search) {
@@ -44,12 +44,16 @@ const getProducts = async (query) => {
     ];
   }
   if (categoryId) where.categoryId = categoryId;
-  if (isActive !== undefined) where.isActive = isActive;
-  if (isFeatured !== undefined) where.isFeatured = isFeatured;
+  if (category) {
+    where.category = { slug: category };
+  }
+  if (isActive !== undefined) where.isActive = isActive === 'true' || isActive === true;
+  if (isFeatured !== undefined) where.isFeatured = isFeatured === 'true' || isFeatured === true;
   if (minPrice !== undefined || maxPrice !== undefined) {
     where.price = {};
-    if (minPrice !== undefined) where.price.gte = minPrice;
-    if (maxPrice !== undefined) where.price.lte = maxPrice;
+    if (minPrice !== undefined && minPrice !== '') where.price.gte = Number(minPrice);
+    if (maxPrice !== undefined && maxPrice !== '') where.price.lte = Number(maxPrice);
+    if (Object.keys(where.price).length === 0) delete where.price;
   }
 
   const totalCount = await prisma.product.count({ where });

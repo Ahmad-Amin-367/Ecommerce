@@ -36,7 +36,7 @@ const useAuth = () => {
     logoutStore();
     clearCart();
     toast.success('Logged out successfully');
-    router.push('/login');
+    router.push('/');
   };
 
   return {

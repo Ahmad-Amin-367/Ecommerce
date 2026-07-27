@@ -1,9 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -11,17 +10,17 @@ import { useCategories } from '@/hooks/useCategories';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import uploadService from '@/services/uploadService';
 
-const productSchema = z.object({
-  name: z.string().min(3, 'Name is required'),
-  slug: z.string().min(3, 'Slug is required'),
-  description: z.string().optional(),
-  price: z.coerce.number().min(0, 'Price must be positive'),
-  comparePrice: z.coerce.number().optional().nullable(),
-  stock: z.coerce.number().int().min(0, 'Stock must be 0 or more'),
-  sku: z.string().optional(),
-  categoryId: z.string().min(1, 'Category is required'),
-  isActive: z.boolean().default(true),
-  isFeatured: z.boolean().default(false),
+const productSchema = Yup.object().shape({
+  name: Yup.string().min(3, 'Name must be at least 3 characters').required('Name is required'),
+  slug: Yup.string().min(3, 'Slug must be at least 3 characters').required('Slug is required'),
+  description: Yup.string(),
+  price: Yup.number().min(0, 'Price must be positive').required('Price is required'),
+  comparePrice: Yup.number().min(0, 'Compare price must be positive').nullable(),
+  stock: Yup.number().integer('Stock must be an integer').min(0, 'Stock must be 0 or more').required('Stock is required'),
+  sku: Yup.string(),
+  categoryId: Yup.string().required('Category is required'),
+  isActive: Yup.boolean().default(true),
+  isFeatured: Yup.boolean().default(false),
 });
 
 export default function ProductModal({ isOpen, onClose, product = null }) {
@@ -41,14 +40,8 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
+  const formik = useFormik({
+    initialValues: {
       name: '',
       slug: '',
       description: '',
@@ -60,42 +53,59 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
       isActive: true,
       isFeatured: false,
     },
+    validationSchema: productSchema,
+    onSubmit: async (values) => {
+      try {
+        setIsUploading(true);
+        let images = product?.images || [];
+
+        if (imageFile) {
+          const uploadRes = await uploadService.uploadImage(imageFile);
+          images = [uploadRes.data.data.url];
+        }
+
+        const payload = { ...values, images };
+
+        if (isEditing) {
+          await updateMutation.mutateAsync({ id: product.id, data: payload });
+        } else {
+          await createMutation.mutateAsync(payload);
+        }
+        onClose();
+      } catch (err) {
+        // Error handled by mutation hook toasts
+      } finally {
+        setIsUploading(false);
+      }
+    },
   });
 
   // Populate form when editing
   useEffect(() => {
     if (product && isOpen) {
-      reset({
-        name: product.name,
-        slug: product.slug,
-        description: product.description || '',
-        price: Number(product.price),
-        comparePrice: product.comparePrice ? Number(product.comparePrice) : 0,
-        stock: product.stock,
-        sku: product.sku || '',
-        categoryId: product.categoryId,
-        isActive: product.isActive,
-        isFeatured: product.isFeatured,
+      formik.resetForm({
+        values: {
+          name: product.name,
+          slug: product.slug,
+          description: product.description || '',
+          price: Number(product.price),
+          comparePrice: product.comparePrice ? Number(product.comparePrice) : 0,
+          stock: product.stock,
+          sku: product.sku || '',
+          categoryId: product.categoryId,
+          isActive: product.isActive,
+          isFeatured: product.isFeatured,
+        }
       });
       setImagePreview(product.images?.[0] || '');
       setImageFile(null);
     } else if (isOpen) {
-      reset({
-        name: '',
-        slug: '',
-        description: '',
-        price: 0,
-        comparePrice: 0,
-        stock: 0,
-        sku: '',
-        categoryId: '',
-        isActive: true,
-        isFeatured: false,
-      });
+      formik.resetForm();
       setImagePreview('');
       setImageFile(null);
     }
-  }, [product, isOpen, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, isOpen]);
 
   if (!isOpen || !mounted) return null;
 
@@ -104,31 +114,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const onSubmit = async (data) => {
-    try {
-      setIsUploading(true);
-      let images = product?.images || [];
-
-      if (imageFile) {
-        const uploadRes = await uploadService.uploadImage(imageFile);
-        images = [uploadRes.data.data.url];
-      }
-
-      const payload = { ...data, images };
-
-      if (isEditing) {
-        await updateMutation.mutateAsync({ id: product.id, data: payload });
-      } else {
-        await createMutation.mutateAsync(payload);
-      }
-      onClose();
-    } catch (err) {
-      // Error handled by mutation hook toasts
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -147,7 +132,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
 
         {/* Form Body */}
         <div className="p-6 overflow-y-auto flex-1">
-          <form id="product-form" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <form id="product-form" onSubmit={formik.handleSubmit} className="flex flex-col gap-5">
             {/* Image Upload Area */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-warm-gray">Product Image</label>
@@ -173,33 +158,87 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Product Name" error={errors.name?.message} {...register('name')} />
-              <Input label="Slug" error={errors.slug?.message} {...register('slug')} />
+              <Input 
+                label="Product Name" 
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
+              />
+              <Input 
+                label="Slug" 
+                name="slug"
+                value={formik.values.slug}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.slug && formik.errors.slug ? formik.errors.slug : undefined}
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-warm-gray">Description</label>
               <textarea
+                name="description"
                 className="w-full py-3 px-4 bg-white border border-cloud rounded-xl outline-none text-charcoal text-sm focus:border-primary focus:ring-2 focus:ring-primary-glow resize-none min-h-[100px]"
-                {...register('description')}
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.description && formik.errors.description && (
+                <p className="text-xs text-error">{formik.errors.description}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input 
+                label="Price (CAD)" 
+                type="number" 
+                name="price"
+                value={formik.values.price}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.price && formik.errors.price ? formik.errors.price : undefined}
+              />
+              <Input 
+                label="Compare Price (Optional)" 
+                type="number" 
+                name="comparePrice"
+                value={formik.values.comparePrice}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.comparePrice && formik.errors.comparePrice ? formik.errors.comparePrice : undefined}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input label="Price (PKR)" type="number" error={errors.price?.message} {...register('price')} />
-              <Input label="Compare Price (Optional)" type="number" error={errors.comparePrice?.message} {...register('comparePrice')} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Stock Quantity" type="number" error={errors.stock?.message} {...register('stock')} />
-              <Input label="SKU (Optional)" error={errors.sku?.message} {...register('sku')} />
+              <Input 
+                label="Stock Quantity" 
+                type="number" 
+                name="stock"
+                value={formik.values.stock}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.stock && formik.errors.stock ? formik.errors.stock : undefined}
+              />
+              <Input 
+                label="SKU (Optional)" 
+                name="sku"
+                value={formik.values.sku}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.sku && formik.errors.sku ? formik.errors.sku : undefined}
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-warm-gray">Category</label>
               <select
+                name="categoryId"
                 className="w-full py-3 px-4 bg-white border border-cloud rounded-xl outline-none text-charcoal text-sm focus:border-primary focus:ring-2 focus:ring-primary-glow"
-                {...register('categoryId')}
+                value={formik.values.categoryId}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               >
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
@@ -208,16 +247,30 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
                   </option>
                 ))}
               </select>
-              {errors.categoryId && <p className="text-xs text-error">{errors.categoryId.message}</p>}
+              {formik.touched.categoryId && formik.errors.categoryId && (
+                <p className="text-xs text-error">{formik.errors.categoryId}</p>
+              )}
             </div>
 
             <div className="flex gap-6 mt-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="accent-primary w-4 h-4" {...register('isActive')} />
+                <input 
+                  type="checkbox" 
+                  name="isActive"
+                  className="accent-primary w-4 h-4" 
+                  checked={formik.values.isActive}
+                  onChange={formik.handleChange}
+                />
                 <span className="text-sm text-charcoal">Active</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="accent-primary w-4 h-4" {...register('isFeatured')} />
+                <input 
+                  type="checkbox" 
+                  name="isFeatured"
+                  className="accent-primary w-4 h-4" 
+                  checked={formik.values.isFeatured}
+                  onChange={formik.handleChange}
+                />
                 <span className="text-sm text-charcoal">Featured on Homepage</span>
               </label>
             </div>
@@ -226,10 +279,10 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
 
         {/* Footer */}
         <div className="p-6 border-t border-cloud flex justify-end gap-3 shrink-0">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting || isUploading}>
+          <Button variant="ghost" onClick={onClose} disabled={formik.isSubmitting || isUploading}>
             Cancel
           </Button>
-          <Button type="submit" form="product-form" isLoading={isSubmitting || isUploading || createMutation.isPending || updateMutation.isPending}>
+          <Button type="submit" form="product-form" isLoading={formik.isSubmitting || isUploading || createMutation.isPending || updateMutation.isPending}>
             {isEditing ? 'Save Changes' : 'Create Product'}
           </Button>
         </div>

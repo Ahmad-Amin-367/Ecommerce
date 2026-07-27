@@ -56,7 +56,7 @@ export default function CartDrawer({ isOpen, onClose }) {
             <div className="ml-3 flex h-7 items-center">
               <button
                 type="button"
-                className="relative -m-2 p-2 text-text-muted hover:text-charcoal transition-colors"
+                className="relative -m-2 p-2 text-text-muted hover:text-charcoal transition-colors cursor-pointer"
                 onClick={onClose}
               >
                 <span className="sr-only">Close panel</span>
@@ -104,7 +104,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                             <button 
                               onClick={() => updateItem({ productId: item.product.id, quantity: item.quantity - 1 })}
                               disabled={item.quantity <= 1 || isLoading}
-                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-50"
+                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               <Minus size={14} />
                             </button>
@@ -112,7 +112,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                             <button 
                               onClick={() => updateItem({ productId: item.product.id, quantity: item.quantity + 1 })}
                               disabled={isLoading}
-                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50"
+                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               <Plus size={14} />
                             </button>
@@ -121,7 +121,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                           <button
                             type="button"
                             onClick={() => removeItem(item.product.id)}
-                            className="font-medium text-error hover:text-error/80 flex items-center gap-1 transition-colors"
+                            className="font-medium text-error hover:text-error/80 flex items-center gap-1 transition-colors cursor-pointer"
                           >
                             <Trash2 size={14} />
                             Remove
@@ -155,7 +155,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                 or{' '}
                 <button
                   type="button"
-                  className="font-medium text-primary hover:text-primary-dark transition-colors"
+                  className="font-medium text-primary hover:text-primary-dark transition-colors cursor-pointer"
                   onClick={onClose}
                 >
                   Continue Shopping

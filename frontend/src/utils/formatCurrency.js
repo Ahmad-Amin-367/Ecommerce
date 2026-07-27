@@ -4,7 +4,7 @@
  * @param {string} currency - e.g. 'USD', 'PKR'
  * @param {string} locale - e.g. 'en-US', 'en-PK'
  */
-export const formatCurrency = (amount, currency = 'USD', locale = 'en-US') => {
+export const formatCurrency = (amount, currency = 'CAD', locale = 'en-CA') => {
   if (amount === null || amount === undefined) return '-';
   return new Intl.NumberFormat(locale, {
     style: 'currency',

@@ -96,6 +96,15 @@
   --z-index-toast: 400;
 }
 
+@layer components {
+  .container {
+    width: 100%;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;

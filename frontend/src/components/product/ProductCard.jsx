@@ -47,11 +47,14 @@ export default function ProductCard({ product }) {
           {product.stock === 0 && (
             <Badge variant="default">Sold Out</Badge>
           )}
+          {(product.isBestseller || product._count?.reviews > 5) && (
+            <Badge variant="bestseller">⭐ Bestseller</Badge>
+          )}
         </div>
 
         {/* Add to cart overlay */}
         <button
-          className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 p-3.5 bg-primary text-white text-sm font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed"
+          className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 p-3.5 bg-primary text-white text-sm font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed cursor-pointer"
           onClick={handleAddToCart}
           disabled={isAdding || product.stock === 0}
           aria-label={`Add ${product.name} to cart`}

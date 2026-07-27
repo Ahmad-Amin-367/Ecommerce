@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { ShoppingCart, User, Menu, X, Search, Gift } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles, Briefcase, HandHeart, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
@@ -9,20 +10,36 @@ import { useState, useRef, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 
 const announcements = [
-  '🎁 Free gift wrapping on orders above Rs.2,000',
+  '🎁 Free gift wrapping on orders above $100',
   '✨ Customized edible arrangements available — order yours today',
   '🚚 Nationwide delivery across Pakistan',
   '💝 Personalize every gift — make it truly special',
 ];
 
+const megaMenuCategories = [
+  { name: 'Birthday Gifts', slug: 'birthday', icon: Cake, color: 'text-[#E88A4D]', bg: 'bg-[#FFF0E6]' },
+  { name: 'Anniversary', slug: 'anniversary', icon: Heart, color: 'text-[#D4596A]', bg: 'bg-[#FDE8EC]' },
+  { name: 'Eid Special', slug: 'eid-special', icon: Moon, color: 'text-[#3D5A3E]', bg: 'bg-[#E8F0E8]' },
+  { name: 'Custom Gifts', slug: 'custom', icon: Sparkles, color: 'text-[#8B5CA8]', bg: 'bg-[#F0E8F5]' },
+  { name: 'Corporate', slug: 'corporate', icon: Briefcase, color: 'text-[#5A6B8C]', bg: 'bg-[#E8EDF5]' },
+  { name: 'Thank You', slug: 'thank-you', icon: HandHeart, color: 'text-[#C67D5C]', bg: 'bg-[#FBF0E4]' },
+];
+
 export default function Navbar() {
+  const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const { logout } = useAuth();
   const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
   
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const shopMenuRef = useRef(null);
+  const shopMenuTimeoutRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -34,6 +51,26 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
+  };
+
+  const handleShopMenuEnter = () => {
+    if (shopMenuTimeoutRef.current) clearTimeout(shopMenuTimeoutRef.current);
+    setIsShopMenuOpen(true);
+  };
+
+  const handleShopMenuLeave = () => {
+    shopMenuTimeoutRef.current = setTimeout(() => {
+      setIsShopMenuOpen(false);
+    }, 200);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-sticky">
@@ -54,10 +91,10 @@ export default function Navbar() {
 
       {/* ─── Main Navigation ──────────────────────────────────────────── */}
       <nav className="bg-white/95 backdrop-blur-md border-b border-cloud">
-        <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between h-[68px] gap-6">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-[68px] gap-4">
           {/* Mobile menu toggle */}
           <button
-            className="flex lg:hidden w-10 h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200"
+            className="flex lg:hidden w-10 h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
             onClick={toggleMobileMenu}
             aria-label="Toggle menu"
             aria-controls="mobile-nav-menu"
@@ -78,33 +115,122 @@ export default function Navbar() {
             </span>
           </Link>
 
+          {/* Desktop Search Bar */}
+          <form
+            onSubmit={handleSearch}
+            className="hidden lg:flex items-center flex-1 max-w-md mx-4"
+          >
+            <div className="relative w-full">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search gifts, occasions…"
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-background border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
+              />
+            </div>
+          </form>
+
           {/* Desktop Links */}
-          <ul className="hidden lg:flex items-center justify-center flex-1 gap-1">
-            {[
-              { label: 'Home', href: '/' },
-              { label: 'Shop', href: '/products' },
-              { label: 'Birthday', href: '/products?category=birthday' },
-              { label: 'Anniversary', href: '/products?category=anniversary' },
-              { label: 'Eid Special', href: '/products?category=eid-special' },
-              { label: 'Custom Gifts', href: '/products?category=custom' },
-            ].map((link) => (
-              <li key={link.href + link.label}>
-                <Link
-                  href={link.href}
-                  className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+          <ul className="hidden lg:flex items-center gap-0.5 shrink-0">
+            <li>
+              <Link
+                href="/"
+                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+              >
+                Home
+              </Link>
+            </li>
+            {/* Shop with Mega Menu */}
+            <li
+              className="relative"
+              ref={shopMenuRef}
+              onMouseEnter={handleShopMenuEnter}
+              onMouseLeave={handleShopMenuLeave}
+            >
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-1 px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+              >
+                Shop
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isShopMenuOpen ? 'rotate-180' : ''}`} />
+              </Link>
+              
+              {/* Mega Menu Dropdown */}
+              {isShopMenuOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[520px] bg-white border border-cloud rounded-2xl shadow-lifted p-6 animate-fade-in z-50">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-cloud">
+                    <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-charcoal">Shop by Occasion</h3>
+                    <Link
+                      href="/products"
+                      className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
+                      onClick={() => setIsShopMenuOpen(false)}
+                    >
+                      View All →
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {megaMenuCategories.map((cat) => (
+                      <Link
+                        key={cat.slug}
+                        href={`/category/${cat.slug}`}
+                        onClick={() => setIsShopMenuOpen(false)}
+                        className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 hover:bg-background-hover group"
+                      >
+                        <div className={`w-9 h-9 rounded-lg ${cat.bg} flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110`}>
+                          <cat.icon size={18} className={cat.color} strokeWidth={1.5} />
+                        </div>
+                        <span className="text-sm font-medium text-charcoal group-hover:text-primary transition-colors">{cat.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  {/* Price Filter Link */}
+                  <div className="mt-4 pt-3 border-t border-cloud">
+                    <Link
+                      href="/products?maxPrice=50"
+                      onClick={() => setIsShopMenuOpen(false)}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
+                    >
+                      🏷️ Under $50
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </li>
+            <li>
+              <Link
+                href="/category/birthday"
+                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+              >
+                Birthday
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/category/eid-special"
+                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+              >
+                Eid Special
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/products?maxPrice=50"
+                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary rounded-lg transition-all duration-200 hover:bg-primary-glow"
+              >
+                Under $50
+              </Link>
+            </li>
           </ul>
 
           {/* Actions */}
-          <div className="flex items-center gap-1">
-            {/* Search */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Mobile Search Toggle */}
             <button
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
+              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Search"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search size={20} />
             </button>
@@ -112,7 +238,7 @@ export default function Navbar() {
             {/* Cart */}
             <button
               onClick={openCart}
-              className="relative flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
+              className="relative flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Shopping cart"
             >
               <ShoppingCart size={20} />
@@ -128,7 +254,7 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
                   aria-label="Profile"
                 >
                   <User size={20} />
@@ -164,7 +290,7 @@ export default function Navbar() {
                         setIsProfileDropdownOpen(false);
                         logout();
                       }}
-                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error/10 transition-colors mt-1 border-t border-cloud pt-2"
+                      className="w-full text-left px-4 py-2 text-sm text-error hover:bg-error/10 transition-colors mt-1 border-t border-cloud pt-2 cursor-pointer"
                     >
                       Log Out
                     </button>
@@ -181,6 +307,24 @@ export default function Navbar() {
             )}
           </div>
         </div>
+
+        {/* ─── Mobile Search Bar ─────────────────────────────────────────── */}
+        {isSearchOpen && (
+          <div className="lg:hidden border-t border-cloud px-4 py-3 bg-white animate-fade-in">
+            <form onSubmit={handleSearch} className="relative">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search gifts, occasions…"
+                autoFocus
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-background border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
+              />
+            </form>
+          </div>
+        )}
       </nav>
 
       {/* ─── Mobile Menu ──────────────────────────────────────────────── */}
@@ -193,12 +337,13 @@ export default function Navbar() {
             {[
               { label: 'Home', href: '/' },
               { label: 'Shop All', href: '/products' },
-              { label: 'Birthday Gifts', href: '/products?category=birthday' },
-              { label: 'Anniversary', href: '/products?category=anniversary' },
-              { label: 'Eid Special', href: '/products?category=eid-special' },
-              { label: 'Custom Gifts', href: '/products?category=custom' },
-              { label: 'Corporate Gifts', href: '/products?category=corporate' },
-              { label: 'Thank You Gifts', href: '/products?category=thank-you' },
+              { label: 'Birthday Gifts', href: '/category/birthday' },
+              { label: 'Anniversary', href: '/category/anniversary' },
+              { label: 'Eid Special', href: '/category/eid-special' },
+              { label: 'Custom Gifts', href: '/category/custom' },
+              { label: 'Corporate Gifts', href: '/category/corporate' },
+              { label: 'Thank You Gifts', href: '/category/thank-you' },
+              { label: '🏷️ Under $50', href: '/products?maxPrice=50' },
             ].map((link) => (
               <li key={link.href + link.label}>
                 <Link
@@ -216,7 +361,7 @@ export default function Navbar() {
                   closeMobileMenu();
                   openCart();
                 }}
-                className="w-full text-left block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200"
+                className="w-full text-left block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
               >
                 Cart {itemCount > 0 && `(${itemCount})`}
               </button>

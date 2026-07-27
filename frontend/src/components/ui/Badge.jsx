@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 
 /**
- * @param {'default'|'success'|'warning'|'error'|'info'|'primary'} variant
+ * @param {'default'|'success'|'warning'|'error'|'info'|'primary'|'bestseller'} variant
  */
 export default function Badge({ children, variant = 'default', className }) {
   const variants = {
@@ -11,6 +11,7 @@ export default function Badge({ children, variant = 'default', className }) {
     warning: 'bg-warning/10 text-warning',
     error: 'bg-primary/10 text-primary',
     info: 'bg-info/10 text-info',
+    bestseller: 'bg-amber-50 text-amber-700 border border-amber-200',
   };
 
   return (

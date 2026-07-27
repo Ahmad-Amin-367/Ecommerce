@@ -1,6 +1,5 @@
 'use client';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useFormik } from 'formik';
 import Link from 'next/link';
 import { Mail, Lock } from 'lucide-react';
 import { loginSchema } from '@/validations/authValidation';
@@ -11,29 +10,35 @@ import Button from '@/components/ui/Button';
 export default function LoginForm() {
   const { login } = useAuth();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({ resolver: zodResolver(loginSchema) });
-
-  const onSubmit = async (data) => {
-    try {
-      await login(data);
-    } catch (err) {
-      // Errors are handled in useAuth via toast
-    }
-  };
+  const formik = useFormik({
+    initialValues: { email: '', password: '' },
+    validationSchema: loginSchema,
+    onSubmit: async (values, { setFieldError, setSubmitting }) => {
+      try {
+        await login(values);
+      } catch (err) {
+        const message = err.response?.data?.message || 'Login failed';
+        if (message.toLowerCase().includes('email') || message.toLowerCase().includes('password') || message.toLowerCase().includes('credentials')) {
+          setFieldError('email', message);
+          setFieldError('password', message);
+        } else {
+          setFieldError('email', message);
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
+    <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6" noValidate>
       <Input
         label="Email"
         type="email"
         placeholder="you@example.com"
         leftIcon={<Mail size={16} />}
-        error={errors.email?.message}
-        {...register('email')}
+        error={formik.touched.email && formik.errors.email ? formik.errors.email : ''}
+        {...formik.getFieldProps('email')}
       />
 
       <Input
@@ -41,11 +46,11 @@ export default function LoginForm() {
         type="password"
         placeholder="••••••••"
         leftIcon={<Lock size={16} />}
-        error={errors.password?.message}
-        {...register('password')}
+        error={formik.touched.password && formik.errors.password ? formik.errors.password : ''}
+        {...formik.getFieldProps('password')}
       />
 
-      <Button type="submit" fullWidth size="lg" isLoading={isSubmitting}>
+      <Button type="submit" fullWidth size="lg" isLoading={formik.isSubmitting}>
         Sign In
       </Button>
 
