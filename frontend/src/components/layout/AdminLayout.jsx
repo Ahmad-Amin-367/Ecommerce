@@ -30,8 +30,10 @@ export default function AdminLayout({ children }) {
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Close mobile sidebar on route change
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -162,7 +164,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         <main className="p-6 lg:p-12 w-full max-w-[100vw] lg:max-w-7xl animate-fade-in overflow-x-hidden">
-          {children}
+          {mounted ? children : <div className="animate-pulse w-full h-full bg-cloud/20 rounded-2xl min-h-[400px]"></div>}
         </main>
       </div>
     </div>

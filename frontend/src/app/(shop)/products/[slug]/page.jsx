@@ -8,8 +8,7 @@ import useCart from '@/hooks/useCart';
 import { ChevronRight, Heart, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
-export default function ProductDetailsPage() {
-  const { slug } = useParams();
+function ProductDetailsInner({ slug }) {
   const { data: product, isLoading, isError } = useProduct(slug);
   const { addToCart, isAdding } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +41,6 @@ export default function ProductDetailsPage() {
     );
   }
 
-  // Fallback image if product has no images
   const images = product.images?.length > 0 ? product.images : ['https://via.placeholder.com/800x800?text=No+Image'];
 
   const increaseQuantity = () => {
@@ -200,4 +198,30 @@ export default function ProductDetailsPage() {
       </div>
     </div>
   );
+}
+
+export default function ProductDetailsPage() {
+  const { slug } = useParams();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 lg:px-8 py-12">
+        <div className="animate-pulse flex flex-col md:flex-row gap-12">
+          <div className="w-full md:w-1/2 aspect-square bg-cloud rounded-2xl" />
+          <div className="w-full md:w-1/2 flex flex-col gap-6 pt-4">
+            <div className="h-10 bg-cloud rounded-md w-3/4" />
+            <div className="h-6 bg-cloud rounded-md w-1/4" />
+            <div className="h-24 bg-cloud rounded-md w-full mt-4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <ProductDetailsInner slug={slug} />;
 }
