@@ -1,33 +1,20 @@
 'use client';
-import { QueryClient, QueryClientProvider, isServer } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
+// Create a single instance outside the component to bypass SSR chunking bugs on Linux.
+// Since we only fetch data on the client (no server-side prefetching), this is perfectly safe.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
     },
-  });
-}
-
-let browserQueryClient = undefined;
-
-function getQueryClient() {
-  if (isServer) {
-    return makeQueryClient();
-  } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
-  }
-}
+  },
+});
 
 export function Providers({ children }) {
-  const queryClient = getQueryClient();
-
   return (
     <QueryClientProvider client={queryClient}>
       {children}
