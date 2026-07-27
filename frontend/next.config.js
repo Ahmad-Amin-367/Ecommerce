@@ -23,6 +23,8 @@ const nextConfig = {
   experimental: {
     // serverActions: true, // Uncomment if using Server Actions
   },
+
+  transpilePackages: ['@tanstack/react-query'],
 };
 
 module.exports = nextConfig;
