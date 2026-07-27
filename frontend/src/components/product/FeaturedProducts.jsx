@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from './ProductCard';
 import ProductSkeleton from './ProductSkeleton';
@@ -6,8 +7,27 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export default function FeaturedProducts() {
-  const { data: productsData, isLoading, isError } = useProducts({ isFeatured: true, limit: 4 });
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const { data: productsData, isLoading, isError } = useProducts({ 
+    isFeatured: true, 
+    limit: 4,
+    enabled: mounted // ONLY run query if mounted on client to prevent SSR Context crash on Linux
+  });
+  
   const products = productsData?.data || [];
+
+  if (!mounted) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)}
+      </div>
+    );
+  }
 
   if (isError) {
     return (
