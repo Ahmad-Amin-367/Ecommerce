@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { Gift, Truck, Heart, RotateCcw, Star, ArrowRight, Sparkles, Cake, PartyPopper, Moon, Briefcase, HandHeart } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const FeaturedProducts = dynamic(() => import('@/components/product/FeaturedProducts'), { ssr: false });
+import FeaturedProducts from '@/components/product/FeaturedProducts';
 export const metadata = {
   title: 'Hisna Gifts — Perfect Gifts for Every Occasion',
   description: 'Customize your edible fruit arrangements or personalize your gift the way you want. Delivering across Pakistan.',

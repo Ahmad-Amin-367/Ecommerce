@@ -6,28 +6,13 @@ import ProductSkeleton from './ProductSkeleton';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-export default function FeaturedProducts() {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+function FeaturedProductsInner() {
   const { data: productsData, isLoading, isError } = useProducts({ 
     isFeatured: true, 
-    limit: 4,
-    enabled: mounted // ONLY run query if mounted on client to prevent SSR Context crash on Linux
+    limit: 4 
   });
   
   const products = productsData?.data || [];
-
-  if (!mounted) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)}
-      </div>
-    );
-  }
 
   if (isError) {
     return (
@@ -56,4 +41,22 @@ export default function FeaturedProducts() {
       </div>
     </>
   );
+}
+
+export default function FeaturedProducts() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)}
+      </div>
+    );
+  }
+
+  return <FeaturedProductsInner />;
 }
