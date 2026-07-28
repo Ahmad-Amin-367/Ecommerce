@@ -67,6 +67,8 @@
   --animate-slow-spin: spin 3s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-marquee: marquee 30s linear infinite;
+  --animate-reveal: reveal 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  --animate-scale-in: scaleIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 
   @keyframes fadeUp {
     0% { opacity: 0; transform: translateY(16px); }
@@ -87,6 +89,14 @@
   @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
+  }
+  @keyframes reveal {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    0% { opacity: 0; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
   }
 
   /* ─── Z-Indices ────────────────────────────────────────────────────────────── */
@@ -192,3 +202,92 @@
   background: rgba(198, 125, 92, 0.25);
   color: #2C2C2C;
 }
+
+/* ─── Scroll Reveal ──────────────────────────────────────────────────────────── */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Swiper Brand Overrides ─────────────────────────────────────────────────── */
+.swiper-pagination-bullet {
+  background: #E8C4B8 !important;
+  opacity: 1 !important;
+  width: 8px !important;
+  height: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #C67D5C !important;
+  width: 24px !important;
+  border-radius: 4px !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  width: 40px !important;
+  height: 40px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 12px rgba(44, 44, 44, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background: #C67D5C !important;
+  box-shadow: 0 4px 24px rgba(198, 125, 92, 0.3) !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #2C2C2C !important;
+  transition: color 0.3s ease !important;
+}
+
+.swiper-button-prev:hover::after,
+.swiper-button-next:hover::after {
+  color: #FFFFFF !important;
+}
+
+/* Hide Swiper nav on mobile — touch swipe is the primary interaction */
+@media (max-width: 768px) {
+  .swiper-button-prev,
+  .swiper-button-next {
+    display: none !important;
+  }
+}
+
+/* ─── Count-up Card Glow ─────────────────────────────────────────────────────── */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(198, 125, 92, 0.06) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+

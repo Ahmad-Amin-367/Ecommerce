@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Gift, Truck, Heart, RotateCcw, Star, ArrowRight, Sparkles, Cake, PartyPopper, Moon, Briefcase, HandHeart, Users, Package, MapPin } from 'lucide-react';
-import FeaturedProducts from '@/components/product/FeaturedProducts';
+import { Star, ArrowRight, Sparkles, Cake, Heart, Moon, Briefcase, HandHeart } from 'lucide-react';
+import FeaturedSlider from '@/components/home/FeaturedSlider';
+import TestimonialsSlider from '@/components/home/TestimonialsSlider';
+import StatsSection from '@/components/home/StatsSection';
+import ScrollReveal from '@/components/home/ScrollReveal';
 
 export const metadata = {
   title: 'Hisna Gifts — Perfect Gifts for Every Occasion',
@@ -17,39 +20,7 @@ const categories = [
   { name: 'Thank You', slug: 'thank-you', icon: HandHeart, color: 'bg-[#FBF0E4]', accent: 'text-[#C67D5C]' },
 ];
 
-const trustFeatures = [
-  { icon: Gift, title: 'Gift Wrapping', desc: 'Complimentary on all orders' },
-  { icon: Truck, title: 'Nationwide Delivery', desc: 'Across all cities in Pakistan' },
-  { icon: Heart, title: 'Personalized Touch', desc: 'Custom messages & styling' },
-  { icon: RotateCcw, title: 'Easy Returns', desc: 'Hassle-free return policy' },
-];
 
-const socialProofStats = [
-  { icon: Star, value: '500+', label: 'Happy Customers', color: 'text-warning' },
-  { icon: Package, value: '2,000+', label: 'Gifts Delivered', color: 'text-primary' },
-  { icon: MapPin, value: 'All Cities', label: 'Nationwide Delivery', color: 'text-success' },
-];
-
-const testimonials = [
-  {
-    name: 'Ayesha K.',
-    location: 'Lahore',
-    rating: 5,
-    text: 'The edible arrangement was absolutely stunning! My mother loved every bit of it. The packaging was premium and it arrived fresh. Will definitely order again.',
-  },
-  {
-    name: 'Fatima S.',
-    location: 'Karachi',
-    rating: 5,
-    text: 'Ordered a custom birthday hamper for my husband and it exceeded all expectations. The attention to detail was remarkable. Hisna Gifts never disappoints!',
-  },
-  {
-    name: 'Ahmed R.',
-    location: 'Islamabad',
-    rating: 5,
-    text: 'Corporate gifting made easy! We ordered Eid gifts for our entire team and the quality was consistent across every single package. Highly professional service.',
-  },
-];
 
 export default function HomePage() {
   return (
@@ -155,180 +126,120 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          SOCIAL PROOF COUNTER STRIP
+          ANIMATED STATS COUNTER CARDS
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-white border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6 py-6">
-          <div className="grid grid-cols-3 gap-4">
-            {socialProofStats.map((stat) => (
-              <div key={stat.label} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-center sm:text-left">
-                <div className="w-10 h-10 rounded-xl bg-primary-glow flex items-center justify-center shrink-0">
-                  <stat.icon size={18} className={stat.color} fill={stat.color === 'text-warning' ? 'currentColor' : 'none'} />
-                </div>
-                <div>
-                  <p className="text-lg sm:text-xl font-bold text-charcoal leading-tight">{stat.value}</p>
-                  <p className="text-[11px] sm:text-xs text-warm-gray">{stat.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          TRUST FEATURES
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-white border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {trustFeatures.map((feature) => (
-              <div key={feature.title} className="flex items-center gap-3 justify-center md:justify-start">
-                <div className="w-10 h-10 rounded-xl bg-primary-glow flex items-center justify-center shrink-0">
-                  <feature.icon size={18} className="text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-charcoal">{feature.title}</p>
-                  <p className="text-xs text-warm-gray">{feature.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <section className="bg-background py-12 sm:py-16">
+        <div className="w-full max-w-7xl mx-auto px-6">
+          <StatsSection />
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           SHOP BY OCCASION
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-background py-16 sm:py-20">
-        <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-              Find the perfect gift
-            </p>
-            <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
-              Shop By Occasion
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/category/${cat.slug}`}
-                className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-white border border-cloud transition-all duration-300 hover:shadow-card hover:-translate-y-1 hover:border-primary/20"
-              >
-                <div className={`w-16 h-16 rounded-2xl ${cat.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-                  <cat.icon size={28} className={cat.accent} strokeWidth={1.5} />
-                </div>
-                <span className="text-sm font-semibold text-charcoal text-center">{cat.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          FEATURED / CURATED SECTION
-      ═══════════════════════════════════════════════════════════════════════ */}
       <section className="bg-background-secondary py-16 sm:py-20">
         <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="flex items-end justify-between mb-10">
-            <div>
+          <ScrollReveal>
+            <div className="text-center mb-10">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-                Handpicked for you
+                Find the perfect gift
               </p>
               <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
-                Curated Gifts
+                Shop By Occasion
               </h2>
             </div>
-            <Link
-              href="/products?isFeatured=true"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-200"
-            >
-              View All <ArrowRight size={16} />
-            </Link>
-          </div>
+          </ScrollReveal>
 
-          {/* Dynamic Featured Products Grid with Skeleton Loading */}
-          <FeaturedProducts />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+            {categories.map((cat, index) => (
+              <ScrollReveal key={cat.slug} delay={index * 80}>
+                <Link
+                  href={`/category/${cat.slug}`}
+                  className="group flex flex-col items-center gap-3 p-6 rounded-2xl bg-white border border-cloud transition-all duration-300 hover:shadow-card hover:-translate-y-1 hover:border-primary/20"
+                >
+                  <div className={`w-16 h-16 rounded-2xl ${cat.color} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+                    <cat.icon size={28} className={cat.accent} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-sm font-semibold text-charcoal text-center">{cat.name}</span>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          TESTIMONIALS
+          FEATURED PRODUCTS SLIDER
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-background py-16 sm:py-20">
+      <section className="bg-background py-16 sm:py-20 overflow-x-hidden">
         <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-              Loved by hundreds
-            </p>
-            <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
-              What Our Customers Say
-            </h2>
-          </div>
+          <ScrollReveal>
+            {/* Dynamic Featured Products Slider (includes Header & Nav) */}
+            <FeaturedSlider />
+          </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((review) => (
-              <div
-                key={review.name}
-                className="bg-white rounded-2xl p-6 sm:p-8 border border-cloud transition-all duration-300 hover:shadow-card"
-              >
-                {/* Stars */}
-                <div className="flex items-center gap-0.5 mb-4">
-                  {Array.from({ length: review.rating }).map((_, i) => (
-                    <Star key={i} size={16} className="text-warning fill-warning" />
-                  ))}
-                </div>
-                {/* Quote */}
-                <p className="text-sm text-warm-gray leading-relaxed mb-5 font-sans">
-                  &ldquo;{review.text}&rdquo;
-                </p>
-                {/* Author */}
-                <div className="flex items-center gap-3 pt-4 border-t border-cloud">
-                  <div className="w-9 h-9 rounded-full bg-primary-glow flex items-center justify-center text-sm font-bold text-primary">
-                    {review.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-charcoal">{review.name}</p>
-                    <p className="text-xs text-text-muted">{review.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="sm:hidden text-center mt-8">
+            <Link
+              href="/products?isFeatured=true"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-200"
+            >
+              View All Gifts <ArrowRight size={16} />
+            </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          TESTIMONIALS SLIDER
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section className="bg-background-secondary py-16 sm:py-20 overflow-x-hidden">
+        <div className="w-full max-w-7xl mx-auto px-6">
+          <ScrollReveal>
+            <div className="text-center mb-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
+                Loved by hundreds
+              </p>
+              <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
+                What Our Customers Say
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <TestimonialsSlider />
         </div>
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
           NEWSLETTER CTA
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-background-secondary py-16 sm:py-20">
+      <section className="bg-background py-16 sm:py-20">
         <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-charcoal mb-3">
-              Stay In The Loop
-            </h2>
-            <p className="text-sm text-warm-gray mb-8 max-w-md mx-auto">
-              Be the first to know about new gift collections, seasonal specials, and exclusive offers.
-            </p>
-            <form
-              className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-              action="/subscribe" // Optional: can be a real action or removed
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-5 py-3 rounded-full bg-white border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
-              />
-              <button
-                type="submit"
-                className="px-7 py-3 bg-primary text-white rounded-full text-sm font-semibold tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[1px] shrink-0"
+          <ScrollReveal>
+            <div className="max-w-2xl mx-auto text-center">
+              <h2 className="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-charcoal mb-3">
+                Stay In The Loop
+              </h2>
+              <p className="text-sm text-warm-gray mb-8 max-w-md mx-auto">
+                Be the first to know about new gift collections, seasonal specials, and exclusive offers.
+              </p>
+              <form
+                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+                action="/subscribe"
               >
-                Subscribe
-              </button>
-            </form>
-          </div>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-5 py-3 rounded-full bg-white border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
+                />
+                <button
+                  type="submit"
+                  className="px-7 py-3 bg-primary text-white rounded-full text-sm font-semibold tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[1px] shrink-0"
+                >
+                  Subscribe
+                </button>
+              </form>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
     </div>

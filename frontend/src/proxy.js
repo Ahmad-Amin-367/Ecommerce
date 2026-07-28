@@ -7,7 +7,7 @@ const ADMIN_ROUTES = ['/admin'];
 // Routes that redirect authenticated users away
 const AUTH_ROUTES = ['/login', '/register'];
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
 
   // Read user info from cookie set by the app (we store a flag in a readable cookie)
