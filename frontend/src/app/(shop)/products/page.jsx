@@ -4,8 +4,9 @@ import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilters from '@/components/product/ProductFilters';
 import { Gift } from 'lucide-react';
+import { Suspense } from 'react';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   
   const search = searchParams.get('search') || '';
@@ -69,5 +70,19 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="bg-background min-h-screen flex items-center justify-center pb-20">
+          <p className="text-text-secondary">Loading products...</p>
+        </div>
+      }
+    >
+      <ProductsContent />
+    </Suspense>
   );
 }
