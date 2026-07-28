@@ -80,7 +80,7 @@ export default function Footer() {
             <li><Link href="/login" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Sign In</Link></li>
             <li><Link href="/register" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Register</Link></li>
             <li><Link href="/orders" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">My Orders</Link></li>
-            <li><Link href="/cart" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Shopping Cart</Link></li>
+            <li><button onClick={() => document.dispatchEvent(new CustomEvent('open-cart'))} className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200 cursor-pointer">Shopping Cart</button></li>
           </ul>
         </div>
 

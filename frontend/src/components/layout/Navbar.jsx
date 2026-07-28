@@ -32,7 +32,7 @@ export default function Navbar() {
   const { logout } = useAuth();
   const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
-  
+
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,17 +41,38 @@ export default function Navbar() {
   const shopMenuRef = useRef(null);
   const shopMenuTimeoutRef = useRef(null);
   const searchInputRef = useRef(null);
+  const searchContainerRef = useRef(null);
+  const searchToggleButtonRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false);
       }
+      if (
+        searchContainerRef.current && 
+        !searchContainerRef.current.contains(event.target) &&
+        (!searchToggleButtonRef.current || !searchToggleButtonRef.current.contains(event.target))
+      ) {
+        setIsSearchOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Block body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -91,11 +112,11 @@ export default function Navbar() {
       </div>
 
       {/* ─── Main Navigation ──────────────────────────────────────────── */}
-      <nav className="bg-white/95 backdrop-blur-md border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-[68px] gap-4">
+      <nav className="relative z-50 bg-white/95 backdrop-blur-md border-b border-cloud">
+        <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 flex items-center justify-between h-[68px] gap-0 sm:gap-4">
           {/* Mobile menu toggle */}
           <button
-            className="flex lg:hidden w-10 h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
+            className="flex lg:hidden w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
             onClick={toggleMobileMenu}
             aria-label="Toggle menu"
             aria-controls="mobile-nav-menu"
@@ -107,11 +128,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-2 shrink-0 group"
+            className="absolute left-[42%] sm:left-[45%] md:left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-1.5 sm:gap-2 shrink-0 group"
             onClick={closeMobileMenu}
           >
-            <Gift size={22} className="text-primary transition-transform duration-300 group-hover:rotate-12" />
-            <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-charcoal">
+            <Gift size={22} className="hidden sm:block text-primary transition-transform duration-300 group-hover:rotate-12" />
+            <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-charcoal">
               Hisna <span className="text-primary">Gifts</span>
             </span>
           </Link>
@@ -157,7 +178,7 @@ export default function Navbar() {
                 Shop
                 <ChevronDown size={14} className={`transition-transform duration-200 ${isShopMenuOpen ? 'rotate-180' : ''}`} />
               </Link>
-              
+
               {/* Mega Menu Dropdown */}
               {isShopMenuOpen && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[520px] bg-white border border-cloud rounded-2xl shadow-lifted p-6 animate-fade-in z-50">
@@ -226,23 +247,24 @@ export default function Navbar() {
           </ul>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-0 sm:gap-1 shrink-0">
             {/* Mobile Search Toggle */}
             <button
-              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
+              ref={searchToggleButtonRef}
+              className="flex lg:hidden items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Search"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
-              <Search size={20} />
+              <Search size={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
             </button>
 
             {/* Cart */}
             <button
               onClick={openCart}
-              className="relative flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
+              className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Shopping cart"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
               {itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
                   {itemCount > 99 ? '99+' : itemCount}
@@ -255,10 +277,10 @@ export default function Navbar() {
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
+                  className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
                   aria-label="Profile"
                 >
-                  <User size={20} />
+                  <User size={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
                 </button>
 
                 {isProfileDropdownOpen && (
@@ -267,7 +289,7 @@ export default function Navbar() {
                       <p className="text-sm font-semibold text-charcoal truncate">{user?.name}</p>
                       <p className="text-xs text-text-muted truncate">{user?.email}</p>
                     </div>
-                    
+
                     {user?.role === 'ADMIN' ? (
                       <Link
                         href="/admin"
@@ -285,7 +307,7 @@ export default function Navbar() {
                         Profile
                       </Link>
                     )}
-                    
+
                     <button
                       onClick={() => {
                         setIsProfileDropdownOpen(false);
@@ -311,7 +333,7 @@ export default function Navbar() {
 
         {/* ─── Mobile Search Bar ─────────────────────────────────────────── */}
         {isSearchOpen && (
-          <div className="lg:hidden border-t border-cloud px-4 py-3 bg-white animate-fade-in">
+          <div ref={searchContainerRef} className="lg:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
             <form onSubmit={handleSearch} className="relative">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray pointer-events-none" />
               <input
@@ -332,7 +354,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div
           id="mobile-nav-menu"
-          className="lg:hidden border-t border-cloud bg-white animate-fade-in shadow-lifted"
+          className="lg:hidden border-t border-cloud bg-white animate-fade-in shadow-lifted overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar"
         >
           <ul className="flex flex-col py-2">
             {[
@@ -402,7 +424,7 @@ export default function Navbar() {
           </ul>
         </div>
       )}
-      
+
       {/* ─── Cart Drawer ──────────────────────────────────────────────── */}
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
     </header>

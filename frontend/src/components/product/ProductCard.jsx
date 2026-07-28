@@ -5,6 +5,7 @@ import { ShoppingCart, Star } from 'lucide-react';
 import { formatCurrency, getDiscountPercent } from '@/utils/formatCurrency';
 import useCart from '@/hooks/useCart';
 import Badge from '@/components/ui/Badge';
+import { useAnimationStore } from '@/store/animationStore';
 
 export default function ProductCard({ product }) {
   const { addToCart, isAdding } = useCart();
@@ -12,7 +13,9 @@ export default function ProductCard({ product }) {
 
   const handleAddToCart = (e) => {
     e.preventDefault();
-    addToCart({ productId: product.id, quantity: 1 });
+    const rect = e.currentTarget.getBoundingClientRect();
+    useAnimationStore.getState().addFlyingItem(product, rect);
+    addToCart({ productId: product.id, quantity: 1, product });
   };
 
   return (

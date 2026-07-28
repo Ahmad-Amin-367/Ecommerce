@@ -87,10 +87,13 @@ export default function CheckoutPage() {
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
-          <Link href="/cart" className="flex items-center text-sm font-medium text-text-secondary hover:text-primary transition-colors">
+          <button 
+            onClick={() => useCartStore.getState().openCart()}
+            className="flex items-center text-sm font-medium text-text-secondary hover:text-primary transition-colors cursor-pointer"
+          >
             <ChevronLeft size={16} className="mr-1" />
-            Back to Cart
-          </Link>
+            Edit Cart
+          </button>
           <div className="flex items-center text-sm text-text-muted">
             <Lock size={14} className="mr-1" />
             Secure Checkout

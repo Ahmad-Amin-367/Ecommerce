@@ -32,7 +32,7 @@ const useCart = () => {
     onSuccess: (res) => {
       setCart(res.data.data);
       invalidateCart();
-      toast.success('Added to cart!');
+      toast.success('Added to cart', { position: 'top-right' });
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to add to cart'),
   });

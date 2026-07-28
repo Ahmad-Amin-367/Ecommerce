@@ -150,19 +150,6 @@ export default function CartDrawer({ isOpen, onClose }) {
                 </Button>
               </Link>
             </div>
-            <div className="mt-6 flex justify-center text-center text-sm text-text-secondary">
-              <p>
-                or{' '}
-                <button
-                  type="button"
-                  className="font-medium text-primary hover:text-primary-dark transition-colors cursor-pointer"
-                  onClick={onClose}
-                >
-                  Continue Shopping
-                  <span aria-hidden="true"> &rarr;</span>
-                </button>
-              </p>
-            </div>
           </div>
         )}
       </div>

@@ -83,20 +83,23 @@ export default function FeaturedSlider() {
       <style jsx global>{`
         .featured-slider {
           display: flex;
-          gap: 1.5rem; /* 24px */
+          gap: 1rem; /* 16px */
         }
         .featured-slide {
-          flex: 0 0 85%; /* mobile peek */
+          flex: 0 0 45%; /* mobile 2 cards + peek */
           min-width: 0;
         }
         @media (min-width: 640px) {
+          .featured-slider {
+            gap: 1.5rem; /* 24px */
+          }
           .featured-slide {
-            flex: 0 0 50%;
+            flex: 0 0 40%;
           }
         }
         @media (min-width: 768px) {
           .featured-slide {
-            flex: 0 0 40%;
+            flex: 0 0 33.333%;
           }
         }
         @media (min-width: 1024px) {

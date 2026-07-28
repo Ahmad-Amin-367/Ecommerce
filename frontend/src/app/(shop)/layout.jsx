@@ -1,5 +1,7 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import FloatingQueueTab from '@/components/ui/FloatingQueueTab';
+import FlyingItemLayer from '@/components/ui/FlyingItemLayer';
 
 export default function ShopLayout({ children }) {
   return (
@@ -9,6 +11,8 @@ export default function ShopLayout({ children }) {
         {children}
       </main>
       <Footer />
+      <FloatingQueueTab />
+      <FlyingItemLayer />
     </>
   );
 }
