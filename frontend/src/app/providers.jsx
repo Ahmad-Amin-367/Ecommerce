@@ -1,20 +1,24 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-
-// Create a single instance outside the component to bypass SSR chunking bugs on Linux.
-// Since we only fetch data on the client (no server-side prefetching), this is perfectly safe.
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { useState } from 'react';
 
 export function Providers({ children }) {
+  // Initialize QueryClient inside the component for Next.js App Router
+  // This prevents context linkage bugs on the client side with Turbopack
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutes
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       {children}
