@@ -15,6 +15,7 @@ export const useProducts = (params = {}) => {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     keepPreviousData: true,
+    ...(params.enabled !== undefined && { enabled: params.enabled }),
   });
 };
 

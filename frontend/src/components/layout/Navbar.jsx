@@ -5,7 +5,8 @@ import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles,
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
-import CartDrawer from '@/components/cart/CartDrawer';
+import dynamic from 'next/dynamic';
+const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), { ssr: false });
 import { useState, useRef, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 
