@@ -55,6 +55,7 @@ async function main() {
       categoryId: categories['anniversary'],
       isFeatured: true,
       tags: ['edible arrangement', 'strawberry', 'chocolate', 'luxury'],
+      images: ['/products/prod-1.jpg'],
     },
     {
       name: 'Custom Alphabet Floral Box',
@@ -66,6 +67,7 @@ async function main() {
       categoryId: categories['custom-gifts'],
       isFeatured: true,
       tags: ['flowers', 'roses', 'custom'],
+      images: ['/products/prod-2.jpg'],
     },
     {
       name: 'Classic Birthday Hamper',
@@ -78,6 +80,7 @@ async function main() {
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['hamper', 'birthday', 'chocolates'],
+      images: ['/products/prod-3.jpg'],
     },
     {
       name: 'Premium Eid Date & Nut Platter',
@@ -89,6 +92,7 @@ async function main() {
       categoryId: categories['eid-special'],
       isFeatured: true,
       tags: ['eid', 'dates', 'nuts', 'platter'],
+      images: ['/products/prod-4.jpg'],
     },
     {
       name: 'Corporate Executive Box',
@@ -100,6 +104,7 @@ async function main() {
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'leather', 'executive'],
+      images: ['/products/prod-5.jpg'],
     },
     {
       name: 'Gourmet Fruit & Chocolate Bouquet',
@@ -111,17 +116,22 @@ async function main() {
       categoryId: categories['thank-you'],
       isFeatured: true,
       tags: ['edible arrangement', 'fruits', 'thank you'],
+      images: ['/products/prod-6.jpg'],
     },
   ];
 
   for (const prod of productsData) {
     await prisma.product.upsert({
       where: { slug: prod.slug },
-      update: { price: prod.price, comparePrice: prod.comparePrice || null },
+      update: { 
+        price: prod.price, 
+        comparePrice: prod.comparePrice || null,
+        images: prod.images 
+      },
       create: prod,
     });
   }
-  console.log(`✅ ${productsData.length} Products created`);
+  console.log(`✅ ${productsData.length} Products created or updated`);
 
   console.log('🎉 Seeding completed successfully!');
 }

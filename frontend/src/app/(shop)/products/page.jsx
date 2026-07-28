@@ -4,7 +4,7 @@ import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilters from '@/components/product/ProductFilters';
 import { Gift } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -74,6 +74,20 @@ function ProductsContent() {
 }
 
 export default function ProductsPage() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center pb-20">
+        <p className="text-text-secondary">Loading products...</p>
+      </div>
+    );
+  }
+
   return (
     <Suspense 
       fallback={

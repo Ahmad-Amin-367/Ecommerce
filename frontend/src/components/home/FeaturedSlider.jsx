@@ -8,7 +8,7 @@ import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/product/ProductCard';
 import ProductSkeleton from '@/components/product/ProductSkeleton';
 
-export default function FeaturedSlider() {
+function FeaturedSliderInner() {
   const { data: productsData, isLoading, isError } = useProducts({ isFeatured: true, limit: 12 });
   const products = productsData?.data || [];
 
@@ -180,4 +180,36 @@ export default function FeaturedSlider() {
       </div>
     </div>
   );
+}
+
+export default function FeaturedSlider() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div>
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
+              Handpicked for you
+            </p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
+              Featured Products
+            </h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ProductSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return <FeaturedSliderInner />;
 }
