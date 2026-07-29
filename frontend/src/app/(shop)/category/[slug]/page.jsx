@@ -6,8 +6,7 @@ import ProductFilters from '@/components/product/ProductFilters';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-
+import { Suspense, useState, useEffect } from 'react';
 // Category metadata for the custom hero sections
 const categoryData = {
   'birthday': {
@@ -82,7 +81,7 @@ const categoryData = {
   }
 };
 
-export default function CategoryPage() {
+function CategoryContent() {
   const { slug } = useParams();
   const searchParams = useSearchParams();
   const [showDetails, setShowDetails] = useState(false);
@@ -187,5 +186,33 @@ export default function CategoryPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function CategoryPage() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center pb-20">
+        <p className="text-text-secondary">Loading category...</p>
+      </div>
+    );
+  }
+
+  return (
+    <Suspense 
+      fallback={
+        <div className="bg-background min-h-screen flex items-center justify-center pb-20">
+          <p className="text-text-secondary">Loading category...</p>
+        </div>
+      }
+    >
+      <CategoryContent />
+    </Suspense>
   );
 }
