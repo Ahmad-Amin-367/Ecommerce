@@ -16,7 +16,7 @@ const create = Joi.object({
     'any.required': 'Price is required',
     'number.positive': 'Price must be a positive number',
   }),
-  comparePrice: Joi.number().positive().precision(2).optional(),
+  comparePrice: Joi.number().positive().precision(2).optional().allow(null, ''),
   stock: Joi.number().integer().min(0).default(0),
   sku: Joi.string().max(100).optional().allow(''),
   categoryId: Joi.string().required().messages({
@@ -36,7 +36,7 @@ const update = Joi.object({
     .optional(),
   description: Joi.string().max(5000).optional().allow(''),
   price: Joi.number().positive().precision(2).optional(),
-  comparePrice: Joi.number().positive().precision(2).optional().allow(null),
+  comparePrice: Joi.number().positive().precision(2).optional().allow(null, ''),
   stock: Joi.number().integer().min(0).optional(),
   sku: Joi.string().max(100).optional().allow(null, ''),
   categoryId: Joi.string().optional(),

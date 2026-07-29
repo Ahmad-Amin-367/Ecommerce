@@ -15,7 +15,7 @@ const productSchema = Yup.object().shape({
   slug: Yup.string().min(3, 'Slug must be at least 3 characters').required('Slug is required'),
   description: Yup.string(),
   price: Yup.number().min(0, 'Price must be positive').required('Price is required'),
-  comparePrice: Yup.number().min(0, 'Compare price must be positive').nullable(),
+  comparePrice: Yup.number().transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value)).min(0, 'Compare price must be positive').nullable(),
   stock: Yup.number().integer('Stock must be an integer').min(0, 'Stock must be 0 or more').required('Stock is required'),
   sku: Yup.string(),
   categoryId: Yup.string().required('Category is required'),
@@ -46,7 +46,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
       slug: '',
       description: '',
       price: 0,
-      comparePrice: 0,
+      comparePrice: '',
       stock: 0,
       sku: '',
       categoryId: '',
@@ -65,6 +65,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
         }
 
         const payload = { ...values, images };
+        if (!payload.comparePrice) payload.comparePrice = null;
 
         if (isEditing) {
           await updateMutation.mutateAsync({ id: product.id, data: payload });
@@ -89,7 +90,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
           slug: product.slug,
           description: product.description || '',
           price: Number(product.price),
-          comparePrice: product.comparePrice ? Number(product.comparePrice) : 0,
+          comparePrice: product.comparePrice ? Number(product.comparePrice) : '',
           stock: product.stock,
           sku: product.sku || '',
           categoryId: product.categoryId,

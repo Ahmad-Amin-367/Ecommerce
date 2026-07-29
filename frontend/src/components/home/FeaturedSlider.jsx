@@ -10,7 +10,12 @@ import ProductSkeleton from '@/components/product/ProductSkeleton';
 
 function FeaturedSliderInner() {
   const { data: productsData, isLoading, isError } = useProducts({ isFeatured: true, limit: 12 });
-  const products = productsData?.data || [];
+  const originalProducts = productsData?.data || [];
+  
+  // Duplicate products to ensure smooth infinite loop if there are too few slides
+  const products = originalProducts.length > 0 && originalProducts.length < 8
+    ? [...originalProducts, ...originalProducts, ...originalProducts].slice(0, 12)
+    : originalProducts;
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState([]);
@@ -83,28 +88,30 @@ function FeaturedSliderInner() {
       <style jsx global>{`
         .featured-slider {
           display: flex;
-          gap: 1rem; /* 16px */
+          margin-left: -1rem; /* Replaces gap to fix Embla cloning issue */
         }
         .featured-slide {
           flex: 0 0 45%; /* mobile 2 cards + peek */
           min-width: 0;
+          padding-left: 1rem; /* Creates the gap for Embla */
         }
         @media (min-width: 640px) {
           .featured-slider {
-            gap: 1.5rem; /* 24px */
+            margin-left: -1.5rem;
           }
           .featured-slide {
-            flex: 0 0 40%;
+            padding-left: 1.5rem;
+            flex: 0 0 33.333%;
           }
         }
         @media (min-width: 768px) {
           .featured-slide {
-            flex: 0 0 33.333%;
+            flex: 0 0 25%;
           }
         }
         @media (min-width: 1024px) {
           .featured-slide {
-            flex: 0 0 25%;
+            flex: 0 0 20%;
           }
         }
       `}</style>
@@ -151,8 +158,8 @@ function FeaturedSliderInner() {
       {/* Embla Viewport */}
       <div ref={emblaRef} className="overflow-hidden cursor-grab active:cursor-grabbing w-full pb-8 pt-2 -mt-2">
         <div className="featured-slider">
-          {products.map((product) => (
-            <div key={product.id} className="featured-slide">
+          {products.map((product, index) => (
+            <div key={`${product.id}-${index}`} className="featured-slide">
               <div className="h-full transition-transform duration-300 hover:-translate-y-1">
                 <ProductCard product={product} />
               </div>

@@ -40,13 +40,12 @@ export default function ProductCard({ product }) {
         )}
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          {discount > 0 && (
-            <Badge variant="error">-{discount}%</Badge>
-          )}
-          {product.isFeatured && (
-            <Badge variant="primary">Featured</Badge>
-          )}
+        {product.isFeatured && (
+          <div className="absolute top-0 left-0 bg-[#e31837] text-white text-[10px] font-bold px-2 py-0.5 z-20 whitespace-nowrap">
+            Featured
+          </div>
+        )}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
           {product.stock === 0 && (
             <Badge variant="default">Sold Out</Badge>
           )}
@@ -57,7 +56,7 @@ export default function ProductCard({ product }) {
 
         {/* Add to cart overlay */}
         <button
-          className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 p-3.5 bg-primary text-white text-sm font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed cursor-pointer"
+          className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-1.5 p-2.5 bg-primary text-white text-xs font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed cursor-pointer"
           onClick={handleAddToCart}
           disabled={isAdding || product.stock === 0}
           aria-label={`Add ${product.name} to cart`}
@@ -68,13 +67,13 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Info */}
-      <div className="p-4 flex flex-col gap-1.5 flex-1">
+      <div className="p-3 flex flex-col gap-1 flex-1">
         {product.category && (
-          <p className="text-[11px] text-accent font-semibold uppercase tracking-[0.1em]">
+          <p className="text-[10px] text-accent font-semibold uppercase tracking-[0.1em]">
             {product.category.name}
           </p>
         )}
-        <h3 className="font-serif text-sm font-semibold text-charcoal leading-snug line-clamp-2">
+        <h3 className="font-serif text-[13px] font-semibold text-charcoal leading-tight line-clamp-2">
           {product.name}
         </h3>
 
@@ -87,10 +86,10 @@ export default function ProductCard({ product }) {
         )}
 
         {/* Price */}
-        <div className="flex items-center gap-2 mt-auto pt-2">
-          <span className="text-base font-bold text-charcoal">{formatCurrency(product.price)}</span>
-          {discount > 0 && (
-            <span className="text-xs text-text-muted line-through">{formatCurrency(product.comparePrice)}</span>
+        <div className="flex items-center gap-1.5 mt-auto pt-1.5">
+          <span className="text-sm font-bold text-charcoal">{formatCurrency(product.price)}</span>
+          {product.comparePrice && product.comparePrice > product.price && (
+            <span className="text-[11px] text-text-muted line-through">{formatCurrency(product.comparePrice)}</span>
           )}
         </div>
       </div>
