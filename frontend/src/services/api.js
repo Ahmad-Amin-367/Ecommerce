@@ -11,33 +11,16 @@ const api = axios.create({
   },
 });
 
-// ─── Request interceptor — attach access token ────────────────────────────────
-api.interceptors.request.use(
-  (config) => {
-    // Access token is stored in memory (zustand authStore)
-    // We import it lazily to avoid circular deps
-    if (typeof window !== 'undefined') {
-      const { useAuthStore } = require('@/store/authStore');
-      const token = useAuthStore.getState().accessToken;
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 // ─── Response interceptor — handle 401 & token refresh ───────────────────────
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
+const processQueue = (error) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve();
     }
   });
   failedQueue = [];
@@ -60,8 +43,7 @@ api.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
+          .then(() => {
             return api(originalRequest);
           })
           .catch((err) => Promise.reject(err));
@@ -71,20 +53,12 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await api.post('/auth/refresh-token');
-        const newToken = response.data.data.accessToken;
+        await api.post('/auth/refresh-token');
 
-        // Update store with new token
-        if (typeof window !== 'undefined') {
-          const { useAuthStore } = require('@/store/authStore');
-          useAuthStore.getState().setAccessToken(newToken);
-        }
-
-        processQueue(null, newToken);
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
 
         // Refresh failed — log out the user
         if (typeof window !== 'undefined') {

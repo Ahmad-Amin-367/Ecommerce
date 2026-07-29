@@ -5,6 +5,7 @@ const ApiError = require('../utils/apiError');
 const {
   generateAccessToken,
   generateRefreshToken,
+  setAccessTokenCookie,
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
 } = require('../utils/generateToken');
@@ -56,15 +57,16 @@ const login = async (data, res) => {
   const refreshToken = generateRefreshToken({ id: user.id });
 
   setRefreshTokenCookie(res, refreshToken, user.role);
+  setAccessTokenCookie(res, accessToken);
 
   const { password: _, ...userWithoutPassword } = user;
-  return { accessToken, user: userWithoutPassword };
+  return { user: userWithoutPassword };
 };
 
 /**
  * Refresh access token using the refresh token from cookie
  */
-const refreshToken = async (req) => {
+const refreshToken = async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (!token) {
     throw ApiError.unauthorized('Refresh token is missing');
@@ -87,7 +89,9 @@ const refreshToken = async (req) => {
   }
 
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
-  return { accessToken };
+  setAccessTokenCookie(res, accessToken);
+  
+  return {};
 };
 
 /**

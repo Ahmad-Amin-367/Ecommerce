@@ -43,6 +43,22 @@ const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
 };
 
 /**
+ * Set access token in an httpOnly cookie
+ * @param {object} res - Express response object
+ * @param {string} token - Access token string
+ */
+const setAccessTokenCookie = (res, token) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000, // 15 minutes in ms
+  };
+  
+  res.cookie('accessToken', token, cookieOptions);
+};
+
+/**
  * Clear the refresh token cookie
  * @param {object} res - Express response object
  */
@@ -52,6 +68,7 @@ const clearRefreshTokenCookie = (res) => {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   };
+  res.clearCookie('accessToken', cookieOptions);
   res.clearCookie('refreshToken', cookieOptions);
   res.clearCookie('auth-status', { ...cookieOptions, httpOnly: false });
   res.clearCookie('user-role', { ...cookieOptions, httpOnly: false });
@@ -60,6 +77,7 @@ const clearRefreshTokenCookie = (res) => {
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
+  setAccessTokenCookie,
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
 };

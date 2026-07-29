@@ -15,8 +15,8 @@ const useAuth = () => {
 
   const login = async (data) => {
     const response = await authService.login(data);
-    const { accessToken, user } = response.data.data;
-    setAuth(user, accessToken);
+    const { user } = response.data.data;
+    setAuth(user);
     toast.success(`Welcome back, ${user.name}!`);
     router.push(user.role === 'ADMIN' ? '/admin' : '/');
   };

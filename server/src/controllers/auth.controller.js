@@ -7,13 +7,13 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { accessToken, user } = await authService.login(req.body, res);
-  sendSuccess(res, 200, 'Logged in successfully', { accessToken, user });
+  const { user } = await authService.login(req.body, res);
+  sendSuccess(res, 200, 'Logged in successfully', { user });
 };
 
 const refreshToken = async (req, res) => {
-  const { accessToken } = await authService.refreshToken(req);
-  sendSuccess(res, 200, 'Token refreshed', { accessToken });
+  await authService.refreshToken(req, res);
+  sendSuccess(res, 200, 'Token refreshed');
 };
 
 const logout = (req, res) => {

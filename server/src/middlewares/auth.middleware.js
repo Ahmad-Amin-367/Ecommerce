@@ -3,18 +3,21 @@ const ApiError = require('../utils/apiError');
 const prisma = require('../config/db');
 
 /**
- * Protect routes — verifies the Bearer access token from Authorization header.
+ * Protect routes — verifies the access token from the httpOnly cookie.
  * Attaches the full user object to req.user.
  */
 const protect = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    // Support token from cookie (primary) or Authorization header (fallback)
+    let token = req.cookies?.accessToken;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw ApiError.unauthorized('Access token is missing or malformed');
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw ApiError.unauthorized('Access token is missing or malformed');
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
