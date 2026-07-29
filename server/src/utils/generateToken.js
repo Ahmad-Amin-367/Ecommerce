@@ -36,10 +36,6 @@ const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
   };
   
   res.cookie('refreshToken', token, cookieOptions);
-  
-  // Non-httpOnly or httpOnly cookies for Next.js middleware
-  res.cookie('auth-status', 'authenticated', { ...cookieOptions, httpOnly: false });
-  res.cookie('user-role', userRole, { ...cookieOptions, httpOnly: false });
 };
 
 /**
@@ -70,8 +66,6 @@ const clearRefreshTokenCookie = (res) => {
   };
   res.clearCookie('accessToken', cookieOptions);
   res.clearCookie('refreshToken', cookieOptions);
-  res.clearCookie('auth-status', { ...cookieOptions, httpOnly: false });
-  res.clearCookie('user-role', { ...cookieOptions, httpOnly: false });
 };
 
 module.exports = {

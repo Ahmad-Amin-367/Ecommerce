@@ -64,7 +64,10 @@ api.interceptors.response.use(
         if (typeof window !== 'undefined') {
           const { useAuthStore } = require('@/store/authStore');
           useAuthStore.getState().logout();
-          window.location.href = '/login';
+          
+          if (window.location.pathname.startsWith('/admin')) {
+            window.location.href = '/login';
+          }
         }
 
         return Promise.reject(refreshError);

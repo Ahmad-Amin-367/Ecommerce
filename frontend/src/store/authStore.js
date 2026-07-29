@@ -1,35 +1,29 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 /**
  * Auth Store
- * - user info persisted to localStorage
+ * - State lives entirely in memory
  */
-const useAuthStore = create(
-  persist(
-    (set, get) => ({
-      user: null,
-      isAuthenticated: false,
+const useAuthStore = create((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isAuthChecked: false,
 
-      // Set user after login
-      setAuth: (user) =>
-        set({ user, isAuthenticated: true }),
+  // Set user after login
+  setAuth: (user) =>
+    set({ user, isAuthenticated: true }),
 
-      // Update user profile data
-      setUser: (user) => set({ user }),
+  // Set initialization status
+  setAuthChecked: (status) => set({ isAuthChecked: status }),
 
-      // Log out — clear everything
-      logout: () => set({ user: null, isAuthenticated: false }),
+  // Update user profile data
+  setUser: (user) => set({ user }),
 
-      // Helpers
-      isAdmin: () => get().user?.role === 'ADMIN',
-    }),
-    {
-      name: 'auth-storage',
-      // Only persist user info, NOT the access token (security)
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
-    }
-  )
-);
+  // Log out — clear everything
+  logout: () => set({ user: null, isAuthenticated: false }),
+
+  // Helpers
+  isAdmin: () => get().user?.role === 'ADMIN',
+}));
 
 export { useAuthStore };

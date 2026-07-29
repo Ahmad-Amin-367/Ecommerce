@@ -28,7 +28,7 @@ const megaMenuCategories = [
 
 export default function Navbar() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isAuthChecked } = useAuthStore();
   const { logout } = useAuth();
   const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
@@ -273,7 +273,9 @@ export default function Navbar() {
             </button>
 
             {/* Auth */}
-            {isAuthenticated ? (
+            {!isAuthChecked ? (
+              <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-[90px] md:h-[40px] bg-cloud/60 rounded-lg md:rounded-full animate-pulse"></div>
+            ) : isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -389,7 +391,12 @@ export default function Navbar() {
                 Cart {itemCount > 0 && `(${itemCount})`}
               </button>
             </li>
-            {isAuthenticated ? (
+            {!isAuthChecked ? (
+              <li className="px-6 py-4 flex flex-col gap-4">
+                <div className="w-24 h-4 bg-cloud/60 rounded animate-pulse"></div>
+                <div className="w-32 h-4 bg-cloud/60 rounded animate-pulse"></div>
+              </li>
+            ) : isAuthenticated ? (
               <li>
                 <Link
                   href="/profile"

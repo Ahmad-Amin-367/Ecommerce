@@ -1,7 +1,29 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import authService from '@/services/authService';
+
+function AuthInitializer({ children }) {
+  const { setAuth, setAuthChecked } = useAuthStore();
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const response = await authService.me();
+        setAuth(response.data.data);
+      } catch (error) {
+        // Not authenticated
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    verifyAuth();
+  }, [setAuth, setAuthChecked]);
+
+  return <>{children}</>;
+}
 
 export function Providers({ children }) {
   // Initialize QueryClient inside the component for Next.js App Router
@@ -21,7 +43,9 @@ export function Providers({ children }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthInitializer>
+        {children}
+      </AuthInitializer>
       <Toaster
         position="top-right"
         toastOptions={{
