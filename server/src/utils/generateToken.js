@@ -36,6 +36,10 @@ const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
   };
   
   res.cookie('refreshToken', token, cookieOptions);
+  
+  // Helper cookies for Next.js Middleware routing (UI-level protection)
+  res.cookie('auth-status', 'authenticated', { maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  res.cookie('user-role', userRole, { maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
 };
 
 /**
@@ -59,13 +63,10 @@ const setAccessTokenCookie = (res, token) => {
  * @param {object} res - Express response object
  */
 const clearRefreshTokenCookie = (res) => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-  };
-  res.clearCookie('accessToken', cookieOptions);
-  res.clearCookie('refreshToken', cookieOptions);
+  res.clearCookie('refreshToken');
+  res.clearCookie('accessToken');
+  res.clearCookie('auth-status');
+  res.clearCookie('user-role');
 };
 
 module.exports = {
