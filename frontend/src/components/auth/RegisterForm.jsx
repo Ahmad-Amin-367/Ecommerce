@@ -1,7 +1,7 @@
 'use client';
 import { useFormik } from 'formik';
 import Link from 'next/link';
-import { User, Mail, Lock, Phone } from 'lucide-react';
+import { User, Mail, Lock } from 'lucide-react';
 import { registerSchema } from '@/validations/authValidation';
 import useAuth from '@/hooks/useAuth';
 import Input from '@/components/ui/Input';
@@ -11,7 +11,7 @@ export default function RegisterForm() {
   const { register: registerUser } = useAuth();
 
   const formik = useFormik({
-    initialValues: { name: '', email: '', password: '', phone: '' },
+    initialValues: { name: '', email: '', password: '' },
     validationSchema: registerSchema,
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
@@ -57,14 +57,6 @@ export default function RegisterForm() {
         {...formik.getFieldProps('password')}
       />
 
-      <Input
-        label="Phone (optional)"
-        type="tel"
-        placeholder="+92 300 1234567"
-        leftIcon={<Phone size={16} />}
-        error={formik.touched.phone && formik.errors.phone ? formik.errors.phone : ''}
-        {...formik.getFieldProps('phone')}
-      />
 
       <Button type="submit" fullWidth size="lg" isLoading={formik.isSubmitting}>
         Create Account

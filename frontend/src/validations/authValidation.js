@@ -13,9 +13,6 @@ export const registerSchema = Yup.object({
       'Password must contain at least one uppercase letter, one lowercase letter, and one number'
     )
     .required('Password is required'),
-  phone: Yup.string()
-    .matches(/^\+?[\d\s\-()]{7,15}$/, { message: 'Please enter a valid phone number', excludeEmptyString: true })
-    .optional(),
 });
 
 export const loginSchema = Yup.object({

@@ -21,9 +21,6 @@ const register = Joi.object({
         'Password must contain at least one uppercase letter, one lowercase letter, and one number',
       'any.required': 'Password is required',
     }),
-  phone: Joi.string().pattern(/^\+?[\d\s\-()]{7,15}$/).optional().messages({
-    'string.pattern.base': 'Please provide a valid phone number',
-  }),
 });
 
 const login = Joi.object({

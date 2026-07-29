@@ -13,7 +13,7 @@ const {
  * Register a new customer
  */
 const register = async (data) => {
-  const { name, email, password, phone } = data;
+  const { name, email, password } = data;
 
   // Check if email already exists
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -25,7 +25,7 @@ const register = async (data) => {
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const user = await prisma.user.create({
-    data: { name, email, password: hashedPassword, phone },
+    data: { name, email, password: hashedPassword },
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   });
 
