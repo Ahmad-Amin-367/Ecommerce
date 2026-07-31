@@ -77,7 +77,7 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
       setIsSearchOpen(false);
     }
@@ -172,7 +172,7 @@ export default function Navbar() {
               onMouseLeave={handleShopMenuLeave}
             >
               <Link
-                href="/products"
+                href="/category/all"
                 className="inline-flex items-center gap-1 px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
               >
                 Shop
@@ -185,7 +185,7 @@ export default function Navbar() {
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-cloud">
                     <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-charcoal">Shop by Occasion</h3>
                     <Link
-                      href="/products"
+                      href="/category/all"
                       className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
                       onClick={() => setIsShopMenuOpen(false)}
                     >
@@ -210,7 +210,7 @@ export default function Navbar() {
                   {/* Price Filter Link */}
                   <div className="mt-4 pt-3 border-t border-cloud">
                     <Link
-                      href="/products?maxPrice=50"
+                      href="/category/all?maxPrice=50"
                       onClick={() => setIsShopMenuOpen(false)}
                       className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
                     >
@@ -238,7 +238,7 @@ export default function Navbar() {
             </li>
             <li>
               <Link
-                href="/products?maxPrice=50"
+                href="/category/all?maxPrice=50"
                 className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary rounded-lg transition-all duration-200 hover:bg-primary-glow"
               >
                 Under $50
@@ -361,14 +361,14 @@ export default function Navbar() {
           <ul className="flex flex-col py-2">
             {[
               { label: 'Home', href: '/' },
-              { label: 'Shop All', href: '/products' },
+              { label: 'Shop All', href: '/category/all' },
               { label: 'Birthday Gifts', href: '/category/birthday' },
               { label: 'Anniversary', href: '/category/anniversary' },
               { label: 'Eid Special', href: '/category/eid-special' },
               { label: 'Custom Gifts', href: '/category/custom' },
               { label: 'Corporate Gifts', href: '/category/corporate' },
               { label: 'Thank You Gifts', href: '/category/thank-you' },
-              { label: '🏷️ Under $50', href: '/products?maxPrice=50' },
+              { label: '🏷️ Under $50', href: '/category/all?maxPrice=50' },
             ].map((link) => (
               <li key={link.href + link.label}>
                 <Link

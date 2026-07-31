@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useProduct } from '@/hooks/useProducts';
 import useCart from '@/hooks/useCart';
 import { useAnimationStore } from '@/store/animationStore';
-import { ChevronRight, Heart, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { ChevronRight, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/utils/formatCurrency';
 
@@ -15,24 +15,6 @@ function ProductDetailsInner({ slug }) {
   const { addToCart, isAdding } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-  const [showStickyBar, setShowStickyBar] = useState(false);
-  const addToCartRef = useRef(null);
-
-  // IntersectionObserver to show/hide sticky bar
-  useEffect(() => {
-    if (!addToCartRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        // Show sticky bar when the main Add to Cart button is NOT visible
-        setShowStickyBar(!entry.isIntersecting);
-      },
-      { threshold: 0, rootMargin: '0px' }
-    );
-
-    observer.observe(addToCartRef.current);
-    return () => observer.disconnect();
-  }, [product]);
 
   if (isLoading) {
     return (
@@ -78,13 +60,13 @@ function ProductDetailsInner({ slug }) {
   };
 
   return (
-    <>
+    <div className="pb-24">
       <div className="container mx-auto px-4 lg:px-8 py-8 lg:py-16 animate-fade-in pb-24 lg:pb-16">
         {/* Breadcrumbs */}
         <nav className="flex flex-wrap items-center gap-2 text-sm text-text-muted mb-6 sm:mb-8">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
           <ChevronRight size={14} className="shrink-0" />
-          <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
+          <Link href="/category/all" className="hover:text-primary transition-colors">Products</Link>
           <ChevronRight size={14} className="shrink-0" />
           <span className="text-charcoal font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>
         </nav>
@@ -150,7 +132,7 @@ function ProductDetailsInner({ slug }) {
             </div>
 
             {/* Action Area */}
-            <div ref={addToCartRef} className="border-t border-border pt-8 flex flex-col gap-6">
+            <div className="border-t border-border pt-8 flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-charcoal">Quantity</span>
                 {product.stock > 0 ? (
@@ -180,10 +162,6 @@ function ProductDetailsInner({ slug }) {
                       <Plus size={16} />
                     </button>
                   </div>
-
-                  <button className="h-12 w-12 flex shrink-0 items-center justify-center border border-border rounded-xl text-text-secondary hover:text-primary hover:border-primary/50 transition-colors cursor-pointer">
-                    <Heart size={24} />
-                  </button>
                 </div>
 
                 {/* Add to Cart Button */}
@@ -227,20 +205,18 @@ function ProductDetailsInner({ slug }) {
           STICKY ADD TO CART BAR
       ═══════════════════════════════════════════════════════════════════════ */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-cloud shadow-lifted transition-all duration-300 ${
-          showStickyBar ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-        }`}
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-cloud shadow-lifted"
       >
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           {/* Product Info */}
-          <div className="flex-1 min-w-0">
+          <div className="hidden sm:block flex-1 min-w-0">
             <p className="text-sm font-semibold text-charcoal truncate">{product.name}</p>
             <p className="text-sm font-bold text-primary">{formatCurrency(product.price)}</p>
           </div>
 
           {/* Quantity + Add to Cart */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="hidden sm:flex items-center bg-background border border-border rounded-xl p-0.5 h-10">
+          <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-3 shrink-0">
+            <div className="flex items-center bg-background border border-border rounded-xl p-0.5 h-10">
               <button 
                 onClick={decreaseQuantity}
                 disabled={quantity <= 1}
@@ -261,6 +237,7 @@ function ProductDetailsInner({ slug }) {
             <Button
               variant="primary"
               size="md"
+              className="flex-1 sm:flex-none"
               onClick={handleAddToCart}
               disabled={product.stock === 0 || isAdding}
               isLoading={isAdding}
@@ -271,7 +248,7 @@ function ProductDetailsInner({ slug }) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

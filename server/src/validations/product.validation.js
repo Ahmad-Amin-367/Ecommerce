@@ -48,9 +48,10 @@ const update = Joi.object({
 
 const query = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(12),
+  limit: Joi.number().integer().min(1).max(100).default(50),
   search: Joi.string().max(200).optional(),
   categoryId: Joi.string().optional(),
+  category: Joi.string().optional(),
   minPrice: Joi.number().min(0).optional(),
   maxPrice: Joi.number().min(0).optional(),
   isActive: Joi.boolean().optional(),

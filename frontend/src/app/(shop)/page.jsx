@@ -45,14 +45,14 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/products"
+                href="/category/all"
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[2px]"
               >
                 Shop Gifts
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/products?category=custom"
+                href="/category/custom"
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-transparent text-charcoal border-2 border-cloud rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:border-primary hover:bg-primary-glow hover:-translate-y-[1px]"
               >
                 Custom Orders
@@ -180,7 +180,7 @@ export default function HomePage() {
 
           <div className="sm:hidden text-center mt-8">
             <Link
-              href="/products?isFeatured=true"
+              href="/category/all?isFeatured=true"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-200"
             >
               View All Gifts <ArrowRight size={16} />

@@ -22,8 +22,8 @@ export default function ProductGrid({ products, isLoading, emptyMessage = 'No pr
 
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+      {products.map((product, index) => (
+        <ProductCard key={product.id} product={product} priority={index < 4} />
       ))}
     </div>
   );

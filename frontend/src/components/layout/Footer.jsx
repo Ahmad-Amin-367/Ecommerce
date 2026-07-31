@@ -64,12 +64,12 @@ export default function Footer() {
         <div>
           <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-white mb-5">Shop</h3>
           <ul className="flex flex-col gap-3">
-            <li><Link href="/products" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">All Gifts</Link></li>
-            <li><Link href="/products?category=birthday" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Birthday Gifts</Link></li>
-            <li><Link href="/products?category=anniversary" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Anniversary</Link></li>
-            <li><Link href="/products?category=eid-special" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Eid Special</Link></li>
-            <li><Link href="/products?category=custom" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Custom Arrangements</Link></li>
-            <li><Link href="/products?category=corporate" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Corporate Gifts</Link></li>
+            <li><Link href="/category/all" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">All Gifts</Link></li>
+            <li><Link href="/category/birthday" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Birthday Gifts</Link></li>
+            <li><Link href="/category/anniversary" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Anniversary</Link></li>
+            <li><Link href="/category/eid-special" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Eid Special</Link></li>
+            <li><Link href="/category/custom" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Custom Arrangements</Link></li>
+            <li><Link href="/category/corporate" className="text-sm text-cloud/70 hover:text-primary transition-colors duration-200">Corporate Gifts</Link></li>
           </ul>
         </div>
 

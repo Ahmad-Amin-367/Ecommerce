@@ -7,7 +7,7 @@ import useCart from '@/hooks/useCart';
 import Badge from '@/components/ui/Badge';
 import { useAnimationStore } from '@/store/animationStore';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, priority = false }) {
   const { addToCart, isAdding } = useCart();
   const discount = getDiscountPercent(product.price, product.comparePrice);
 
@@ -26,13 +26,14 @@ export default function ProductCard({ product }) {
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-cream/40">
         {product.images?.[0] ? (
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-          />
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              priority={priority}
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-cloud">
             <ShoppingCart size={32} />

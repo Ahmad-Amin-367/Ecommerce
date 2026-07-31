@@ -85,36 +85,6 @@ function FeaturedSliderInner() {
 
   return (
     <div className="relative w-full">
-      <style jsx global>{`
-        .featured-slider {
-          display: flex;
-          margin-left: -1rem; /* Replaces gap to fix Embla cloning issue */
-        }
-        .featured-slide {
-          flex: 0 0 45%; /* mobile 2 cards + peek */
-          min-width: 0;
-          padding-left: 1rem; /* Creates the gap for Embla */
-        }
-        @media (min-width: 640px) {
-          .featured-slider {
-            margin-left: -1.5rem;
-          }
-          .featured-slide {
-            padding-left: 1.5rem;
-            flex: 0 0 33.333%;
-          }
-        }
-        @media (min-width: 768px) {
-          .featured-slide {
-            flex: 0 0 25%;
-          }
-        }
-        @media (min-width: 1024px) {
-          .featured-slide {
-            flex: 0 0 20%;
-          }
-        }
-      `}</style>
 
       {/* Header and Controls Row */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-6">
@@ -129,7 +99,7 @@ function FeaturedSliderInner() {
 
         <div className="flex items-center gap-6 self-start md:self-end">
           <Link
-            href="/products?isFeatured=true"
+            href="/category/all?isFeatured=true"
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-200"
           >
             View All <ArrowRight size={16} />
@@ -157,9 +127,9 @@ function FeaturedSliderInner() {
 
       {/* Embla Viewport */}
       <div ref={emblaRef} className="overflow-hidden cursor-grab active:cursor-grabbing w-full pb-8 pt-2 -mt-2">
-        <div className="featured-slider">
+        <div className="flex -ml-4 sm:-ml-6">
           {products.map((product, index) => (
-            <div key={`${product.id}-${index}`} className="featured-slide">
+            <div key={`${product.id}-${index}`} className="flex-[0_0_45%] sm:flex-[0_0_33.333%] md:flex-[0_0_25%] lg:flex-[0_0_20%] min-w-0 pl-4 sm:pl-6">
               <div className="h-full transition-transform duration-300 hover:-translate-y-1">
                 <ProductCard product={product} />
               </div>

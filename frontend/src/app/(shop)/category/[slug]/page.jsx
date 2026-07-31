@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilters from '@/components/product/ProductFilters';
+import Pagination from '@/components/ui/Pagination';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -69,6 +70,16 @@ const categoryData = {
       text: 'text-[#C67D5C]',
     }
   },
+  'all': {
+    title: 'All Products',
+    label: 'all gifts',
+    description: 'Browse our complete collection of handcrafted gifts, premium fruit arrangements, and specialized gift baskets.',
+    image: '/products/prod-1.jpg',
+    colors: {
+      bg: 'bg-primary-glow',
+      text: 'text-primary',
+    }
+  },
   'default': {
     title: 'Gifts & Treats',
     label: 'gifts',
@@ -98,13 +109,19 @@ function CategoryContent() {
   const maxPrice = searchParams.get('maxPrice');
   const sortBy = searchParams.get('sortBy');
   const sortOrder = searchParams.get('sortOrder');
+  const search = searchParams.get('search');
+  const isFeatured = searchParams.get('isFeatured');
+  const page = parseInt(searchParams.get('page')) || 1;
 
   const { data, isLoading } = useProducts({
-    category: slug,
+    ...(slug !== 'all' && { category: slug }),
     ...(minPrice && { minPrice }),
     ...(maxPrice && { maxPrice }),
     ...(sortBy && { sortBy }),
-    ...(sortOrder && { sortOrder })
+    ...(sortOrder && { sortOrder }),
+    ...(search && { search }),
+    ...(isFeatured && { isFeatured }),
+    page,
   });
 
   return (
@@ -167,7 +184,11 @@ function CategoryContent() {
       <div className="w-full max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm font-medium text-text-secondary">
-            {isLoading ? 'Loading...' : `${data?.data?.length || 0} Results`}
+            {isLoading ? (
+              <div className="h-5 w-24 bg-cloud rounded animate-pulse" />
+            ) : (
+              `${data?.data?.length || 0} Results`
+            )}
           </p>
         </div>
 
@@ -182,10 +203,50 @@ function CategoryContent() {
               isLoading={isLoading} 
               emptyMessage={`No products found in the ${currentCategory.title} category with these filters.`} 
             />
+            
+            {/* Pagination */}
+            {!isLoading && data?.meta && (
+              <Pagination 
+                currentPage={data.meta.page} 
+                totalPages={data.meta.totalPages} 
+              />
+            )}
           </div>
         </div>
       </div>
 
+    </div>
+  );
+}
+
+function CategorySkeleton() {
+  return (
+    <div className="bg-background min-h-screen pb-20 animate-pulse">
+      {/* Banner Skeleton */}
+      <div className="w-full h-[120px] md:h-[160px] lg:h-[200px] bg-cloud mb-8" />
+      
+      {/* Header text skeleton */}
+      <div className="w-full max-w-7xl mx-auto px-6 mb-8">
+        <div className="h-4 bg-cloud rounded w-1/3 mb-2" />
+        <div className="h-4 bg-cloud rounded w-1/4" />
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+        {/* Sidebar Skeleton */}
+        <div className="hidden lg:block space-y-4">
+          <div className="h-6 bg-cloud rounded w-1/2 mb-6" />
+          <div className="h-10 bg-cloud rounded w-full" />
+          <div className="h-10 bg-cloud rounded w-full" />
+          <div className="h-10 bg-cloud rounded w-full" />
+        </div>
+
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-[360px] rounded-2xl bg-cloud" />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -198,21 +259,11 @@ export default function CategoryPage() {
   }, []);
 
   if (!mounted) {
-    return (
-      <div className="bg-background min-h-screen flex items-center justify-center pb-20">
-        <p className="text-text-secondary">Loading category...</p>
-      </div>
-    );
+    return <CategorySkeleton />;
   }
 
   return (
-    <Suspense 
-      fallback={
-        <div className="bg-background min-h-screen flex items-center justify-center pb-20">
-          <p className="text-text-secondary">Loading category...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<CategorySkeleton />}>
       <CategoryContent />
     </Suspense>
   );

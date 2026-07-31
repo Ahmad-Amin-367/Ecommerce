@@ -1,50 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
-const prisma = new PrismaClient();
-
-async function main() {
-  console.log('🌱 Starting database seeding...');
-
-  // 1. Create Admin User
-  const adminEmail = 'admin@hisnagifts.com';
-  const adminPassword = await bcrypt.hash('admin123', 10);
-
-  const admin = await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {},
-    create: {
-      name: 'Admin User',
-      email: adminEmail,
-      password: adminPassword,
-      role: 'ADMIN',
-    },
-  });
-  console.log('✅ Admin user created:', admin.email);
-
-  // 2. Create Categories
-  const categoriesData = [
-    { name: 'Birthday Gifts', slug: 'birthday-gifts', description: 'Perfect gifts to celebrate birthdays' },
-    { name: 'Anniversary', slug: 'anniversary', description: 'Romantic and memorable anniversary gifts' },
-    { name: 'Eid Special', slug: 'eid-special', description: 'Exclusive gift hampers for Eid' },
-    { name: 'Custom Gifts', slug: 'custom-gifts', description: 'Personalized and customized gifts' },
-    { name: 'Corporate', slug: 'corporate', description: 'Professional corporate gifting solutions' },
-    { name: 'Thank You', slug: 'thank-you', description: 'Gifts to express your gratitude' },
-  ];
-
-  const categories = {};
-  for (const cat of categoriesData) {
-    const category = await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: {},
-      create: cat,
-    });
-    categories[category.slug] = category.id;
-  }
-  console.log('✅ Categories created');
-
-  // 3. Create Products (Inspired by Hisna Gifts Instagram)
-  const productsData = [
+const newProducts = `const productsData = [
     // --- ANNIVERSARY ---
     {
       name: 'Luxury Strawberry Tower',
@@ -52,7 +9,7 @@ async function main() {
       description: 'A stunning tower of fresh strawberries dipped in premium Belgian chocolate, decorated with edible flowers and gold flakes. Perfect for anniversaries or special events.',
       price: 150,
       stock: 10,
-      sku: 'HG-GEN-1',
+      sku: 'HG-ST-001',
       categoryId: categories['anniversary'],
       isFeatured: true,
       tags: ['edible arrangement', 'strawberry', 'chocolate', 'luxury'],
@@ -64,7 +21,7 @@ async function main() {
       description: 'A heart-shaped box filled with golden-wrapped artisan chocolates.',
       price: 45,
       stock: 15,
-      sku: 'HG-GEN-2',
+      sku: 'HG-AN-002',
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['chocolate', 'heart', 'anniversary'],
@@ -76,7 +33,7 @@ async function main() {
       description: 'An elegant mix of fresh red roses and chocolate-dipped strawberries in a sleek black box.',
       price: 120,
       stock: 12,
-      sku: 'HG-GEN-3',
+      sku: 'HG-AN-003',
       categoryId: categories['anniversary'],
       isFeatured: true,
       tags: ['roses', 'strawberries', 'anniversary'],
@@ -88,7 +45,7 @@ async function main() {
       description: 'A grand bouquet of 50 premium red roses.',
       price: 200,
       stock: 5,
-      sku: 'HG-GEN-4',
+      sku: 'HG-AN-004',
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['roses', 'bouquet', 'anniversary'],
@@ -100,7 +57,7 @@ async function main() {
       description: 'A platter of various sweet treats perfect for sharing on a special day.',
       price: 85,
       stock: 20,
-      sku: 'HG-GEN-5',
+      sku: 'HG-AN-005',
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['sweets', 'platter', 'anniversary'],
@@ -114,7 +71,7 @@ async function main() {
       description: 'Beautiful fresh roses arranged in the shape of a letter of your choice, presented in our signature acrylic box.',
       price: 85,
       stock: 20,
-      sku: 'HG-GEN-6',
+      sku: 'HG-FL-002',
       categoryId: categories['custom-gifts'],
       isFeatured: true,
       tags: ['flowers', 'roses', 'custom'],
@@ -126,7 +83,7 @@ async function main() {
       description: 'A high-quality ceramic mug with personalized engraving.',
       price: 25,
       stock: 50,
-      sku: 'HG-GEN-7',
+      sku: 'HG-CUS-002',
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['mug', 'custom'],
@@ -138,7 +95,7 @@ async function main() {
       description: 'Say it with chocolate! A box of chocolates spelling out a custom message.',
       price: 55,
       stock: 30,
-      sku: 'HG-GEN-8',
+      sku: 'HG-CUS-003',
       categoryId: categories['custom-gifts'],
       isFeatured: true,
       tags: ['chocolate', 'custom', 'message'],
@@ -150,7 +107,7 @@ async function main() {
       description: 'Select your favorite fruits and chocolate dips to create the perfect custom basket.',
       price: 110,
       stock: 15,
-      sku: 'HG-GEN-9',
+      sku: 'HG-CUS-004',
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['fruit', 'basket', 'custom'],
@@ -162,7 +119,7 @@ async function main() {
       description: 'Work with our team to create a completely custom hamper from our premium selection.',
       price: 150,
       stock: 10,
-      sku: 'HG-GEN-10',
+      sku: 'HG-CUS-005',
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['hamper', 'custom', 'bespoke'],
@@ -177,7 +134,7 @@ async function main() {
       price: 60,
       comparePrice: 75,
       stock: 15,
-      sku: 'HG-GEN-11',
+      sku: 'HG-BD-003',
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['hamper', 'birthday', 'chocolates'],
@@ -189,7 +146,7 @@ async function main() {
       description: 'A festive helium balloon paired with a box of colorful chocolate-dipped strawberries.',
       price: 45,
       stock: 25,
-      sku: 'HG-GEN-12',
+      sku: 'HG-BD-002',
       categoryId: categories['birthday-gifts'],
       isFeatured: true,
       tags: ['birthday', 'balloon', 'berries'],
@@ -201,7 +158,7 @@ async function main() {
       description: 'A decadent mini birthday cake surrounded by fresh berries and macarons.',
       price: 90,
       stock: 8,
-      sku: 'HG-GEN-13',
+      sku: 'HG-BD-003',
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['birthday', 'cake', 'macarons'],
@@ -213,7 +170,7 @@ async function main() {
       description: 'A large platter of mixed fruits, chocolates, and cookies designed for a birthday party.',
       price: 130,
       stock: 12,
-      sku: 'HG-GEN-14',
+      sku: 'HG-BD-004',
       categoryId: categories['birthday-gifts'],
       isFeatured: true,
       tags: ['birthday', 'party', 'platter'],
@@ -225,7 +182,7 @@ async function main() {
       description: 'A curated box of self-care items and sweet treats for a relaxing birthday.',
       price: 75,
       stock: 20,
-      sku: 'HG-GEN-15',
+      sku: 'HG-BD-005',
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['birthday', 'self-care', 'box'],
@@ -239,7 +196,7 @@ async function main() {
       description: 'A luxurious wooden platter filled with premium stuffed Ajwa dates, roasted nuts, and Turkish delights.',
       price: 120,
       stock: 50,
-      sku: 'HG-GEN-16',
+      sku: 'HG-EID-004',
       categoryId: categories['eid-special'],
       isFeatured: true,
       tags: ['eid', 'dates', 'nuts', 'platter'],
@@ -251,7 +208,7 @@ async function main() {
       description: 'A beautiful crescent moon-shaped arrangement of white and gold flowers.',
       price: 85,
       stock: 15,
-      sku: 'HG-GEN-17',
+      sku: 'HG-EID-002',
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'floral', 'crescent'],
@@ -263,7 +220,7 @@ async function main() {
       description: 'A large box of assorted chocolates, dates, and sweets perfect for family gatherings.',
       price: 95,
       stock: 30,
-      sku: 'HG-GEN-18',
+      sku: 'HG-EID-003',
       categoryId: categories['eid-special'],
       isFeatured: true,
       tags: ['eid', 'family', 'treats'],
@@ -275,7 +232,7 @@ async function main() {
       description: 'A premium gift set including artisanal perfumes, stuffed dates, and gold-dusted chocolates.',
       price: 250,
       stock: 5,
-      sku: 'HG-GEN-19',
+      sku: 'HG-EID-004',
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'luxury', 'gift set'],
@@ -287,7 +244,7 @@ async function main() {
       description: 'A welcoming basket filled with traditional Eid sweets and fresh fruit.',
       price: 65,
       stock: 40,
-      sku: 'HG-GEN-20',
+      sku: 'HG-EID-005',
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'basket', 'sweets'],
@@ -301,7 +258,7 @@ async function main() {
       description: 'A sleek black gift box containing a premium leather wallet, a customized pen, and artisan chocolates. Ideal for client appreciation.',
       price: 95,
       stock: 100,
-      sku: 'HG-GEN-21',
+      sku: 'HG-CORP-005',
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'leather', 'executive'],
@@ -313,7 +270,7 @@ async function main() {
       description: 'A professional and elegant fruit basket to show appreciation to your top clients.',
       price: 110,
       stock: 50,
-      sku: 'HG-GEN-22',
+      sku: 'HG-CORP-002',
       categoryId: categories['corporate'],
       isFeatured: true,
       tags: ['corporate', 'client', 'fruit basket'],
@@ -325,7 +282,7 @@ async function main() {
       description: 'A massive platter of assorted treats perfect for office parties and team celebrations.',
       price: 180,
       stock: 20,
-      sku: 'HG-GEN-23',
+      sku: 'HG-CORP-003',
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'team', 'platter'],
@@ -337,7 +294,7 @@ async function main() {
       description: 'A box of premium chocolates featuring your company logo on the packaging.',
       price: 45,
       stock: 200,
-      sku: 'HG-GEN-24',
+      sku: 'HG-CORP-004',
       categoryId: categories['corporate'],
       isFeatured: true,
       tags: ['corporate', 'branded', 'chocolate'],
@@ -349,7 +306,7 @@ async function main() {
       description: 'A thoughtful kit for new employees, including a mug, notebook, and gourmet snacks.',
       price: 55,
       stock: 150,
-      sku: 'HG-GEN-25',
+      sku: 'HG-CORP-005',
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'onboarding', 'kit'],
@@ -363,7 +320,7 @@ async function main() {
       description: 'Our signature edible arrangement featuring fresh pineapples shaped like daisies, chocolate-dipped apples, and fresh grapes.',
       price: 78,
       stock: 25,
-      sku: 'HG-GEN-26',
+      sku: 'HG-FR-006',
       categoryId: categories['thank-you'],
       isFeatured: true,
       tags: ['edible arrangement', 'fruits', 'thank you'],
@@ -375,7 +332,7 @@ async function main() {
       description: 'A simple yet elegant box of fresh seasonal fruits to say a quick thank you.',
       price: 35,
       stock: 40,
-      sku: 'HG-GEN-27',
+      sku: 'HG-TY-002',
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'fruit', 'box'],
@@ -387,7 +344,7 @@ async function main() {
       description: 'A beautiful assortment of artisan chocolates with a "Thank You" card.',
       price: 50,
       stock: 30,
-      sku: 'HG-GEN-28',
+      sku: 'HG-TY-003',
       categoryId: categories['thank-you'],
       isFeatured: true,
       tags: ['thank you', 'chocolate'],
@@ -399,7 +356,7 @@ async function main() {
       description: 'A small, bright floral arrangement perfect for a desk or side table.',
       price: 45,
       stock: 25,
-      sku: 'HG-GEN-29',
+      sku: 'HG-TY-004',
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'floral', 'mini'],
@@ -411,35 +368,20 @@ async function main() {
       description: 'A massive hamper filled with fruits, chocolates, and wine to show immense gratitude.',
       price: 160,
       stock: 10,
-      sku: 'HG-GEN-30',
+      sku: 'HG-TY-005',
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'hamper', 'mega'],
       images: ['/products/prod-5.jpg'],
     }
-  ];
+  ];`;
 
-  for (const prod of productsData) {
-    await prisma.product.upsert({
-      where: { slug: prod.slug },
-      update: { 
-        price: prod.price, 
-        comparePrice: prod.comparePrice || null,
-        images: prod.images 
-      },
-      create: prod,
-    });
-  }
-  console.log(`✅ ${productsData.length} Products created or updated`);
+const filePath = path.join(__dirname, 'seed.js');
+let content = fs.readFileSync(filePath, 'utf8');
 
-  console.log('🎉 Seeding completed successfully!');
-}
+// Replace the existing productsData array
+const regex = /const productsData = \[[\s\S]*?\];/;
+content = content.replace(regex, newProducts);
 
-main()
-  .catch((e) => {
-    console.error('❌ Seeding failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+fs.writeFileSync(filePath, content);
+console.log('Seed file updated successfully.');

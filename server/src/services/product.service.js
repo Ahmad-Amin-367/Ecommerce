@@ -33,7 +33,8 @@ const ensureUniqueSlug = async (slug, excludeId = null) => {
  * Get paginated product list with filters
  */
 const getProducts = async (query) => {
-  const { page, limit, search, categoryId, category, minPrice, maxPrice, isActive, isFeatured, sortBy, sortOrder } = query;
+  const { page, search, categoryId, category, minPrice, maxPrice, isActive, isFeatured, sortBy, sortOrder } = query;
+  const limit = query.limit || 50;
 
   const where = {};
   if (search) {
@@ -59,11 +60,13 @@ const getProducts = async (query) => {
   const totalCount = await prisma.product.count({ where });
   const { skip, take, meta } = paginate({ page, limit }, totalCount);
 
+  const orderBy = sortBy ? { [sortBy]: sortOrder || 'asc' } : { createdAt: 'desc' };
+
   const products = await prisma.product.findMany({
     where,
     skip,
     take,
-    orderBy: { [sortBy]: sortOrder },
+    orderBy,
     include: {
       category: { select: { id: true, name: true, slug: true } },
       _count: { select: { reviews: true } },

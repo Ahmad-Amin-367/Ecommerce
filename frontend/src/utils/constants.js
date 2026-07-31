@@ -38,7 +38,7 @@ export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
-  PRODUCTS: '/products',
+  PRODUCTS: '/category/all',
   CART: '/cart',
   CHECKOUT: '/checkout',
   ORDERS: '/orders',
