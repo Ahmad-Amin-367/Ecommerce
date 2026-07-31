@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles, Briefcase, HandHeart, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
@@ -28,15 +28,26 @@ const megaMenuCategories = [
 
 export default function Navbar() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { isAuthenticated, user, isAuthChecked } = useAuthStore();
   const { logout } = useAuth();
   const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useUIStore();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, isSearchOpen, setIsSearchOpen } = useUIStore();
 
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Sync search input with URL search parameter
+  useEffect(() => {
+    const currentSearch = searchParams?.get('search');
+    if (currentSearch) {
+      setSearchQuery(currentSearch);
+    } else {
+      setSearchQuery('');
+    }
+  }, [searchParams]);
   const dropdownRef = useRef(null);
   const shopMenuRef = useRef(null);
   const shopMenuTimeoutRef = useRef(null);
@@ -78,7 +89,18 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/category/all?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
+      setIsSearchOpen(false);
+    } else {
+      // If cleared and submitted, remove search from URL
+      const basePath = pathname.includes('/category') ? pathname : '/category/all';
+      
+      // Preserve other params if they exist
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('search');
+      params.delete('page'); // Reset to page 1 on new search or clear
+      
+      const queryString = params.toString();
+      router.push(queryString ? `${basePath}?${queryString}` : basePath);
       setIsSearchOpen(false);
     }
   };
@@ -143,7 +165,13 @@ export default function Navbar() {
             className="hidden lg:flex items-center flex-1 max-w-md mx-4"
           >
             <div className="relative w-full">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray pointer-events-none" />
+              <button 
+                type="submit" 
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
+                aria-label="Submit search"
+              >
+                <Search size={16} />
+              </button>
               <input
                 type="text"
                 value={searchQuery}
@@ -337,7 +365,13 @@ export default function Navbar() {
         {isSearchOpen && (
           <div ref={searchContainerRef} className="lg:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
             <form onSubmit={handleSearch} className="relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray pointer-events-none" />
+              <button 
+                type="submit" 
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
+                aria-label="Submit search"
+              >
+                <Search size={16} />
+              </button>
               <input
                 ref={searchInputRef}
                 type="text"

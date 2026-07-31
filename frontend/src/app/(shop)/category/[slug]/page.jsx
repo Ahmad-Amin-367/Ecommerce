@@ -1,10 +1,10 @@
 'use client';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilters from '@/components/product/ProductFilters';
 import Pagination from '@/components/ui/Pagination';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useState, useEffect } from 'react';
@@ -93,8 +93,11 @@ const categoryData = {
 };
 
 function CategoryContent() {
-  const { slug } = useParams();
+  const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const slug = params.slug;
   const [showDetails, setShowDetails] = useState(false);
   
   // Format slug for title fallback
@@ -123,6 +126,14 @@ function CategoryContent() {
     ...(isFeatured && { isFeatured }),
     page,
   });
+
+  const clearSearch = () => {
+    const current = new URLSearchParams(searchParams.toString());
+    current.delete('search');
+    current.delete('page');
+    const queryString = current.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  };
 
   return (
     <div className="bg-background min-h-screen pb-20">
@@ -182,14 +193,30 @@ function CategoryContent() {
 
       {/* ─── Main Content Grid (Filters + Products) ─────────────────────────── */}
       <div className="w-full max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-sm font-medium text-text-secondary">
-            {isLoading ? (
-              <div className="h-5 w-24 bg-cloud rounded animate-pulse" />
-            ) : (
-              `${data?.data?.length || 0} Results`
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-sm font-medium text-text-secondary">
+              {isLoading ? (
+                <div className="h-5 w-24 bg-cloud rounded animate-pulse" />
+              ) : (
+                `${data?.data?.length || 0} Results`
+              )}
+            </p>
+            
+            {/* Search Filter Tag */}
+            {search && (
+              <div className="flex items-center gap-2 bg-cloud/50 px-3 py-1.5 rounded-full border border-cloud">
+                <span className="text-sm text-charcoal">Search: <span className="font-semibold text-primary">"{search}"</span></span>
+                <button 
+                  onClick={clearSearch}
+                  className="text-text-muted hover:text-error transition-colors flex items-center justify-center bg-white rounded-full p-0.5 shadow-sm border border-cloud"
+                  aria-label="Clear search"
+                >
+                  <X size={12} strokeWidth={3} />
+                </button>
+              </div>
             )}
-          </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
