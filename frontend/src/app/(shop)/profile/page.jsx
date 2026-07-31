@@ -137,6 +137,7 @@ export default function ProfilePage() {
                                   alt={item.product.name}
                                   fill
                                   className="object-cover"
+                                  sizes="80px"
                                 />
                               </div>
                               <div className="flex-1">

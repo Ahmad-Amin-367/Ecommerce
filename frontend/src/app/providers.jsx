@@ -3,10 +3,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useCartStore } from '@/store/cartStore';
 import authService from '@/services/authService';
 
 function AuthInitializer({ children }) {
-  const { setAuth, setAuthChecked } = useAuthStore();
+  const { setAuth, setAuthChecked, logout } = useAuthStore();
+  const { clearCart } = useCartStore();
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -15,12 +17,15 @@ function AuthInitializer({ children }) {
         setAuth(response.data.data);
       } catch (error) {
         // Not authenticated
+        document.cookie = 'auth-status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        logout();
+        clearCart();
       } finally {
         setAuthChecked(true);
       }
     };
     verifyAuth();
-  }, [setAuth, setAuthChecked]);
+  }, [setAuth, setAuthChecked, logout, clearCart]);
 
   return <>{children}</>;
 }

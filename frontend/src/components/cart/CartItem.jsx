@@ -13,7 +13,7 @@ export default function CartItem({ item }) {
     <div className="flex gap-4 py-5 border-b border-cloud">
       <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-cream/40 shrink-0">
         {product.images?.[0] ? (
-          <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
+          <Image src={product.images[0]} alt={product.name} fill className="object-cover" sizes="80px" />
         ) : (
           <div className="w-full h-full bg-cream/40" />
         )}

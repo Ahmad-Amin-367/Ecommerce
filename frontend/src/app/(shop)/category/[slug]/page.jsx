@@ -122,6 +122,7 @@ function CategoryContent() {
               alt={currentCategory.title} 
               fill
               className="object-cover object-center"
+              sizes="(max-width: 768px) 50vw, 40vw"
               priority
             />
             {/* Soft gradient fade on the left side of the image so it blends with background */}

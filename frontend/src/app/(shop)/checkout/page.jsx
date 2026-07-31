@@ -173,7 +173,7 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <li key={item.product.id} className="flex gap-4">
                     <div className="relative w-16 h-16 rounded-md overflow-hidden bg-white border border-cloud shrink-0">
-                      <Image src={item.product.images?.[0] || 'https://via.placeholder.com/150'} alt={item.product.name} fill className="object-cover" />
+                      <Image src={item.product.images?.[0] || 'https://via.placeholder.com/150'} alt={item.product.name} fill className="object-cover" sizes="64px" />
                       <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
                         {item.quantity}
                       </span>

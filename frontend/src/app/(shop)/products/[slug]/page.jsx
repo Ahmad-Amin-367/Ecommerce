@@ -112,7 +112,7 @@ function ProductDetailsInner({ slug }) {
                       activeImage === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'
                     }`}
                   >
-                    <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" />
+                    <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" sizes="80px" />
                   </button>
                 ))}
               </div>
