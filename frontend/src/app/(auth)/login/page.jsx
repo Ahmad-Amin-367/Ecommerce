@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import { Gift } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +25,9 @@ export default function LoginPage() {
           <h1 className="font-serif text-[28px] font-bold text-charcoal mb-2">Welcome Back</h1>
           <p className="text-sm text-warm-gray">Sign in to your account</p>
         </div>
-        <LoginForm />
+        <Suspense fallback={<div className="h-48 flex items-center justify-center text-warm-gray text-sm">Loading...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

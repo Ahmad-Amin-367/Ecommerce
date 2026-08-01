@@ -28,4 +28,11 @@ const clearCart = async (req, res) => {
   sendSuccess(res, 200, 'Cart cleared');
 };
 
-module.exports = { getCart, addToCart, updateCartItem, removeFromCart, clearCart };
+const syncCart = async (req, res) => {
+  const { items } = req.body;
+  const cart = await cartService.syncCart(req.user.id, items);
+  sendSuccess(res, 200, 'Cart synced successfully', cart);
+};
+
+module.exports = { getCart, addToCart, updateCartItem, removeFromCart, clearCart, syncCart };
+

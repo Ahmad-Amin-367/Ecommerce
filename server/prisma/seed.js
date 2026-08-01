@@ -432,6 +432,50 @@ async function main() {
   }
   console.log(`✅ ${productsData.length} Products created or updated`);
 
+  // 4. Create Testimonials / Home Reviews
+  const testimonialsData = [
+    {
+      name: 'Ayesha K.',
+      location: 'Lahore',
+      rating: 5,
+      text: 'The edible arrangement was absolutely stunning! My mother loved every bit of it. The packaging was premium and it arrived fresh. Will definitely order again.',
+    },
+    {
+      name: 'Fatima S.',
+      location: 'Karachi',
+      rating: 5,
+      text: 'Ordered a custom birthday hamper for my husband and it exceeded all expectations. The attention to detail was remarkable. Hisna Gifts never disappoints!',
+    },
+    {
+      name: 'Ahmed R.',
+      location: 'Islamabad',
+      rating: 5,
+      text: 'Corporate gifting made easy! We ordered Eid gifts for our entire team and the quality was consistent across every single package. Highly professional service.',
+    },
+    {
+      name: 'Sana M.',
+      location: 'Rawalpindi',
+      rating: 5,
+      text: 'I ordered a gift basket for my friend\'s wedding and it was beautifully arranged. The flowers and chocolates were fresh. Delivery was right on time!',
+    },
+    {
+      name: 'Hassan T.',
+      location: 'Faisalabad',
+      rating: 5,
+      text: 'Best gifting service in Pakistan! The customization options are amazing and the customer support team was incredibly helpful throughout the process.',
+    },
+  ];
+
+  for (const item of testimonialsData) {
+    const existing = await prisma.testimonial.findFirst({
+      where: { name: item.name, text: item.text },
+    });
+    if (!existing) {
+      await prisma.testimonial.create({ data: item });
+    }
+  }
+  console.log(`✅ ${testimonialsData.length} Testimonials created`);
+
   console.log('🎉 Seeding completed successfully!');
 }
 

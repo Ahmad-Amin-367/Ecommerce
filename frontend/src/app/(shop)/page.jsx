@@ -5,6 +5,7 @@ import FeaturedSlider from '@/components/home/FeaturedSlider';
 import TestimonialsSlider from '@/components/home/TestimonialsSlider';
 import StatsSection from '@/components/home/StatsSection';
 import ScrollReveal from '@/components/home/ScrollReveal';
+import GallerySection from '@/components/home/GallerySection';
 
 export const metadata = {
   title: 'Hisna Gifts — Perfect Gifts for Every Occasion',
@@ -210,38 +211,9 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          NEWSLETTER CTA
+          GALLERY SHOWCASE — Bento Grid with 0 to 100% Reveal
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="bg-background py-16 sm:py-20">
-        <div className="w-full max-w-7xl mx-auto px-6">
-          <ScrollReveal>
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-charcoal mb-3">
-                Stay In The Loop
-              </h2>
-              <p className="text-sm text-warm-gray mb-8 max-w-md mx-auto">
-                Be the first to know about new gift collections, seasonal specials, and exclusive offers.
-              </p>
-              <form
-                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-                action="/subscribe"
-              >
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-5 py-3 rounded-full bg-white border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
-                />
-                <button
-                  type="submit"
-                  className="px-7 py-3 bg-primary text-white rounded-full text-sm font-semibold tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[1px] shrink-0"
-                >
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+      <GallerySection />
     </div>
   );
 }

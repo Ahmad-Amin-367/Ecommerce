@@ -51,9 +51,9 @@ export default function FloatingQueueTab() {
           {/* Queue of Icons */}
           <div className="flex items-center -space-x-3 mr-3" ref={tabRef}>
             <AnimatePresence mode="popLayout">
-              {displayItems.map((item) => (
+              {displayItems.map((item, idx) => (
                 <motion.div
-                  key={item.id}
+                  key={item.product?.id || item.id || idx}
                   layout
                   initial={{ scale: 0, opacity: 0, x: -20 }}
                   animate={{ scale: 1, opacity: 1, x: 0 }}

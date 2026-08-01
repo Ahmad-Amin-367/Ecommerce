@@ -38,6 +38,11 @@ export default function Navbar() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Sync search input with URL search parameter
   useEffect(() => {
@@ -117,7 +122,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-sticky">
+    <header className="fixed top-0 left-0 right-0 z-sticky" suppressHydrationWarning>
       {/* ─── Announcement Bar ─────────────────────────────────────────── */}
       <div className="bg-primary text-text-inverse overflow-hidden">
         <div className="marquee-track py-2">
@@ -293,7 +298,7 @@ export default function Navbar() {
               aria-label="Shopping cart"
             >
               <ShoppingCart size={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
-              {itemCount > 0 && (
+              {mounted && itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-primary text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm">
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>

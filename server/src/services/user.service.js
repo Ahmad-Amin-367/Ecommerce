@@ -107,8 +107,10 @@ const getAllUsers = async (query) => {
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
-  if (role) where.role = role;
+  // Exclude ADMIN users by default
+  where.role = role || 'CUSTOMER';
   if (isActive !== undefined) where.isActive = isActive;
+
 
   const totalCount = await prisma.user.count({ where });
   const { skip, take, meta } = paginate({ page, limit }, totalCount);
@@ -140,11 +142,16 @@ const adminUpdateUser = async (userId, data) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw ApiError.notFound('User not found');
 
+  if (user.role === 'ADMIN') {
+    throw ApiError.forbidden('Admin accounts cannot be deactivated or modified');
+  }
+
   return prisma.user.update({
     where: { id: userId },
     data,
     select: { id: true, name: true, email: true, role: true, isActive: true },
   });
 };
+
 
 module.exports = { getProfile, updateProfile, addAddress, updateAddress, deleteAddress, getAllUsers, adminUpdateUser };

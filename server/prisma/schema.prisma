@@ -213,3 +213,17 @@ model Review {
   @@unique([userId, productId]) // one review per product per user
   @@map("reviews")
 }
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  rating    Int      @default(5)
+  text      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("testimonials")
+}
+

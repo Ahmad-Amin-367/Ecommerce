@@ -7,6 +7,7 @@ import {
   Package,
   ShoppingBag,
   Users,
+  Star,
   ChevronRight,
   LogOut,
   Gift,
@@ -22,8 +23,10 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { href: '/admin/testimonials', label: 'Reviews', icon: Star },
   { href: '/admin/users', label: 'Users', icon: Users },
 ];
+
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();

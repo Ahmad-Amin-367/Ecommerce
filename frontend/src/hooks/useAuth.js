@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import authService from '@/services/authService';
+import cartService from '@/services/cartService';
 
 /**
  * useAuth hook — provides auth actions and state
@@ -13,12 +14,33 @@ const useAuth = () => {
   const { user, isAuthenticated, setAuth, logout: logoutStore, isAdmin } = useAuthStore();
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const login = async (data) => {
+  const login = async (data, redirectTo) => {
     const response = await authService.login(data);
     const { user } = response.data.data;
     setAuth(user);
+
+    // Sync guest cart if local items exist
+    const localItems = useCartStore.getState().items;
+    if (localItems && localItems.length > 0) {
+      try {
+        const payload = localItems.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        }));
+        const syncRes = await cartService.syncCart(payload);
+        useCartStore.getState().setCart(syncRes.data.data);
+      } catch (err) {
+        console.error('Failed to sync guest cart:', err);
+      }
+    }
+
     toast.success(`Welcome back, ${user.name}!`);
-    router.push(user.role === 'ADMIN' ? '/admin' : '/');
+
+    if (redirectTo) {
+      router.push(redirectTo);
+    } else {
+      router.push(user.role === 'ADMIN' ? '/admin' : '/');
+    }
   };
 
   const register = async (data) => {

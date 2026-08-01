@@ -133,4 +133,45 @@ const clearCart = async (userId) => {
   await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
 };
 
-module.exports = { getCart, addToCart, updateCartItem, removeFromCart, clearCart };
+/**
+ * Merge guest cart items (from localStorage) into user DB cart
+ * - If product exists in DB cart: add quantities together (capped at stock)
+ * - If product is new: add item with guest quantity (capped at stock)
+ */
+const syncCart = async (userId, guestItems = []) => {
+  if (!Array.isArray(guestItems) || guestItems.length === 0) {
+    return getCart(userId);
+  }
+
+  let cart = await prisma.cart.findUnique({ where: { userId } });
+  if (!cart) {
+    cart = await prisma.cart.create({ data: { userId } });
+  }
+
+  for (const item of guestItems) {
+    if (!item.productId || !item.quantity || item.quantity <= 0) continue;
+
+    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+    if (!product || !product.isActive || product.stock <= 0) continue;
+
+    const existingItem = await prisma.cartItem.findUnique({
+      where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
+    });
+
+    const targetQuantity = existingItem ? existingItem.quantity + item.quantity : item.quantity;
+    const finalQuantity = Math.min(targetQuantity, product.stock);
+
+    if (finalQuantity > 0) {
+      await prisma.cartItem.upsert({
+        where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
+        create: { cartId: cart.id, productId: item.productId, quantity: finalQuantity },
+        update: { quantity: finalQuantity },
+      });
+    }
+  }
+
+  return getCart(userId);
+};
+
+module.exports = { getCart, addToCart, updateCartItem, removeFromCart, clearCart, syncCart };
+

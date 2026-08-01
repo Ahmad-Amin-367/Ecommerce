@@ -2,21 +2,21 @@
 import { X, ShoppingBag, Minus, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import useCart from '@/hooks/useCart';
-import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/utils/formatCurrency';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 
 export default function CartDrawer({ isOpen, onClose }) {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { cart, updateItem, removeItem, isLoading } = useCart();
-  const localCartItems = useCartStore(s => s.items);
-  const localSubtotal = useCartStore(s => s.subtotal);
 
-  // Use server cart if available, fallback to local
-  const items = cart?.items || localCartItems;
-  const subtotal = cart?.subtotal || localSubtotal;
+  const items = cart?.items || [];
+  const subtotal = cart?.subtotal || 0;
 
   // Prevent background scrolling when drawer is open
   useEffect(() => {
@@ -29,6 +29,15 @@ export default function CartDrawer({ isOpen, onClose }) {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  const handleCheckout = () => {
+    onClose();
+    if (isAuthenticated) {
+      router.push('/checkout');
+    } else {
+      router.push('/login?redirect=/checkout');
+    }
+  };
 
   return (
     <>
@@ -92,7 +101,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                         <div>
                           <div className="flex justify-between text-base font-medium text-charcoal">
                             <h3 className="line-clamp-2 pr-4 leading-snug">
-                              <Link href={`/products/${item.product.slug}`} onClick={onClose}>
+                              <Link href={`/products/${item.product.slug || item.product.id}`} onClick={onClose}>
                                 {item.product.name}
                               </Link>
                             </h3>
@@ -144,11 +153,9 @@ export default function CartDrawer({ isOpen, onClose }) {
             </div>
             <p className="mt-1 text-sm text-text-secondary">Shipping and taxes calculated at checkout.</p>
             <div className="mt-6">
-              <Link href="/checkout" onClick={onClose}>
-                <Button variant="primary" className="w-full text-lg h-14">
-                  Checkout
-                </Button>
-              </Link>
+              <Button variant="primary" className="w-full text-lg h-14" onClick={handleCheckout}>
+                Checkout
+              </Button>
             </div>
           </div>
         )}

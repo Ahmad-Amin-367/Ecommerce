@@ -2,6 +2,7 @@
 import { useFormik } from 'formik';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { loginSchema } from '@/validations/authValidation';
 import useAuth from '@/hooks/useAuth';
@@ -10,6 +11,8 @@ import Button from '@/components/ui/Button';
 
 export default function LoginForm() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const redirect = searchParams ? searchParams.get('redirect') : null;
   const [showPassword, setShowPassword] = useState(false);
 
   const formik = useFormik({
@@ -17,7 +20,7 @@ export default function LoginForm() {
     validationSchema: loginSchema,
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
-        await login(values);
+        await login(values, redirect);
       } catch (err) {
         const message = err.response?.data?.message || 'Login failed';
         if (message.toLowerCase().includes('email') || message.toLowerCase().includes('password') || message.toLowerCase().includes('credentials')) {

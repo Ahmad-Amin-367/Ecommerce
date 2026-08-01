@@ -6,6 +6,7 @@ const cartService = {
   updateCartItem: (productId, quantity) => api.patch('/cart/items', { productId, quantity }),
   removeFromCart: (productId) => api.delete(`/cart/items/${productId}`),
   clearCart: () => api.delete('/cart'),
+  syncCart: (items) => api.post('/cart/sync', { items }),
 };
 
 export default cartService;

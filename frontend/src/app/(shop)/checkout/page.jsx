@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import useCart from '@/hooks/useCart';
 import { useCartStore } from '@/store/cartStore';
 import api from '@/services/api';
 import Button from '@/components/ui/Button';
@@ -12,7 +13,9 @@ import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCartStore();
+  const { cart, clearCart } = useCart();
+  const items = cart?.items || [];
+  const subtotal = cart?.subtotal || 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({

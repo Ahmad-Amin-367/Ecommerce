@@ -6,20 +6,29 @@ import cartService from '@/services/cartService';
 import { useAuthStore } from '@/store/authStore';
 
 /**
- * useCart hook — cart state, add/remove/update with TanStack Query
+ * useCart hook — unified cart state and actions for guest & authenticated users
  */
 const useCart = () => {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const { setCart, itemCount } = useCartStore();
+  const {
+    items: storeItems,
+    subtotal: storeSubtotal,
+    itemCount,
+    setCart,
+    addGuestItem,
+    updateGuestItem,
+    removeGuestItem,
+    clearCart: clearCartStore,
+  } = useCartStore();
 
-  const { data: cart, isLoading } = useQuery({
+  const { data: cartData, isLoading } = useQuery({
     queryKey: ['cart'],
     queryFn: async () => {
       const res = await cartService.getCart();
-      const cartData = res.data.data;
-      setCart(cartData);
-      return cartData;
+      const fetchedCart = res.data.data;
+      setCart(fetchedCart);
+      return fetchedCart;
     },
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 2, // 2 minutes
@@ -27,6 +36,7 @@ const useCart = () => {
 
   const invalidateCart = () => queryClient.invalidateQueries({ queryKey: ['cart'] });
 
+  // Authenticated Mutations
   const addToCartMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartService.addToCart(productId, quantity),
     onSuccess: (res) => {
@@ -59,19 +69,64 @@ const useCart = () => {
   const clearCartMutation = useMutation({
     mutationFn: () => cartService.clearCart(),
     onSuccess: () => {
+      clearCartStore();
       invalidateCart();
       toast.success('Cart cleared');
     },
   });
 
+  // Unified actions
+  const addToCart = ({ productId, quantity = 1, product }) => {
+    if (isAuthenticated) {
+      addToCartMutation.mutate({ productId, quantity });
+    } else {
+      if (!product) {
+        toast.error('Product details missing');
+        return;
+      }
+      addGuestItem(product, quantity);
+      toast.success('Added to cart', { position: 'top-right' });
+    }
+  };
+
+  const updateItem = ({ productId, quantity }) => {
+    if (isAuthenticated) {
+      updateItemMutation.mutate({ productId, quantity });
+    } else {
+      updateGuestItem(productId, quantity);
+    }
+  };
+
+  const removeItem = (productId) => {
+    if (isAuthenticated) {
+      removeItemMutation.mutate(productId);
+    } else {
+      removeGuestItem(productId);
+      toast.success('Item removed');
+    }
+  };
+
+  const clearCart = () => {
+    if (isAuthenticated) {
+      clearCartMutation.mutate();
+    } else {
+      clearCartStore();
+      toast.success('Cart cleared');
+    }
+  };
+
+  const currentCart = isAuthenticated
+    ? cartData || { items: storeItems, subtotal: storeSubtotal }
+    : { items: storeItems, subtotal: storeSubtotal };
+
   return {
-    cart,
-    isLoading,
+    cart: currentCart,
+    isLoading: isAuthenticated ? isLoading : false,
     itemCount,
-    addToCart: addToCartMutation.mutate,
-    updateItem: updateItemMutation.mutate,
-    removeItem: removeItemMutation.mutate,
-    clearCart: clearCartMutation.mutate,
+    addToCart,
+    updateItem,
+    removeItem,
+    clearCart,
     isAdding: addToCartMutation.isPending,
   };
 };

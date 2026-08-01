@@ -8,7 +8,6 @@ import authService from '@/services/authService';
 
 function AuthInitializer({ children }) {
   const { setAuth, setAuthChecked, logout } = useAuthStore();
-  const { clearCart } = useCartStore();
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -16,16 +15,15 @@ function AuthInitializer({ children }) {
         const response = await authService.me();
         setAuth(response.data.data);
       } catch (error) {
-        // Not authenticated
+        // Not authenticated — clear auth cookie and reset auth store, but preserve guest cart
         document.cookie = 'auth-status=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         logout();
-        clearCart();
       } finally {
         setAuthChecked(true);
       }
     };
     verifyAuth();
-  }, [setAuth, setAuthChecked, logout, clearCart]);
+  }, [setAuth, setAuthChecked, logout]);
 
   return <>{children}</>;
 }

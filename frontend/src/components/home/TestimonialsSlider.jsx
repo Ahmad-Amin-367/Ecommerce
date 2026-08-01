@@ -2,41 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const testimonials = [
-  {
-    name: 'Ayesha K.',
-    location: 'Lahore',
-    rating: 5,
-    text: 'The edible arrangement was absolutely stunning! My mother loved every bit of it. The packaging was premium and it arrived fresh. Will definitely order again.',
-  },
-  {
-    name: 'Fatima S.',
-    location: 'Karachi',
-    rating: 5,
-    text: 'Ordered a custom birthday hamper for my husband and it exceeded all expectations. The attention to detail was remarkable. Hisna Gifts never disappoints!',
-  },
-  {
-    name: 'Ahmed R.',
-    location: 'Islamabad',
-    rating: 5,
-    text: 'Corporate gifting made easy! We ordered Eid gifts for our entire team and the quality was consistent across every single package. Highly professional service.',
-  },
-  {
-    name: 'Sana M.',
-    location: 'Rawalpindi',
-    rating: 5,
-    text: 'I ordered a gift basket for my friend\'s wedding and it was beautifully arranged. The flowers and chocolates were fresh. Delivery was right on time!',
-  },
-  {
-    name: 'Hassan T.',
-    location: 'Faisalabad',
-    rating: 5,
-    text: 'Best gifting service in Pakistan! The customization options are amazing and the customer support team was incredibly helpful throughout the process.',
-  },
-];
+import { useTestimonials } from '@/hooks/useTestimonials';
+import TestimonialsSkeleton from './TestimonialsSkeleton';
 
 export default function TestimonialsSlider() {
+  const { data: testimonials = [], isLoading, isError } = useTestimonials();
   const [activeIndex, setActiveIndex] = useState(0);
   const [xOffset, setXOffset] = useState(360); // Default for SSR
   const [isMounted, setIsMounted] = useState(false);
@@ -52,48 +22,66 @@ export default function TestimonialsSlider() {
   }, []);
 
   const nextSlide = () => {
+    if (testimonials.length === 0) return;
     setActiveIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
+    if (testimonials.length === 0) return;
     setActiveIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
   };
 
   useEffect(() => {
+    if (testimonials.length === 0) return;
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
     return () => clearInterval(interval);
-  }, [activeIndex]);
+  }, [activeIndex, testimonials.length]);
 
-  if (!isMounted) return null; // Avoid hydration mismatch on offset
+  if (!isMounted || isLoading) {
+    return <TestimonialsSkeleton />;
+  }
+
+  if (isError || testimonials.length === 0) {
+    return (
+      <div className="text-center py-12 text-warm-gray">
+        <p className="text-sm font-medium">No customer reviews available yet.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full">
-
       {/* Slider Container */}
       <div className="relative flex items-center justify-center min-h-[400px] md:min-h-[440px] pb-6">
-
+        
         {/* Navigation Arrows */}
-        <div className="absolute left-0 md:left-4 lg:left-12 z-30">
-          <button
-            type="button"
-            onClick={prevSlide}
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-cloud flex items-center justify-center bg-white text-primary hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md group"
-          >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-          </button>
-        </div>
+        {testimonials.length > 1 && (
+          <>
+            <div className="absolute left-0 md:left-4 lg:left-12 z-30">
+              <button
+                type="button"
+                onClick={prevSlide}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-cloud flex items-center justify-center bg-white text-primary hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md group"
+                aria-label="Previous review"
+              >
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+              </button>
+            </div>
 
-        <div className="absolute right-0 md:right-4 lg:right-12 z-30">
-          <button
-            type="button"
-            onClick={nextSlide}
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-cloud flex items-center justify-center bg-white text-primary hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md group"
-          >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-          </button>
-        </div>
+            <div className="absolute right-0 md:right-4 lg:right-12 z-30">
+              <button
+                type="button"
+                onClick={nextSlide}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-cloud flex items-center justify-center bg-white text-primary hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md group"
+                aria-label="Next review"
+              >
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Cards Track */}
         <div className="relative flex items-center justify-center w-full h-[340px] md:h-[380px] overflow-visible">
@@ -121,7 +109,7 @@ export default function TestimonialsSlider() {
 
             return (
               <motion.div
-                key={review.name}
+                key={review.id || review.name + index}
                 initial={false}
                 animate={{
                   scale,
@@ -145,7 +133,7 @@ export default function TestimonialsSlider() {
 
                 {/* Stars */}
                 <div className="flex items-center gap-0.5 mb-4">
-                  {Array.from({ length: review.rating }).map((_, i) => (
+                  {Array.from({ length: review.rating || 5 }).map((_, i) => (
                     <Star key={i} size={16} className="text-warning fill-warning" />
                   ))}
                 </div>
@@ -158,7 +146,7 @@ export default function TestimonialsSlider() {
                 {/* Author */}
                 <div className="flex items-center gap-3 pt-4 border-t border-cloud mt-auto">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-md">
-                    {review.name.charAt(0)}
+                    {review.name ? review.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm font-semibold text-charcoal">{review.name}</p>
@@ -172,21 +160,23 @@ export default function TestimonialsSlider() {
       </div>
 
       {/* Pagination Dots */}
-      <div className="flex justify-center items-center gap-2 mt-2">
-        {testimonials.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => setActiveIndex(index)}
-            className={`transition-all duration-300 ${
-              activeIndex === index 
-                ? 'w-12 h-2 bg-primary rounded-full' 
-                : 'w-3 h-2 bg-primary/30 rounded-full hover:bg-primary/50'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+      {testimonials.length > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-2">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className={`transition-all duration-300 ${
+                activeIndex === index 
+                  ? 'w-12 h-2 bg-primary rounded-full' 
+                  : 'w-3 h-2 bg-primary/30 rounded-full hover:bg-primary/50'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
