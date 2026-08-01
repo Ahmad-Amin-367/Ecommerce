@@ -115,9 +115,11 @@ const useCart = () => {
     }
   };
 
-  const currentCart = isAuthenticated
-    ? cartData || { items: storeItems, subtotal: storeSubtotal }
-    : { items: storeItems, subtotal: storeSubtotal };
+  const currentCart = {
+    items: storeItems,
+    subtotal: storeSubtotal,
+  };
+
 
   return {
     cart: currentCart,

@@ -19,7 +19,7 @@ const useAuth = () => {
     const { user } = response.data.data;
     setAuth(user);
 
-    // Sync guest cart if local items exist
+    // Sync guest cart if local items exist, otherwise fetch user's saved DB cart
     const localItems = useCartStore.getState().items;
     if (localItems && localItems.length > 0) {
       try {
@@ -32,7 +32,15 @@ const useAuth = () => {
       } catch (err) {
         console.error('Failed to sync guest cart:', err);
       }
+    } else {
+      try {
+        const cartRes = await cartService.getCart();
+        useCartStore.getState().setCart(cartRes.data.data);
+      } catch (err) {
+        console.error('Failed to fetch user cart on login:', err);
+      }
     }
+
 
     toast.success(`Welcome back, ${user.name}!`);
 
