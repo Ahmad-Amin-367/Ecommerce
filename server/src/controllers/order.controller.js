@@ -52,7 +52,7 @@ const createOrder = async (req, res) => {
   const order = await prisma.$transaction(async (tx) => {
     // 1. Create the address if provided (or store as guest)
     let addressId = null;
-    let userId = req.user?.id || null;
+    const userId = req.user.id;
 
     if (shippingAddress) {
       const address = await tx.address.create({

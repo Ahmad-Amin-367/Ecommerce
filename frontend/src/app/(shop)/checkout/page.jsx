@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useCart from '@/hooks/useCart';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -14,6 +15,7 @@ import toast from 'react-hot-toast';
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
+  const { user } = useAuthStore();
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +30,21 @@ export default function CheckoutPage() {
     postalCode: '',
     notes: ''
   });
+
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      setFormData((prev) => ({
+        ...prev,
+        firstName: prev.firstName || firstName,
+        lastName: prev.lastName || lastName,
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || ''
+      }));
+    }
+  }, [user]);
 
   const shippingFee = 200; // Flat rate for now
   const total = subtotal + shippingFee;
@@ -65,8 +82,8 @@ export default function CheckoutPage() {
       await api.post('/orders', payload);
       
       clearCart();
-      toast.success('Order placed successfully!');
-      router.push('/'); // Redirect to home for now
+      toast.success('Order placed successfully! Redirecting to your order history...');
+      router.push('/profile');
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Failed to place order. Please try again.');
     } finally {
