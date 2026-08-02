@@ -177,9 +177,43 @@ const getMyOrders = async (req, res) => {
   sendSuccess(res, 200, 'My orders retrieved successfully', orders);
 };
 
+/**
+ * @desc    Get order by ID
+ * @route   GET /api/v1/orders/:id
+ * @access  Private (User who owns it or Admin)
+ */
+const getOrderById = async (req, res) => {
+  const { id } = req.params;
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true }
+      },
+      address: true,
+      items: {
+        include: { product: true }
+      }
+    }
+  });
+
+  if (!order) {
+    throw ApiError.notFound('Order not found');
+  }
+
+  // Authorize: customer must own order or be admin
+  if (req.user.role !== 'ADMIN' && order.userId !== req.user.id) {
+    throw ApiError.forbidden('Access denied to this order');
+  }
+
+  sendSuccess(res, 200, 'Order details retrieved', order);
+};
+
 module.exports = {
   createOrder,
   getOrders,
+  getOrderById,
   updateOrderStatus,
   getMyOrders
 };
