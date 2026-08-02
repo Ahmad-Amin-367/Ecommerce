@@ -20,7 +20,8 @@ import {
   AlertCircle,
   ChevronRight,
   RefreshCw,
-  DollarSign
+  DollarSign,
+  Store
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -152,11 +153,10 @@ export default function AdminDashboardPage() {
 
             <Link
               href="/"
-              target="_blank"
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-border text-charcoal rounded-xl text-sm font-medium hover:bg-cream/60 transition-all duration-200 cursor-pointer shadow-soft hover:shadow-lifted"
             >
+              <Store size={15} className="text-primary" />
               <span>Visit Front Store</span>
-              <ExternalLink size={14} className="text-text-secondary" />
             </Link>
 
             <button
