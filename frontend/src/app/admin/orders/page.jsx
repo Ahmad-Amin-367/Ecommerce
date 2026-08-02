@@ -204,35 +204,39 @@ export default function AdminOrdersPage() {
                   Order Items ({selectedOrder.items?.length || 0})
                 </h4>
                 <div className="border border-cloud rounded-2xl overflow-hidden divide-y divide-cloud">
-                  {selectedOrder.items?.map((item) => (
-                    <div key={item.id} className="p-3.5 flex items-center justify-between gap-4 hover:bg-cream/20 transition-colors">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {item.product?.images?.[0] ? (
-                          <img
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-cloud shrink-0"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-cloud/50 flex items-center justify-center text-text-muted text-xs font-bold shrink-0">
-                            HG
+                  {selectedOrder.items?.map((item) => {
+                    const unitPrice = Number(item.unitPrice ?? item.price ?? item.product?.price ?? 0);
+                    const itemTotal = Number(item.totalPrice ?? (unitPrice * item.quantity));
+                    return (
+                      <div key={item.id} className="p-3.5 flex items-center justify-between gap-4 hover:bg-cream/20 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {item.product?.images?.[0] ? (
+                            <img
+                              src={item.product.images[0]}
+                              alt={item.product.name}
+                              className="w-12 h-12 rounded-xl object-cover border border-cloud shrink-0"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-xl bg-cloud/50 flex items-center justify-center text-text-muted text-xs font-bold shrink-0">
+                              HG
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-charcoal truncate">
+                              {item.product?.name || 'Product Item'}
+                            </p>
+                            <p className="text-xs text-text-muted">
+                              Qty: {item.quantity} × {formatCurrency(unitPrice)}
+                            </p>
                           </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-charcoal truncate">
-                            {item.product?.name || 'Product Item'}
-                          </p>
-                          <p className="text-xs text-text-muted">
-                            Qty: {item.quantity} × {formatCurrency(item.price)}
-                          </p>
                         </div>
-                      </div>
 
-                      <p className="text-sm font-bold text-primary shrink-0">
-                        {formatCurrency(Number(item.price || 0) * item.quantity)}
-                      </p>
-                    </div>
-                  ))}
+                        <p className="text-sm font-bold text-primary shrink-0">
+                          {formatCurrency(itemTotal)}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -240,11 +244,17 @@ export default function AdminOrdersPage() {
               <div className="bg-cream/40 p-4 rounded-2xl border border-cloud/60 space-y-2 text-xs">
                 <div className="flex justify-between text-text-secondary">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-charcoal">{formatCurrency(selectedOrder.totalAmount)}</span>
+                  <span className="font-semibold text-charcoal">
+                    {formatCurrency(selectedOrder.subtotal || selectedOrder.totalAmount)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-text-secondary">
-                  <span>Shipping</span>
-                  <span className="font-semibold text-forest">Free</span>
+                  <span>Shipping Fee</span>
+                  <span className="font-semibold text-charcoal">
+                    {Number(selectedOrder.shippingFee || 0) > 0
+                      ? formatCurrency(selectedOrder.shippingFee)
+                      : 'Free'}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-charcoal pt-2 border-t border-cloud/80">
                   <span>Total Amount</span>
