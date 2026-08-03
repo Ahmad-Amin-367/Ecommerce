@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { useCartStore } from '@/store/cartStore';
 import authService from '@/services/authService';
 
 function AuthInitializer({ children }) {
@@ -11,11 +10,20 @@ function AuthInitializer({ children }) {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!token) {
+        setAuthChecked(true);
+        return;
+      }
+
       try {
         const response = await authService.me();
         setAuth(response.data.data);
       } catch (error) {
-        // Not authenticated — reset auth store, preserve guest cart
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
         logout();
       } finally {
         setAuthChecked(true);
