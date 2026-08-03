@@ -5,9 +5,9 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "build": "prisma generate",
+    "build": "npx prisma generate",
     "start": "node server.js",
-    "prisma:generate": "prisma generate",
+    "prisma:generate": "npx prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset"
