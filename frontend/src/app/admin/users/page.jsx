@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { useUsers } from '@/hooks/useUsers';
-import { Search, Shield } from 'lucide-react';
+import { Search, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
+import ReactPaginate from 'react-paginate';
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
@@ -66,7 +67,7 @@ export default function AdminUsersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="rounded-xl border border-cloud bg-background px-3.5 py-2 text-sm text-charcoal focus:outline-none focus:border-primary transition-colors cursor-pointer"
+            className="w-full rounded-xl border border-cloud bg-background px-3.5 py-2 text-sm text-charcoal focus:outline-none focus:border-primary transition-colors cursor-pointer"
           >
             <option value="">All Statuses</option>
             <option value="true">Active Accounts</option>
@@ -154,30 +155,34 @@ export default function AdminUsersPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {meta.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-cloud bg-background-secondary text-xs text-warm-gray">
-            <span>
-              Showing Page <strong>{page}</strong> of <strong>{meta.totalPages}</strong>
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded-lg border border-cloud bg-white text-charcoal hover:bg-cloud/50 disabled:opacity-40 transition-colors"
-              >
-                Previous
-              </button>
-              <button
-                disabled={page >= meta.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="p-1.5 rounded-lg border border-cloud bg-white text-charcoal hover:bg-cloud/50 disabled:opacity-40 transition-colors"
-              >
-                Next
-              </button>
-            </div>
+        {/* Table Footer with Pagination */}
+        <div className="p-4 border-t border-cloud flex flex-col sm:flex-row items-center justify-between gap-4 bg-background-secondary rounded-b-2xl">
+          <div className="text-sm text-text-muted font-medium">
+            Showing {totalUsers === 0 ? 0 : (page - 1) * 10 + 1} to {Math.min(page * 10, totalUsers)} of {totalUsers} users
           </div>
-        )}
+
+          <ReactPaginate
+            previousLabel={<ChevronLeft size={16} />}
+            nextLabel={<ChevronRight size={16} />}
+            breakLabel="..."
+            breakClassName="w-8 h-8 flex items-center justify-center text-text-muted"
+            pageCount={meta.totalPages}
+            marginPagesDisplayed={1}
+            pageRangeDisplayed={2}
+            forcePage={page > 0 ? page - 1 : 0}
+            onPageChange={({ selected }) => setPage(selected + 1)}
+            containerClassName="flex items-center gap-1.5"
+            activeClassName="!bg-primary !text-white !border-primary hover:!bg-primary-dark"
+            pageClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            previousClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            nextClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            disabledClassName="!opacity-30 !cursor-not-allowed hover:!bg-white"
+            disabledLinkClassName="!cursor-not-allowed"
+            pageLinkClassName="w-full h-full flex items-center justify-center"
+            previousLinkClassName="w-full h-full flex items-center justify-center"
+            nextLinkClassName="w-full h-full flex items-center justify-center"
+          />
+        </div>
       </div>
     </div>
   );

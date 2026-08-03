@@ -242,7 +242,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        <main className="p-6 lg:p-12 w-full max-w-[100vw] lg:max-w-7xl animate-fade-in overflow-x-hidden">
+        <main className="p-6 lg:p-12 w-full animate-fade-in overflow-x-hidden">
           {mounted ? children : <div className="animate-pulse w-full h-full bg-cloud/20 rounded-2xl min-h-[400px]"></div>}
         </main>
       </div>

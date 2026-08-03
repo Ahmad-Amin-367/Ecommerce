@@ -1,7 +1,7 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import { Search, Eye, Filter, CheckCircle, Package, Truck, XCircle } from 'lucide-react';
+import { Search, Eye, Filter, CheckCircle, Package, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/utils/formatCurrency';
 import api from '@/services/api';
@@ -14,19 +14,26 @@ import OrderDetailsModal from '@/components/ui/OrderDetailsModal';
 export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [filterOverflow, setFilterOverflow] = useState('hidden');
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const limit = 50;
 
-  const fetchOrders = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await api.get('/orders');
-      setOrders(data.data);
-    } catch (error) {
-      toast.error('Failed to load orders');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to page 1 on new search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
+  // Reset page when filters change
   useEffect(() => {
     setPage(1);
   }, [status, paymentStatus, paymentMethod, dateRange]);
@@ -57,24 +64,6 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleOpenDetails = async (orderId) => {
-    setIsDetailModalOpen(true);
-    setIsLoadingDetail(true);
-    try {
-      const { data } = await api.get(`/orders/${orderId}`);
-      setSelectedOrder(data.data);
-    } catch (error) {
-      toast.error('Failed to load order details');
-    } finally {
-      setIsLoadingDetail(false);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsDetailModalOpen(false);
-    setSelectedOrder(null);
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -86,14 +75,9 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter(order =>
-    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (order.guestName || order.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <div className="flex-1 overflow-y-auto bg-background animate-fade-in">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -285,7 +269,11 @@ export default function AdminOrdersPage() {
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex" title="View Details">
+                        <button
+                          onClick={() => setSelectedOrderId(order.id)}
+                          className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex cursor-pointer"
+                          title="View Details"
+                        >
                           <Eye size={18} />
                         </button>
                       </td>
@@ -327,6 +315,12 @@ export default function AdminOrdersPage() {
         </div>
 
       </div>
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrderId}
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </div>
   );
 }

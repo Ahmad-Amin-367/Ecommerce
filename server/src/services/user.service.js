@@ -109,7 +109,10 @@ const getAllUsers = async (query) => {
   }
   // Exclude ADMIN users by default
   where.role = role || 'CUSTOMER';
-  if (isActive !== undefined) where.isActive = isActive;
+  
+  if (isActive !== undefined && isActive !== '') {
+    where.isActive = isActive === 'true' || isActive === true;
+  }
 
 
   const totalCount = await prisma.user.count({ where });

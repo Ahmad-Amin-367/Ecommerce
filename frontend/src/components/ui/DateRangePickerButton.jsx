@@ -92,26 +92,26 @@ export const getPresetRange = (preset) => {
 export const getInitialDateRange = () => getPresetRange('Till Date');
 
 export const getDateRangeLabel = (range) => {
-    if (!range || !range.from || !range.to) return 'Select Date Range';
-    const tillDateRange = getPresetRange('Till Date');
-    const last30DaysRange = getPresetRange('Last 30 Days');
-    const thisMonthRange = getPresetRange('This Month');
-    const lastMonthRange = getPresetRange('Last Month');
-    const thisWeekRange = getPresetRange('This Week');
- 
-    if (range.from === tillDateRange.from && range.to === tillDateRange.to) return 'Till Date';
-    if (range.from === last30DaysRange.from && range.to === last30DaysRange.to) return 'Last 30 Days';
-    if (range.from === thisMonthRange.from && range.to === thisMonthRange.to) return 'This Month';
-    if (range.from === lastMonthRange.from && range.to === lastMonthRange.to) return 'Last Month';
-    if (range.from === thisWeekRange.from && range.to === thisWeekRange.to) return 'This Week';
- 
-    const from = parseDateValue(range.from);
-    const to = parseDateValue(range.to);
-    
-    // Safety check for NaN in case of malformed dates
-    if (isNaN(from) || isNaN(to)) return 'Select Date Range';
+  if (!range || !range.from || !range.to) return 'Select Date Range';
+  const tillDateRange = getPresetRange('Till Date');
+  const last30DaysRange = getPresetRange('Last 30 Days');
+  const thisMonthRange = getPresetRange('This Month');
+  const lastMonthRange = getPresetRange('Last Month');
+  const thisWeekRange = getPresetRange('This Week');
 
-    return `${MONTH_LABELS[from.getMonth()]} ${from.getDate()}, ${from.getFullYear()} - ${MONTH_LABELS[to.getMonth()]} ${to.getDate()}, ${to.getFullYear()}`;
+  if (range.from === tillDateRange.from && range.to === tillDateRange.to) return 'Till Date';
+  if (range.from === last30DaysRange.from && range.to === last30DaysRange.to) return 'Last 30 Days';
+  if (range.from === thisMonthRange.from && range.to === thisMonthRange.to) return 'This Month';
+  if (range.from === lastMonthRange.from && range.to === lastMonthRange.to) return 'Last Month';
+  if (range.from === thisWeekRange.from && range.to === thisWeekRange.to) return 'This Week';
+
+  const from = parseDateValue(range.from);
+  const to = parseDateValue(range.to);
+
+  // Safety check for NaN in case of malformed dates
+  if (isNaN(from) || isNaN(to)) return 'Select Date Range';
+
+  return `${MONTH_LABELS[from.getMonth()]} ${from.getDate()}, ${from.getFullYear()} - ${MONTH_LABELS[to.getMonth()]} ${to.getDate()}, ${to.getFullYear()}`;
 };
 
 export const isInitialDateRange = (range) => {
@@ -402,7 +402,7 @@ export default function DateRangePickerButton({
         title={buttonLabel}
         onClick={() => setIsOpen((prev) => !prev)}
         className={`inline-flex w-full sm:w-auto items-center justify-between gap-3 rounded-lg border border-cloud bg-white font-medium text-charcoal shadow-sm transition-colors hover:border-primary hover:text-primary ${compact ? 'h-10 px-3 text-xs' : 'h-10 px-4 text-sm'
-        } ${className || (!compact ? 'min-w-[150px]' : '')}`}
+          } ${className || (!compact ? 'min-w-[150px]' : '')}`}
       >
         <span className="inline-flex min-w-0 items-center gap-2">
           <CalendarDays size={compact ? 17 : 19} className="shrink-0 text-warm-gray" />
@@ -484,7 +484,7 @@ export default function DateRangePickerButton({
                       className={`mt-2 h-10 w-full rounded-lg border px-2 text-xs font-normal text-charcoal outline-none transition-all ${activeBoundary === 'from'
                         ? 'border-primary ring-2 ring-primary/15 shadow-sm'
                         : 'border-cloud hover:border-gray-300'
-                      }`}
+                        }`}
                     />
                   </label>
                   <label htmlFor={`${pickerId}-to`} className="text-xs font-semibold text-charcoal">
@@ -498,7 +498,7 @@ export default function DateRangePickerButton({
                       className={`mt-2 h-10 w-full rounded-lg border px-2 text-xs font-normal text-charcoal outline-none transition-all ${activeBoundary === 'to'
                         ? 'border-primary ring-2 ring-primary/15 shadow-sm'
                         : 'border-cloud hover:border-gray-300'
-                      }`}
+                        }`}
                     />
                   </label>
                 </div>
@@ -509,14 +509,14 @@ export default function DateRangePickerButton({
               <button
                 type="button"
                 onClick={handleCancel}
-                className="h-9 min-w-[92px] rounded-lg border border-cloud px-4 text-xs font-semibold text-charcoal transition-colors hover:border-primary hover:text-primary"
+                className="h-9 min-w-[92px] rounded-lg border border-cloud px-4 text-xs font-semibold text-charcoal transition-colors hover:border-primary hover:text-primary cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleApply}
-                className="h-9 min-w-[92px] rounded-lg bg-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-primary-glow"
+                className="h-9 min-w-[92px] rounded-lg bg-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-primary/90 cursor-pointer"
               >
                 Apply
               </button>
