@@ -54,6 +54,7 @@ const query = Joi.object({
   category: Joi.string().optional(),
   minPrice: Joi.number().min(0).optional(),
   maxPrice: Joi.number().min(0).optional(),
+  maxStock: Joi.number().min(0).optional(),
   isActive: Joi.boolean().optional(),
   isFeatured: Joi.boolean().optional(),
   sortBy: Joi.string().valid('price', 'createdAt', 'name', 'stock').default('createdAt'),

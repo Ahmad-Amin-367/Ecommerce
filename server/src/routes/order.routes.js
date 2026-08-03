@@ -11,6 +11,7 @@ router.get('/my-orders', protect, orderController.getMyOrders);
 
 // Admin routes
 router.get('/', protect, restrictTo('ADMIN'), orderController.getOrders);
+router.get('/:id', protect, restrictTo('ADMIN'), orderController.getOrderById);
 router.patch('/:id/status', protect, restrictTo('ADMIN'), orderController.updateOrderStatus);
 
 module.exports = router;

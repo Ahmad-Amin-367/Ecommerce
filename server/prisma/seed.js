@@ -476,6 +476,105 @@ async function main() {
   }
   console.log(`✅ ${testimonialsData.length} Testimonials created`);
 
+  // 5. Create Orders (if none exist or < 7)
+  const existingOrdersCount = await prisma.order.count();
+  if (existingOrdersCount < 7) {
+    console.log(`Creating ${7 - existingOrdersCount} Orders...`);
+    // Create Customer
+    const customerEmail = 'customer@hisnagifts.com';
+    const customerPassword = await bcrypt.hash('password123', 10);
+    const customer = await prisma.user.upsert({
+      where: { email: customerEmail },
+      update: {},
+      create: {
+        name: 'John Doe',
+        email: customerEmail,
+        password: customerPassword,
+        role: 'CUSTOMER',
+        phone: '+92 300 1234567',
+      },
+    });
+
+    // Create Address
+    let address = await prisma.address.findFirst({ where: { userId: customer.id } });
+    if (!address) {
+      address = await prisma.address.create({
+        data: {
+          userId: customer.id,
+          label: 'Home',
+          street: '123 Main St',
+          city: 'Lahore',
+          state: 'Punjab',
+          country: 'Pakistan',
+          postalCode: '54000',
+          isDefault: true,
+        },
+      });
+    }
+
+    // Get some products to use
+    const productsList = await prisma.product.findMany({ take: 10 });
+
+    if (productsList.length > 0) {
+      const ordersToCreate = 7 - existingOrdersCount;
+      const statuses = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
+      const paymentStatuses = ['UNPAID', 'PAID', 'PAID', 'PAID', 'PAID', 'FAILED', 'REFUNDED'];
+      const paymentMethods = ['CASH_ON_DELIVERY', 'CREDIT_CARD', 'BANK_TRANSFER'];
+
+      for (let i = 0; i < ordersToCreate; i++) {
+        const orderNumber = `ORD-20260803-00${existingOrdersCount + i + 1}`;
+        const p1 = productsList[Math.floor(Math.random() * productsList.length)];
+        const p2 = productsList[Math.floor(Math.random() * productsList.length)];
+        
+        // Randomly choose to have 1 or 2 items
+        const hasTwoItems = Math.random() > 0.5 && p1.id !== p2.id;
+        const q1 = Math.floor(Math.random() * 3) + 1;
+        const q2 = Math.floor(Math.random() * 2) + 1;
+
+        let subtotal = Number(p1.price) * q1;
+        const items = [
+          {
+            productId: p1.id,
+            quantity: q1,
+            unitPrice: p1.price,
+            totalPrice: Number(p1.price) * q1,
+          }
+        ];
+
+        if (hasTwoItems) {
+          subtotal += Number(p2.price) * q2;
+          items.push({
+            productId: p2.id,
+            quantity: q2,
+            unitPrice: p2.price,
+            totalPrice: Number(p2.price) * q2,
+          });
+        }
+
+        const shippingFee = subtotal > 1000 ? 0 : 200;
+        const totalAmount = subtotal + shippingFee;
+        const statusIdx = i % statuses.length; // cycle through different statuses
+
+        await prisma.order.create({
+          data: {
+            orderNumber,
+            userId: customer.id,
+            addressId: address.id,
+            status: statuses[statusIdx],
+            paymentStatus: paymentStatuses[statusIdx],
+            paymentMethod: paymentMethods[i % paymentMethods.length],
+            subtotal,
+            shippingFee,
+            totalAmount,
+            deliveredAt: statuses[statusIdx] === 'DELIVERED' ? new Date() : null,
+            items: { create: items }
+          }
+        });
+      }
+      console.log(`✅ ${ordersToCreate} Mock orders created (Total: 7)`);
+    }
+  }
+
   console.log('🎉 Seeding completed successfully!');
 }
 

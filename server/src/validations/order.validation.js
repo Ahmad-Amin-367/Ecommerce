@@ -23,10 +23,16 @@ const updateStatus = Joi.object({
 const query = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(10),
+  search: Joi.string().max(200).optional(),
   status: Joi.string()
     .valid('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED')
     .optional(),
   paymentStatus: Joi.string().valid('UNPAID', 'PAID', 'FAILED', 'REFUNDED').optional(),
+  paymentMethod: Joi.string().valid('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER').optional(),
+  startDate: Joi.date().iso().optional(),
+  endDate: Joi.date().iso().optional(),
+  minTotal: Joi.number().min(0).optional(),
+  maxTotal: Joi.number().min(0).optional(),
   sortBy: Joi.string().valid('createdAt', 'totalAmount').default('createdAt'),
   sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
 });

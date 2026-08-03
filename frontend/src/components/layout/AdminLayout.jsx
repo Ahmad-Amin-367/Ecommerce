@@ -45,14 +45,14 @@ export default function AdminLayout({ children }) {
     <div className="flex min-h-screen bg-background">
       {/* Mobile Backdrop */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-charcoal/50 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={clsx(
           "fixed top-0 left-0 bottom-0 z-50 bg-background-secondary border-r border-border flex flex-col transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }) {
               <span className="text-[10px] font-semibold uppercase tracking-widest text-primary whitespace-nowrap">Admin Panel</span>
             </div>
           </Link>
-          
+
           {/* Mini Logo (HG) - Only visible when collapsed on desktop */}
           {isDesktopCollapsed && (
             <Link href="/" className="hidden lg:flex flex-col items-center justify-center group" title="Hisna Gifts">
@@ -81,7 +81,7 @@ export default function AdminLayout({ children }) {
           )}
 
           {/* Mobile Close Button */}
-          <button 
+          <button
             className="lg:hidden p-1 text-text-muted hover:text-charcoal hover:bg-cloud/50 rounded transition-colors"
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -120,7 +120,7 @@ export default function AdminLayout({ children }) {
             <p className="text-sm font-semibold text-text-primary mb-[2px] truncate">{user?.name}</p>
             <p className="text-xs text-text-muted truncate">{user?.email}</p>
           </div>
-          
+
           <button
             className={clsx(
               "flex items-center gap-2 text-sm font-medium text-error py-2 rounded-md transition-colors duration-200 hover:bg-error/10",
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main content */}
-      <div 
+      <div
         className={clsx(
           "flex-1 min-h-screen flex flex-col w-full min-w-0 transition-all duration-300 ease-in-out",
           isDesktopCollapsed ? "lg:ml-[80px]" : "lg:ml-[260px]"
@@ -146,15 +146,15 @@ export default function AdminLayout({ children }) {
         <header className="flex items-center justify-between p-4 lg:px-8 border-b border-cloud bg-white sticky top-0 z-30 h-[88px]">
           <div className="flex items-center gap-4">
             {/* Mobile Sidebar Toggle */}
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden p-2 text-charcoal hover:bg-cloud/50 rounded-md transition-colors"
             >
               <Menu size={24} />
             </button>
-            
+
             {/* Desktop Sidebar Toggle */}
-            <button 
+            <button
               onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
               className="hidden lg:flex p-2 text-charcoal hover:bg-cloud/50 rounded-md transition-colors items-center justify-center"
               title={isDesktopCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}

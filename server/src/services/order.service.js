@@ -199,10 +199,39 @@ const cancelOrder = async (orderId, userId) => {
  * Admin: Get all orders with filters
  */
 const getAllOrders = async (query) => {
-  const { page, limit, status, paymentStatus, sortBy, sortOrder } = query;
+  const { page, limit, search, status, paymentStatus, paymentMethod, startDate, endDate, minTotal, maxTotal, sortBy, sortOrder } = query;
   const where = {};
+  
+  if (search) {
+    where.OR = [
+      { orderNumber: { contains: search, mode: 'insensitive' } },
+      { guestName: { contains: search, mode: 'insensitive' } },
+      { guestEmail: { contains: search, mode: 'insensitive' } },
+      { user: { name: { contains: search, mode: 'insensitive' } } },
+      { user: { email: { contains: search, mode: 'insensitive' } } },
+    ];
+  }
+  
   if (status) where.status = status;
   if (paymentStatus) where.paymentStatus = paymentStatus;
+  if (paymentMethod) where.paymentMethod = paymentMethod;
+
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.createdAt.lte = end;
+    }
+  }
+
+  if (minTotal !== undefined || maxTotal !== undefined) {
+    where.totalAmount = {};
+    if (minTotal !== undefined && minTotal !== '') where.totalAmount.gte = Number(minTotal);
+    if (maxTotal !== undefined && maxTotal !== '') where.totalAmount.lte = Number(maxTotal);
+    if (Object.keys(where.totalAmount).length === 0) delete where.totalAmount;
+  }
 
   const totalCount = await prisma.order.count({ where });
   const { skip, take, meta } = paginate({ page, limit }, totalCount);

@@ -67,6 +67,24 @@ export const useCancelOrder = () => {
 };
 
 /**
+ * useAdminOrders — admin order list with filters
+ */
+export const useAdminOrders = (params = {}) => {
+  return useQuery({
+    queryKey: ['orders', params],
+    queryFn: async () => {
+      // Clean up empty params to avoid backend validation errors (e.g. empty strings for dates)
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v !== '' && v !== null && v !== undefined)
+      );
+      const res = await orderService.getAllOrders(cleanParams);
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 1, // 1 minute
+  });
+};
+
+/**
  * useUpdateOrderStatus — admin mutation
  */
 export const useUpdateOrderStatus = () => {

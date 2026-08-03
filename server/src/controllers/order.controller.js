@@ -1,6 +1,7 @@
 const prisma = require('../config/db');
 const ApiError = require('../utils/apiError');
 const { sendSuccess } = require('../utils/apiResponse');
+const orderService = require('../services/order.service');
 
 // Generate unique order number (e.g. ORD-168123456)
 const generateOrderNumber = () => {
@@ -102,7 +103,6 @@ const createOrder = async (req, res) => {
 
     return newOrder;
   });
-
   sendSuccess(res, 201, 'Order placed successfully', order);
 };
 
@@ -112,20 +112,8 @@ const createOrder = async (req, res) => {
  * @access  Private/Admin
  */
 const getOrders = async (req, res) => {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true }
-      },
-      address: true,
-      items: {
-        include: { product: true }
-      }
-    }
-  });
-
-  sendSuccess(res, 200, 'Orders retrieved successfully', orders);
+  const { orders, meta } = await orderService.getAllOrders(req.query);
+  sendSuccess(res, 200, 'Orders retrieved successfully', orders, meta);
 };
 
 /**
@@ -177,9 +165,27 @@ const getMyOrders = async (req, res) => {
   sendSuccess(res, 200, 'My orders retrieved successfully', orders);
 };
 
+/**
+ * @desc    Get order by ID
+ * @route   GET /api/v1/orders/:id
+ * @access  Private/Admin
+ */
+const getOrderById = async (req, res) => {
+  const { id } = req.params;
+  const isAdmin = req.user && req.user.role === 'ADMIN';
+  const order = await orderService.getOrder(id, req.user?.id, isAdmin);
+  
+  if (!order) {
+    throw ApiError.notFound('Order not found');
+  }
+
+  sendSuccess(res, 200, 'Order retrieved successfully', order);
+};
+
 module.exports = {
   createOrder,
   getOrders,
+  getOrderById,
   updateOrderStatus,
   getMyOrders
 };

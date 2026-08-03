@@ -1,38 +1,64 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Search, Eye, Filter, CheckCircle, Package, Truck, XCircle } from 'lucide-react';
+import { Search, Eye, Filter, CheckCircle, Package, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import { formatCurrency } from '@/utils/formatCurrency';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
+import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
+import ReactPaginate from 'react-paginate';
+import DateRangePickerButton from '@/components/ui/DateRangePickerButton';
+import OrderDetailsModal from '@/components/ui/OrderDetailsModal';
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [filterOverflow, setFilterOverflow] = useState('hidden');
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const limit = 50;
 
-  const fetchOrders = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await api.get('/orders');
-      setOrders(data.data);
-    } catch (error) {
-      toast.error('Failed to load orders');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Debounce search
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to page 1 on new search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [status, paymentStatus, paymentMethod, dateRange]);
+
+  const { data, isLoading, refetch } = useAdminOrders({
+    page,
+    limit,
+    search: debouncedSearch,
+    status,
+    paymentStatus,
+    paymentMethod,
+    startDate: dateRange.from,
+    endDate: dateRange.to
+  });
+
+  const orders = data?.data || [];
+  const meta = data?.meta || { totalCount: 0, totalPages: 0 };
+  const totalCount = meta.totalCount || 0;
+  const totalPages = meta.totalPages || 0;
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus });
       toast.success('Order status updated');
-      fetchOrders();
+      refetch();
     } catch (error) {
       toast.error('Failed to update status');
     }
@@ -49,68 +75,140 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter(order => 
-    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (order.guestName || order.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 lg:p-8 animate-fade-in">
+    <div className="flex-1 overflow-y-auto bg-background animate-fade-in">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="font-serif text-3xl font-bold text-charcoal">Orders</h1>
             <p className="text-text-secondary mt-1">Manage and track customer orders</p>
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="flex items-center gap-2 bg-white">
-              <Filter size={18} />
-              Filter
-            </Button>
-          </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-primary' },
-            { label: 'Pending', value: orders.filter(o => o.status === 'PENDING').length, icon: CheckCircle, color: 'text-yellow-600' },
-            { label: 'Shipped', value: orders.filter(o => o.status === 'SHIPPED').length, icon: Truck, color: 'text-purple-600' },
-            { label: 'Delivered', value: orders.filter(o => o.status === 'DELIVERED').length, icon: CheckCircle, color: 'text-green-600' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl shadow-card border border-cloud flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl bg-cloud/50 flex items-center justify-center ${stat.color}`}>
-                <stat.icon size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-warm-gray">{stat.label}</p>
-                <p className="text-2xl font-bold text-charcoal">{stat.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Toolbar */}
-        <div className="bg-white p-4 rounded-t-2xl border border-cloud border-b-0 flex flex-col sm:flex-row gap-4 justify-between items-center">
-          <div className="relative w-full sm:w-96">
+        {/* Toolbar (Search & Basic Filters) */}
+        <div className={`relative z-30 bg-white p-4 ${showAdvancedFilters ? 'rounded-t-2xl' : 'rounded-t-2xl'} border border-cloud border-b-0 flex flex-col lg:flex-row gap-4 justify-between items-center`}>
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray" size={18} />
-            <input 
+            <input
               type="text"
-              placeholder="Search by Order ID or Customer Name..."
+              placeholder="Search by Order ID, Name, or Email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-cream border border-cloud rounded-xl outline-none text-charcoal text-sm focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all"
             />
           </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-cream border border-cloud rounded-xl outline-none text-charcoal text-sm focus:border-primary transition-colors cursor-pointer min-w-[140px]"
+            >
+              <option value="">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="PROCESSING">Processing</option>
+              <option value="SHIPPED">Shipped</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+
+            {(() => {
+              const activeFiltersCount = (paymentStatus ? 1 : 0) + (paymentMethod ? 1 : 0) + (dateRange.from ? 1 : 0);
+              return (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 transition-colors ${showAdvancedFilters || activeFiltersCount > 0 ? 'bg-primary/10 border-primary text-primary hover:bg-primary/20 hover:text-primary' : 'bg-white'}`}
+                >
+                  <Filter size={18} />
+                  Filter
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </Button>
+              );
+            })()}
+          </div>
         </div>
 
+        {/* Advanced Filters */}
+        <AnimatePresence>
+          {showAdvancedFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              style={{ overflow: filterOverflow }}
+              onAnimationStart={() => setFilterOverflow('hidden')}
+              onAnimationComplete={() => { if (showAdvancedFilters) setFilterOverflow('visible'); }}
+              className="relative z-20"
+            >
+              <div className="p-4 border-l border-r border-cloud bg-background-secondary flex flex-wrap gap-4 items-center border-t">
+
+                <div className="flex flex-col gap-1 w-full sm:w-auto">
+                  <span className="text-xs font-medium text-text-muted px-1">Payment Status</span>
+                  <select
+                    value={paymentStatus}
+                    onChange={(e) => setPaymentStatus(e.target.value)}
+                    className="w-full sm:w-auto px-3 py-2 border border-cloud rounded-lg text-sm bg-white focus:outline-none focus:border-primary text-charcoal"
+                  >
+                    <option value="">Any Payment Status</option>
+                    <option value="PAID">Paid</option>
+                    <option value="UNPAID">Unpaid</option>
+                    <option value="FAILED">Failed</option>
+                    <option value="REFUNDED">Refunded</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1 w-full sm:w-auto">
+                  <span className="text-xs font-medium text-text-muted px-1">Payment Method</span>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full sm:w-auto px-3 py-2 border border-cloud rounded-lg text-sm bg-white focus:outline-none focus:border-primary text-charcoal"
+                  >
+                    <option value="">Any Payment Method</option>
+                    <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
+                    <option value="CREDIT_CARD">Credit Card</option>
+                    <option value="BANK_TRANSFER">Bank Transfer</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1 w-full sm:w-auto">
+                  <span className="text-xs font-medium text-text-muted px-1">Date Range</span>
+                  <DateRangePickerButton
+                    dateRange={dateRange}
+                    onApply={setDateRange}
+                    align="center"
+                  />
+                </div>
+
+                {(paymentStatus || paymentMethod || dateRange.from) && (
+                  <button
+                    onClick={() => {
+                      setPaymentStatus('');
+                      setPaymentMethod('');
+                      setDateRange({ from: '', to: '' });
+                    }}
+                    className="text-sm text-primary hover:text-primary-dark font-medium px-2 cursor-pointer mt-5"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Table */}
-        <div className="bg-white border border-cloud rounded-b-2xl overflow-hidden shadow-card">
+        <div className="bg-white border border-cloud border-b-0 overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-cream/50 text-warm-gray font-medium border-b border-cloud">
+              <thead className="bg-cream/50 text-warm-gray font-medium border-b border-t border-cloud">
                 <tr>
                   <th className="px-6 py-4">Order ID</th>
                   <th className="px-6 py-4">Customer</th>
@@ -128,17 +226,17 @@ export default function AdminOrdersPage() {
                       Loading orders...
                     </td>
                   </tr>
-                ) : filteredOrders.length === 0 ? (
+                ) : orders.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center text-warm-gray">
                       No orders found matching your search.
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  orders.map((order) => (
                     <tr key={order.id} className="hover:bg-cream/30 transition-colors">
                       <td className="px-6 py-4 font-medium text-primary">
-                        #{order.orderNumber.split('-')[1]}
+                        #{order.orderNumber.split('-')[1] || order.orderNumber}
                       </td>
                       <td className="px-6 py-4">
                         <div className="font-medium text-charcoal">{order.guestName || order.user?.name || 'Guest User'}</div>
@@ -149,8 +247,13 @@ export default function AdminOrdersPage() {
                           day: 'numeric', month: 'short', year: 'numeric'
                         })}
                       </td>
-                      <td className="px-6 py-4 font-medium">
-                        {formatCurrency(order.totalAmount)}
+                      <td className="px-6 py-4 font-medium flex flex-col">
+                        <span>{formatCurrency(order.totalAmount)}</span>
+                        {order.paymentStatus === 'PAID' ? (
+                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded w-max mt-1">PAID</span>
+                        ) : (
+                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded w-max mt-1">{order.paymentStatus}</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <select
@@ -166,7 +269,11 @@ export default function AdminOrdersPage() {
                         </select>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex" title="View Details">
+                        <button
+                          onClick={() => setSelectedOrderId(order.id)}
+                          className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex cursor-pointer"
+                          title="View Details"
+                        >
                           <Eye size={18} />
                         </button>
                       </td>
@@ -178,7 +285,42 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
+        {/* Table Footer with Pagination */}
+        <div className="p-4 border border-cloud border-t-0 flex flex-col sm:flex-row items-center justify-between gap-4 bg-background-secondary rounded-b-2xl shadow-card">
+          <div className="text-sm text-text-muted font-medium">
+            Showing {totalCount === 0 ? 0 : (page - 1) * limit + 1} to {Math.min(page * limit, totalCount)} of {totalCount} records
+          </div>
+
+          <ReactPaginate
+            previousLabel={<ChevronLeft size={16} />}
+            nextLabel={<ChevronRight size={16} />}
+            breakLabel="..."
+            breakClassName="w-8 h-8 flex items-center justify-center text-text-muted"
+            pageCount={totalPages}
+            marginPagesDisplayed={1}
+            pageRangeDisplayed={2}
+            forcePage={page > 0 ? page - 1 : 0}
+            onPageChange={({ selected }) => setPage(selected + 1)}
+            containerClassName="flex items-center gap-1.5"
+            activeClassName="!bg-primary !text-white !border-primary hover:!bg-primary-dark"
+            pageClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            previousClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            nextClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+            disabledClassName="!opacity-30 !cursor-not-allowed hover:!bg-white"
+            disabledLinkClassName="!cursor-not-allowed"
+            pageLinkClassName="w-full h-full flex items-center justify-center"
+            previousLinkClassName="w-full h-full flex items-center justify-center"
+            nextLinkClassName="w-full h-full flex items-center justify-center"
+          />
+        </div>
+
       </div>
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrderId}
+        orderId={selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+      />
     </div>
   );
 }
