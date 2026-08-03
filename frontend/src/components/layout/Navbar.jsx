@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles, Briefcase, HandHeart, ChevronDown } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles, Briefcase, HandHeart, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
@@ -9,11 +9,12 @@ import dynamic from 'next/dynamic';
 const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), { ssr: false });
 import { useState, useRef, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const announcements = [
   '🎁 Free gift wrapping on orders above $100',
   '✨ Customized edible arrangements available — order yours today',
-  '🚚 Nationwide delivery across Pakistan',
+  '🚚 Nationwide delivery across Canada',
   '💝 Personalize every gift — make it truly special',
 ];
 
@@ -39,6 +40,18 @@ export default function Navbar() {
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [announcementIdx, setAnnouncementIdx] = useState(0);
+
+  // Auto-advance announcement
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextAnnouncement = () => setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
+  const prevAnnouncement = () => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length);
 
   useEffect(() => {
     setMounted(true);
@@ -67,7 +80,7 @@ export default function Navbar() {
         setIsProfileDropdownOpen(false);
       }
       if (
-        searchContainerRef.current && 
+        searchContainerRef.current &&
         !searchContainerRef.current.contains(event.target) &&
         (!searchToggleButtonRef.current || !searchToggleButtonRef.current.contains(event.target))
       ) {
@@ -98,12 +111,12 @@ export default function Navbar() {
     } else {
       // If cleared and submitted, remove search from URL
       const basePath = pathname.includes('/category') ? pathname : '/category/all';
-      
+
       // Preserve other params if they exist
       const params = new URLSearchParams(searchParams.toString());
       params.delete('search');
       params.delete('page'); // Reset to page 1 on new search or clear
-      
+
       const queryString = params.toString();
       router.push(queryString ? `${basePath}?${queryString}` : basePath);
       setIsSearchOpen(false);
@@ -124,17 +137,40 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-sticky" suppressHydrationWarning>
       {/* ─── Announcement Bar ─────────────────────────────────────────── */}
-      <div className="bg-primary text-text-inverse overflow-hidden">
-        <div className="marquee-track py-2">
-          {[...announcements, ...announcements].map((msg, i) => (
-            <span
-              key={i}
-              className="flex shrink-0 items-center gap-3 px-8 text-xs sm:text-sm font-medium tracking-wide whitespace-nowrap"
-            >
-              <span>{msg}</span>
-              <span className="text-primary-light" aria-hidden="true">✦</span>
-            </span>
-          ))}
+      <div className="bg-primary text-text-inverse relative h-9 flex items-center justify-center overflow-hidden">
+        <div className="w-full max-w-3xl mx-auto relative flex items-center justify-between px-2 sm:px-4 h-full">
+          <button
+            onClick={prevAnnouncement}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors z-20 text-white cursor-pointer shrink-0"
+            aria-label="Previous announcement"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          <div className="flex-1 relative h-full flex items-center justify-center overflow-hidden px-4">
+            {mounted && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={announcementIdx}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="text-xs sm:text-sm font-medium tracking-wide whitespace-nowrap absolute"
+                >
+                  {announcements[announcementIdx]}
+                </motion.div>
+              </AnimatePresence>
+            )}
+          </div>
+
+          <button
+            onClick={nextAnnouncement}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors z-20 text-white cursor-pointer shrink-0"
+            aria-label="Next announcement"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
 
@@ -170,8 +206,8 @@ export default function Navbar() {
             className="hidden lg:flex items-center flex-1 max-w-md mx-4"
           >
             <div className="relative w-full">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
                 aria-label="Submit search"
               >
@@ -370,8 +406,8 @@ export default function Navbar() {
         {isSearchOpen && (
           <div ref={searchContainerRef} className="lg:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
             <form onSubmit={handleSearch} className="relative">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
                 aria-label="Submit search"
               >

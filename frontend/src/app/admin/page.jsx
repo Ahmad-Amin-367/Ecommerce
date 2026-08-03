@@ -23,6 +23,8 @@ import {
   DollarSign,
   Store
 } from 'lucide-react';
+import ProductModal from '@/components/admin/ProductModal';
+import OrderDetailsModal from '@/components/ui/OrderDetailsModal';
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
@@ -30,6 +32,9 @@ export default function AdminDashboardPage() {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
@@ -143,13 +148,13 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <Link
-              href="/admin/products"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-all duration-200 shadow-soft hover:shadow-lifted cursor-pointer transform hover:-translate-y-0.5"
+            <button
+              onClick={() => setIsProductModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition-all duration-200 shadow-soft hover:shadow-lifted cursor-pointer transform hover:-translate-y-0.5 border-none outline-none"
             >
               <Plus size={16} />
               <span>Add Product</span>
-            </Link>
+            </button>
 
             <Link
               href="/"
@@ -381,12 +386,12 @@ export default function AdminDashboardPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-3 text-right">
-                          <Link
-                            href="/admin/orders"
-                            className="text-xs font-semibold text-primary hover:underline"
+                          <button
+                            onClick={() => setSelectedOrderId(order.id)}
+                            className="text-xs font-semibold text-primary hover:underline cursor-pointer bg-transparent border-none outline-none"
                           >
                             View
-                          </Link>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -467,6 +472,18 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      <ProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        product={null}
+      />
+
+      <OrderDetailsModal
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        orderId={selectedOrderId}
+      />
     </div>
   );
 }
