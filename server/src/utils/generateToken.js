@@ -22,24 +22,22 @@ const generateRefreshToken = (payload) => {
   });
 };
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getCookieOptions = (maxAge) => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+  maxAge,
+});
+
 /**
  * Set refresh token in an httpOnly cookie
  * @param {object} res - Express response object
  * @param {string} token - Refresh token string
  */
-const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax', // Use lax so it works smoothly between port 3000 and 5000
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-  };
-  
-  res.cookie('refreshToken', token, cookieOptions);
-  
-  // Helper cookies for Next.js Middleware routing (UI-level protection)
-  res.cookie('auth-status', 'authenticated', { maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-  res.cookie('user-role', userRole, { maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+const setRefreshTokenCookie = (res, token) => {
+  res.cookie('refreshToken', token, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 };
 
 /**
@@ -48,14 +46,7 @@ const setRefreshTokenCookie = (res, token, userRole = 'CUSTOMER') => {
  * @param {string} token - Access token string
  */
 const setAccessTokenCookie = (res, token) => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 15 * 60 * 1000, // 15 minutes in ms
-  };
-  
-  res.cookie('accessToken', token, cookieOptions);
+  res.cookie('accessToken', token, getCookieOptions(15 * 60 * 1000));
 };
 
 /**
@@ -63,10 +54,13 @@ const setAccessTokenCookie = (res, token) => {
  * @param {object} res - Express response object
  */
 const clearRefreshTokenCookie = (res) => {
-  res.clearCookie('refreshToken');
-  res.clearCookie('accessToken');
-  res.clearCookie('auth-status');
-  res.clearCookie('user-role');
+  const options = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  };
+  res.clearCookie('refreshToken', options);
+  res.clearCookie('accessToken', options);
 };
 
 module.exports = {
