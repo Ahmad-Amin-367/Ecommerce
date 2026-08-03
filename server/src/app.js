@@ -12,6 +12,9 @@ const { generalLimiter } = require('./middlewares/rateLimiter.middleware');
 
 const app = express();
 
+// Trust proxy (required for Render / reverse proxies to process HTTPS cookies correctly)
+app.set('trust proxy', 1);
+
 // ─── Security middlewares ─────────────────────────────────────────────────────
 app.use(helmet());
 app.use(

@@ -16,7 +16,14 @@ const useAuth = () => {
 
   const login = async (data, redirectTo) => {
     const response = await authService.login(data);
-    const { user } = response.data.data;
+    const { user, accessToken, refreshToken } = response.data.data;
+
+    // Save tokens locally for cross-domain Bearer fallback
+    if (typeof window !== 'undefined') {
+      if (accessToken) localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+    }
+
     setAuth(user);
 
     // Sync guest cart if local items exist, otherwise fetch user's saved DB cart
@@ -41,7 +48,6 @@ const useAuth = () => {
       }
     }
 
-
     toast.success(`Welcome back, ${user.name}!`);
 
     if (redirectTo) {
@@ -62,6 +68,10 @@ const useAuth = () => {
       await authService.logout();
     } catch {
       // ignore — still log out locally
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
     }
     logoutStore();
     clearCart();

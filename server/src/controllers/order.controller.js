@@ -15,7 +15,7 @@ const generateOrderNumber = () => {
  */
 const createOrder = async (req, res) => {
   const { items, shippingAddress, paymentMethod, notes, guestInfo } = req.body;
-  
+
   if (!items || items.length === 0) {
     throw ApiError.badRequest('No order items');
   }
@@ -26,11 +26,11 @@ const createOrder = async (req, res) => {
 
   for (const item of items) {
     const product = await prisma.product.findUnique({ where: { id: item.productId } });
-    
+
     if (!product) {
       throw ApiError.notFound(`Product not found: ${item.productId}`);
     }
-    
+
     if (product.stock < item.quantity) {
       throw ApiError.badRequest(`Insufficient stock for ${product.name}`);
     }
@@ -53,7 +53,7 @@ const createOrder = async (req, res) => {
   const order = await prisma.$transaction(async (tx) => {
     // 1. Create the address if provided (or store as guest)
     let addressId = null;
-    let userId = req.user?.id || null;
+    const userId = req.user.id;
 
     if (shippingAddress) {
       const address = await tx.address.create({
@@ -136,7 +136,7 @@ const updateOrderStatus = async (req, res) => {
 
   const updatedOrder = await prisma.order.update({
     where: { id },
-    data: { 
+    data: {
       status,
       deliveredAt: status === 'DELIVERED' ? new Date() : order.deliveredAt
     }
@@ -168,18 +168,34 @@ const getMyOrders = async (req, res) => {
 /**
  * @desc    Get order by ID
  * @route   GET /api/v1/orders/:id
- * @access  Private/Admin
+ * @access  Private (User who owns it or Admin)
  */
 const getOrderById = async (req, res) => {
   const { id } = req.params;
-  const isAdmin = req.user && req.user.role === 'ADMIN';
-  const order = await orderService.getOrder(id, req.user?.id, isAdmin);
-  
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true }
+      },
+      address: true,
+      items: {
+        include: { product: true }
+      }
+    }
+  });
+
   if (!order) {
     throw ApiError.notFound('Order not found');
   }
 
-  sendSuccess(res, 200, 'Order retrieved successfully', order);
+  // Authorize: customer must own order or be admin
+  if (req.user.role !== 'ADMIN' && order.userId !== req.user.id) {
+    throw ApiError.forbidden('Access denied to this order');
+  }
+
+  sendSuccess(res, 200, 'Order details retrieved', order);
 };
 
 module.exports = {

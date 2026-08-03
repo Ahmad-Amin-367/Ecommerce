@@ -53,4 +53,40 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+/**
+ * Optional auth middleware — attaches req.user if valid token is provided,
+ * but allows requests to proceed as guest if unauthenticated.
+ */
+const optionalAuth = async (req, res, next) => {
+  try {
+    let token = req.cookies?.accessToken;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+        },
+      });
+
+      if (user && user.isActive) {
+        req.user = user;
+      }
+    }
+  } catch (err) {
+    // Ignore error for optional auth (allow guest)
+  }
+  next();
+};
+
+module.exports = { protect, optionalAuth };
+

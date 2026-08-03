@@ -34,7 +34,7 @@ const register = async (data) => {
 };
 
 /**
- * Login a user — returns access token and sets refresh token cookie
+ * Login a user — returns user data + tokens (in JSON response and cookies)
  */
 const login = async (data, res) => {
   const { email, password } = data;
@@ -60,14 +60,18 @@ const login = async (data, res) => {
   setAccessTokenCookie(res, accessToken);
 
   const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword };
+  return {
+    user: userWithoutPassword,
+    accessToken,
+    refreshToken,
+  };
 };
 
 /**
- * Refresh access token using the refresh token from cookie
+ * Refresh access token using refresh token from body, header, or cookie
  */
 const refreshToken = async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.body?.refreshToken || req.headers['x-refresh-token'] || req.cookies?.refreshToken;
   if (!token) {
     throw ApiError.unauthorized('Refresh token is missing');
   }
@@ -88,14 +92,20 @@ const refreshToken = async (req, res) => {
     throw ApiError.unauthorized('User not found or deactivated');
   }
 
-  const accessToken = generateAccessToken({ id: user.id, role: user.role });
-  setAccessTokenCookie(res, accessToken);
-  
-  return {};
+  const newAccessToken = generateAccessToken({ id: user.id, role: user.role });
+  const newRefreshToken = generateRefreshToken({ id: user.id });
+
+  setAccessTokenCookie(res, newAccessToken);
+  setRefreshTokenCookie(res, newRefreshToken, user.role);
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+  };
 };
 
 /**
- * Logout — clears refresh token cookie
+ * Logout — clears cookies
  */
 const logout = (res) => {
   clearRefreshTokenCookie(res);

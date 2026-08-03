@@ -4,10 +4,13 @@ const orderController = require('../controllers/order.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
 
-router.post('/', orderController.createOrder);
+router.post('/', protect, orderController.createOrder);
 
 // Private route for customers to get their own orders
 router.get('/my-orders', protect, orderController.getMyOrders);
+
+// Route to get single order details by ID
+router.get('/:id', protect, orderController.getOrderById);
 
 // Admin routes
 router.get('/', protect, restrictTo('ADMIN'), orderController.getOrders);

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Allow images from external sources (add your domains here when needed)
+  // Allow images from external sources
   images: {
     remotePatterns: [
       {
@@ -18,11 +18,6 @@ const nextConfig = {
 
   // Strict mode for catching bugs early
   reactStrictMode: true,
-
-  // Enable experimental features as needed
-  experimental: {
-    // serverActions: true, // Uncomment if using Server Actions
-  },
 
   transpilePackages: ['@tanstack/react-query'],
 };
