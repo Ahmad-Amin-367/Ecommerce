@@ -13,14 +13,20 @@ const logger = winston.createLogger({
   ]
 });
 
+const smtpPort = Number(process.env.BREVO_SMTP_PORT) || 587;
+const isSecure = smtpPort === 465;
+
 const transporter = nodemailer.createTransport({
   host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
-  port: process.env.BREVO_SMTP_PORT || 587,
-  secure: false,
+  port: smtpPort,
+  secure: isSecure,
   auth: {
     user: process.env.BREVO_SMTP_USER,
     pass: process.env.BREVO_SMTP_PASS,
   },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 5000,
+  socketTimeout: 10000,
 });
 
 const sendOtpEmail = async (to, name, otp) => {
