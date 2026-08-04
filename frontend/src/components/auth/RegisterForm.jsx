@@ -5,12 +5,17 @@ import { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { registerSchema } from '@/validations/authValidation';
 import useAuth from '@/hooks/useAuth';
+import { GoogleLogin } from '@react-oauth/google';
+import toast from 'react-hot-toast';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import OtpModal from '@/components/auth/OtpModal';
 
 export default function RegisterForm() {
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, googleLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   const formik = useFormik({
     initialValues: { name: '', email: '', password: '' },
@@ -18,6 +23,8 @@ export default function RegisterForm() {
     onSubmit: async (values, { setFieldError, setSubmitting }) => {
       try {
         await registerUser(values);
+        setRegisteredEmail(values.email);
+        setIsOtpModalOpen(true);
       } catch (err) {
         const message = err.response?.data?.message || 'Registration failed';
         if (message.toLowerCase().includes('email')) {
@@ -32,7 +39,8 @@ export default function RegisterForm() {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6" noValidate>
+    <>
+      <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6" noValidate>
       <Input
         label="Full Name"
         placeholder="Your name"
@@ -73,12 +81,46 @@ export default function RegisterForm() {
         Create Account
       </Button>
 
+      <div className="flex items-center gap-3">
+        <hr className="flex-1 border-cloud" />
+        <span className="text-xs font-semibold text-warm-gray uppercase tracking-wider">Or register with</span>
+        <hr className="flex-1 border-cloud" />
+      </div>
+
+      <div className="w-full flex justify-center">
+        <GoogleLogin
+          onSuccess={async (credentialResponse) => {
+            try {
+              // We pass null for redirect to let the hook handle it
+              await googleLogin({ credential: credentialResponse.credential }, null);
+            } catch (err) {
+              toast.error(err.response?.data?.message || 'Google Registration failed');
+            }
+          }}
+          onError={() => {
+            toast.error('Google Registration failed');
+          }}
+          useOneTap
+          theme="outline"
+          size="large"
+          text="signup_with"
+          shape="rectangular"
+        />
+      </div>
+
       <p className="text-center text-sm text-warm-gray">
         Already have an account?{' '}
         <Link href="/login" className="text-primary font-semibold transition-colors duration-200 hover:text-primary-dark hover:underline">
           Sign in
         </Link>
       </p>
-    </form>
+      </form>
+
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        email={registeredEmail}
+      />
+    </>
   );
 }

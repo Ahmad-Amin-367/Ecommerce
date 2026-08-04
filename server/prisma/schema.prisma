@@ -46,13 +46,17 @@ enum PaymentMethod {
 model User {
   id        String   @id @default(cuid())
   name      String
-  email     String   @unique
-  password  String
+  email        String   @unique
+  password     String?
+  googleId     String?  @unique
+  authProvider String   @default("LOCAL")
   role      Role     @default(CUSTOMER)
   phone     String?
   isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  resetPasswordOtp    String?
+  resetPasswordExpires DateTime?
 
   addresses Address[]
   cart      Cart?
@@ -60,6 +64,18 @@ model User {
   reviews   Review[]
 
   @@map("users")
+}
+
+model PendingUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("pending_users")
 }
 
 model Address {

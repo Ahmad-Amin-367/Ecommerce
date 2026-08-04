@@ -14,8 +14,7 @@ const useAuth = () => {
   const { user, isAuthenticated, setAuth, logout: logoutStore, isAdmin } = useAuthStore();
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const login = async (data, redirectTo) => {
-    const response = await authService.login(data);
+  const handleAuthResponse = async (response, redirectTo) => {
     const { user, accessToken, refreshToken } = response.data.data;
 
     // Save tokens locally for cross-domain Bearer fallback
@@ -57,10 +56,39 @@ const useAuth = () => {
     }
   };
 
+  const login = async (data, redirectTo) => {
+    const response = await authService.login(data);
+    await handleAuthResponse(response, redirectTo);
+  };
+
+  const googleLogin = async (data, redirectTo) => {
+    const response = await authService.googleLogin(data);
+    await handleAuthResponse(response, redirectTo);
+  };
+
   const register = async (data) => {
     await authService.register(data);
-    toast.success('Account created! Please log in.');
-    router.push('/login');
+    toast.success('Registration pending! Check your email for the OTP.');
+  };
+
+  const verifyOtp = async (data, redirectTo) => {
+    const response = await authService.verifyOtp(data);
+    await handleAuthResponse(response, redirectTo);
+  };
+
+  const resendOtp = async (data) => {
+    await authService.resendOtp(data);
+    toast.success('A new OTP has been sent to your email.');
+  };
+
+  const forgotPassword = async (data) => {
+    const response = await authService.forgotPassword(data);
+    toast.success(response.data?.message || 'OTP sent to your email.');
+  };
+
+  const resetPassword = async (data) => {
+    const response = await authService.resetPassword(data);
+    toast.success(response.data?.message || 'Password reset successfully.');
   };
 
   const logout = async () => {
@@ -84,7 +112,12 @@ const useAuth = () => {
     isAuthenticated,
     isAdmin: isAdmin(),
     login,
+    googleLogin,
     register,
+    verifyOtp,
+    resendOtp,
+    forgotPassword,
+    resetPassword,
     logout,
   };
 };

@@ -7,7 +7,12 @@ const { authLimiter } = require('../middlewares/rateLimiter.middleware');
 const authValidation = require('../validations/auth.validation');
 
 router.post('/register', authLimiter, validate(authValidation.register), authController.register);
+router.post('/verify-otp', authLimiter, authController.verifyOtp);
+router.post('/resend-otp', authLimiter, authController.resendOtp);
 router.post('/login', authLimiter, validate(authValidation.login), authController.login);
+router.post('/google', authLimiter, authController.googleLogin);
+router.post('/forgot-password', authLimiter, authController.forgotPassword);
+router.post('/reset-password', authLimiter, authController.resetPassword);
 router.post('/refresh-token', authLimiter, authController.refreshToken);
 router.post('/logout', authController.logout);
 router.get('/me', protect, authController.me);
