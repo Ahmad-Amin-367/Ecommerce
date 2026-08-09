@@ -10,6 +10,7 @@ const orderRoutes = require('./order.routes');
 const reviewRoutes = require('./review.routes');
 const testimonialRoutes = require('./testimonial.routes');
 const uploadRoutes = require('./upload.routes');
+const b2bRoutes = require('./b2b.routes');
 const reviewController = require('../controllers/review.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
@@ -23,6 +24,8 @@ router.use('/cart', cartRoutes);
 router.use('/orders', orderRoutes);
 router.use('/testimonials', testimonialRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/b2b', b2bRoutes);
+
 
 
 // ─── Standalone review update/delete ─────────────────────────────────────────

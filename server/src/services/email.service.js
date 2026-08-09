@@ -153,7 +153,51 @@ const sendPasswordResetEmail = async (to, name, otp) => {
   }
 };
 
+const sendB2BQuoteNotification = async (quoteData) => {
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e1e1e1; border-radius: 12px; background-color: #fafafa;">
+        <h2 style="color: #004D40; text-align: center; margin-bottom: 8px;">Hisna Gifts — B2B Quote Received</h2>
+        <p style="text-align: center; color: #666; font-size: 14px; margin-top: 0;">Quote Ref: <strong>${quoteData.quoteNumber}</strong></p>
+        
+        <p style="color: #333; font-size: 16px;">Hi ${quoteData.contactName},</p>
+        <p style="color: #555; font-size: 15px; line-height: 1.5;">Thank you for requesting a corporate / bulk ordering quote with <strong>Hisna Gifts</strong>. Our B2B event team has received your request and is reviewing your specifications.</p>
+        
+        <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0;">
+          <h3 style="color: #004D40; margin-top: 0; font-size: 16px; border-b: 1px solid #e2e8f0; padding-bottom: 8px;">Quote Details</h3>
+          <table style="width: 100%; font-size: 14px; color: #4a5568; line-height: 1.8;">
+            <tr><td style="font-weight: bold; width: 40%;">Company Name:</td><td>${quoteData.companyName}</td></tr>
+            <tr><td style="font-weight: bold;">Service Type:</td><td>${quoteData.serviceType}</td></tr>
+            <tr><td style="font-weight: bold;">Event Type:</td><td>${quoteData.eventType}</td></tr>
+            <tr><td style="font-weight: bold;">Guest Count / Qty:</td><td>${quoteData.guestCount}</td></tr>
+            <tr><td style="font-weight: bold;">Budget Range:</td><td>${quoteData.budgetRange || 'Flexible'}</td></tr>
+            ${quoteData.eventDate ? `<tr><td style="font-weight: bold;">Target Event Date:</td><td>${new Date(quoteData.eventDate).toLocaleDateString()}</td></tr>` : ''}
+            ${quoteData.notes ? `<tr><td style="font-weight: bold;">Notes/Requests:</td><td>${quoteData.notes}</td></tr>` : ''}
+          </table>
+        </div>
+
+        <p style="color: #555; font-size: 14px; line-height: 1.5;">One of our dedicated event specialists will get back to you within 24 business hours with a detailed proposal and customized options.</p>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="color: #999; font-size: 12px; text-align: center;">&copy; ${new Date().getFullYear()} Hisna Gifts. Corporate & Bulk Catering Division.</p>
+      </div>
+    `;
+
+    await sendMail({
+      to: quoteData.email,
+      name: quoteData.contactName,
+      subject: `B2B Quote Confirmation [${quoteData.quoteNumber}] - Hisna Gifts`,
+      html,
+    });
+  } catch (error) {
+    logger.error(`Error sending B2B quote email: ${error.message}`);
+    // Non-blocking for API submission
+  }
+};
+
 module.exports = {
   sendOtpEmail,
   sendPasswordResetEmail,
+  sendB2BQuoteNotification,
 };
+

@@ -243,3 +243,37 @@ model Testimonial {
   @@map("testimonials")
 }
 
+// ─── B2B Quotes ───────────────────────────────────────────────────────────────
+
+enum B2BQuoteStatus {
+  PENDING
+  REVIEWED
+  QUOTED
+  APPROVED
+  FULFILLED
+  REJECTED
+}
+
+model B2BQuote {
+  id              String         @id @default(cuid())
+  quoteNumber     String         @unique
+  companyName     String
+  contactName     String
+  email           String
+  phone           String
+  eventDate       DateTime?
+  eventType       String
+  guestCount      String
+  budgetRange     String?
+  serviceType     String
+  notes           String?
+  status          B2BQuoteStatus @default(PENDING)
+  adminNotes      String?
+  estimatedAmount Decimal?       @db.Decimal(10, 2)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("b2b_quotes")
+}
+
+
