@@ -7,6 +7,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
 import dynamic from 'next/dynamic';
 const CartDrawer = dynamic(() => import('@/components/cart/CartDrawer'), { ssr: false });
+import B2BNavbar from './B2BNavbar';
 import { useState, useRef, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,6 +29,16 @@ const megaMenuCategories = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/b2b')) {
+    return <B2BNavbar />;
+  }
+
+  return <B2CNavbarContent />;
+}
+
+function B2CNavbarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -35,6 +46,7 @@ export default function Navbar() {
   const { logout } = useAuth();
   const { itemCount, isCartOpen, openCart, closeCart } = useCartStore();
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu, isSearchOpen, setIsSearchOpen } = useUIStore();
+
 
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
@@ -313,7 +325,17 @@ export default function Navbar() {
                 Under $50
               </Link>
             </li>
+            <li>
+              <Link
+                href="/b2b"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.08em] bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full transition-all duration-200 shadow-sm"
+              >
+                <Briefcase size={13} />
+                B2B Bulk Orders
+              </Link>
+            </li>
           </ul>
+
 
           {/* Actions */}
           <div className="flex items-center gap-0 sm:gap-1 shrink-0">
@@ -442,8 +464,10 @@ export default function Navbar() {
               { label: 'Eid Special', href: '/category/eid-special' },
               { label: 'Custom Gifts', href: '/category/custom' },
               { label: 'Corporate Gifts', href: '/category/corporate' },
+              { label: '🏢 B2B & Bulk Orders (Request Quote)', href: '/b2b' },
               { label: 'Thank You Gifts', href: '/category/thank-you' },
               { label: '🏷️ Under $50', href: '/category/all?maxPrice=50' },
+
             ].map((link) => (
               <li key={link.href + link.label}>
                 <Link

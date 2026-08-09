@@ -44,21 +44,30 @@ export default function HomePage() {
               A perfect gift for your perfect occasion. Customize your edible fruit arrangements 
               or personalize your gift the way you want.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <Link
                 href="/category/all"
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[2px]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-white rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[2px]"
               >
                 Shop Gifts
                 <ArrowRight size={16} />
               </Link>
               <Link
+                href="/b2b"
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary-glow text-primary border-2 border-primary/20 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-primary hover:text-white hover:border-primary hover:shadow-glow hover:-translate-y-[2px]"
+              >
+                <Briefcase size={16} />
+                B2B Bulk Orders
+              </Link>
+
+              <Link
                 href="/category/custom"
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-transparent text-charcoal border-2 border-cloud rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:border-primary hover:bg-primary-glow hover:-translate-y-[1px]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 bg-transparent text-charcoal border-2 border-cloud rounded-full font-semibold text-sm tracking-wide transition-all duration-300 hover:border-primary hover:bg-primary-glow hover:-translate-y-[1px]"
               >
                 Custom Orders
               </Link>
             </div>
+
 
             {/* Inline Social Proof */}
             <div className="flex items-center gap-2 mt-8 pt-6 border-t border-cloud/60">
