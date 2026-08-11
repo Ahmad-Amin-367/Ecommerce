@@ -167,23 +167,23 @@ export default function B2BCalculator({ onSelectService }) {
       </div>
 
       {/* Estimated Output Box */}
-      <div className="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-glow">
-        <div>
-          <p className="text-xs font-medium text-white/80 uppercase tracking-wider">Estimated Investment Range</p>
-          <div className="text-2xl sm:text-3xl font-serif font-bold mt-1">
+      <div className="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-4 sm:p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-glow">
+        <div className="text-center sm:text-left w-full sm:w-auto">
+          <p className="text-[10px] sm:text-xs font-medium text-white/80 uppercase tracking-wider">Estimated Investment Range</p>
+          <div className="text-xl sm:text-3xl font-serif font-bold mt-0.5 sm:mt-1">
             ${minEstimate.toLocaleString()} — ${maxEstimate.toLocaleString()}
-            <span className="text-xs font-normal text-white/80 ml-2">CAD</span>
+            <span className="text-xs font-normal text-white/80 ml-1.5">CAD</span>
           </div>
-          <p className="text-[11px] text-white/80 mt-1">*Final quote includes delivery, setup & volume discounts</p>
+          <p className="text-[10px] sm:text-[11px] text-white/80 mt-1">*Final quote includes delivery, setup & volume discounts</p>
         </div>
 
         <button
           type="button"
           onClick={handleApplyToForm}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-primary rounded-full font-bold text-sm hover:bg-background-hover transition-colors shadow-md cursor-pointer shrink-0"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5 bg-white text-primary rounded-full font-bold text-xs sm:text-sm hover:bg-background-hover transition-colors shadow-md cursor-pointer shrink-0 text-center"
         >
-          Lock in Quote Request
-          <ArrowRight size={16} />
+          <span>Lock in Quote Request</span>
+          <ArrowRight size={16} className="shrink-0" />
         </button>
       </div>
     </div>

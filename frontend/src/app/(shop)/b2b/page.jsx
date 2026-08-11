@@ -61,32 +61,32 @@ export default function B2BPage() {
 
         <div className="relative w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Copy */}
-          <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-tight text-charcoal">
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
+            <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] sm:leading-[1.1] tracking-tight text-charcoal">
               Luxury Corporate Gifting & <br className="hidden sm:inline" />
               <span className="relative inline-block text-primary">
                 <span>Unforgettable Event Catering</span>
-                <span className="absolute bottom-1 left-0 right-0 h-3 bg-blush/50 -z-10 rounded-sm" aria-hidden="true" />
+                <span className="absolute bottom-1 left-0 right-0 h-2.5 sm:h-3 bg-blush/50 -z-10 rounded-sm" aria-hidden="true" />
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-warm-gray leading-relaxed max-w-2xl font-sans">
+            <p className="text-xs sm:text-base text-warm-gray leading-relaxed max-w-2xl font-sans">
               From elegant employee appreciation gifts to 6-foot centerpiece fruit tables and interactive live chocolate dipping stations — we create handcrafted, fresh edible experiences tailored for your business across Toronto & nationwide.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-1 w-full max-w-md mx-auto lg:mx-0">
               <a
                 href="#quote-section"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-xs sm:text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-center"
               >
-                Request a Corporate Quote
-                <ArrowDown size={16} />
+                <span>Request a Corporate Quote</span>
+                <ArrowDown size={15} className="shrink-0" />
               </a>
               <a
                 href="#b2b-offerings"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-white hover:bg-background-hover text-charcoal border-2 border-cloud rounded-full font-semibold text-sm tracking-wide transition-all duration-300 cursor-pointer shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-3.5 bg-white hover:bg-background-hover text-charcoal border-2 border-cloud rounded-full font-semibold text-xs sm:text-sm tracking-wide transition-all duration-300 cursor-pointer shadow-sm text-center"
               >
-                Explore Offerings
+                <span>Explore Offerings</span>
               </a>
             </div>
 
@@ -259,7 +259,7 @@ export default function B2BPage() {
                   </div>
                   <a
                     href="#quote-section"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors whitespace-nowrap"
                   >
                     Request Quote for this Offering →
                   </a>
@@ -340,7 +340,7 @@ export default function B2BPage() {
             <div>
               <a
                 href="#b2b-quote-form"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 sm:px-7 py-3 sm:py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-xs sm:text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 cursor-pointer whitespace-nowrap"
               >
                 Request a Quote
                 <ArrowRight size={16} />

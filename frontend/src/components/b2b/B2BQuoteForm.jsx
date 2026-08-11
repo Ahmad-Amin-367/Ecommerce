@@ -106,7 +106,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             setSubmittedQuote(null);
             formik.resetForm();
           }}
-          className="inline-flex items-center gap-2 px-8 py-3.5 bg-primary text-white rounded-full font-bold text-sm hover:bg-primary-dark transition-all cursor-pointer shadow-glow"
+          className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-primary text-white rounded-full font-bold text-xs sm:text-sm whitespace-nowrap hover:bg-primary-dark transition-all cursor-pointer shadow-glow"
         >
           Submit Another Request
         </button>
@@ -115,12 +115,12 @@ export default function B2BQuoteForm({ initialValues = {} }) {
   }
 
   return (
-    <form id="b2b-quote-form" onSubmit={formik.handleSubmit} className="bg-white rounded-3xl border border-cloud p-6 sm:p-10 shadow-lifted">
-      <div className="mb-8 text-center sm:text-left">
-        <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal">
+    <form id="b2b-quote-form" onSubmit={formik.handleSubmit} className="bg-white rounded-3xl border border-cloud p-4 sm:p-8 lg:p-10 shadow-lifted">
+      <div className="mb-6 sm:mb-8 text-center sm:text-left">
+        <h3 className="font-serif text-xl sm:text-3xl font-bold text-charcoal">
           Request a Custom B2B Quote
         </h3>
-        <p className="text-sm text-warm-gray mt-1">
+        <p className="text-xs sm:text-sm text-warm-gray mt-1">
           Tell us about your event, headcount, and custom branding requirements. We respond within 24 hours.
         </p>
       </div>
@@ -389,17 +389,17 @@ export default function B2BQuoteForm({ initialValues = {} }) {
       <button
         type="submit"
         disabled={formik.isSubmitting}
-        className="w-full inline-flex items-center justify-center gap-2 py-4 px-8 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-base tracking-wide shadow-glow hover:shadow-lifted transition-all duration-200 cursor-pointer disabled:opacity-50"
+        className="w-full inline-flex items-center justify-center gap-2 py-3.5 sm:py-4 px-3 sm:px-6 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-xs sm:text-sm md:text-base tracking-wide shadow-glow hover:shadow-lifted transition-all duration-200 cursor-pointer disabled:opacity-50 text-center"
       >
         {formik.isSubmitting ? (
           <>
-            <Loader2 size={20} className="animate-spin" />
-            Submitting Quote...
+            <Loader2 size={18} className="animate-spin shrink-0" />
+            <span className="truncate">Submitting Quote...</span>
           </>
         ) : (
           <>
-            <Send size={18} />
-            Submit Official B2B Quote Request
+            <Send size={16} className="shrink-0" />
+            <span className="text-center leading-tight">Submit Official B2B Quote Request</span>
           </>
         )}
       </button>

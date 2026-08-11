@@ -181,7 +181,7 @@ export default function B2BNavbar() {
             <button
               type="button"
               onClick={() => scrollToSection('b2b-quote-form', 'quote-section')}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-glow hover:bg-primary-dark hover:-translate-y-0.5 transition-all cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-glow hover:bg-primary-dark hover:-translate-y-0.5 transition-all cursor-pointer"
             >
               <Send size={13} />
               <span>Get Quote</span>
