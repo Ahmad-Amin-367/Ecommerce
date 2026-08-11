@@ -146,9 +146,8 @@ export default function B2BNavbar() {
                   <button
                     type="button"
                     onClick={() => scrollToSection(tab.targetId, tab.id)}
-                    className={`relative z-10 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors duration-200 cursor-pointer ${
-                      isActive ? 'text-primary' : 'text-warm-gray hover:text-primary'
-                    }`}
+                    className={`relative z-10 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors duration-200 cursor-pointer ${isActive ? 'text-primary' : 'text-warm-gray hover:text-primary'
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -243,9 +242,8 @@ export default function B2BNavbar() {
                   <button
                     type="button"
                     onClick={() => scrollToSection(tab.targetId, tab.id)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-colors ${
-                      isActive ? 'bg-primary-glow text-primary font-bold' : 'hover:bg-primary-glow hover:text-primary'
-                    }`}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-colors ${isActive ? 'bg-primary-glow text-primary font-bold' : 'hover:bg-primary-glow hover:text-primary'
+                      }`}
                   >
                     {tab.id === 'overview' && '🏢 '}
                     {tab.id === 'b2b-offerings' && '🍓 '}
