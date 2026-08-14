@@ -234,8 +234,7 @@ export default function AdminProductsPage() {
                   <tr key={product.id} className="hover:bg-background-hover transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-charcoal">{product.name}</span>
-                        <span className="text-xs text-text-muted">{product.sku || 'No SKU'}</span>
+                        <span className="font-medium text-charcoal">{product.name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium text-charcoal">

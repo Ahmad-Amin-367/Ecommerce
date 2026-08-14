@@ -33,15 +33,17 @@ const ensureUniqueSlug = async (slug, excludeId = null) => {
  * Get paginated product list with filters
  */
 const getProducts = async (query) => {
-  const { page, search, categoryId, category, minPrice, maxPrice, maxStock, isActive, isFeatured, sortBy, sortOrder } = query;
+  const { page, search, exactName, categoryId, category, minPrice, maxPrice, maxStock, isActive, isFeatured, sortBy, sortOrder } = query;
   const limit = query.limit || 50;
 
   const where = {};
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
-      { sku: { contains: search, mode: 'insensitive' } },
     ];
+  }
+  if (exactName) {
+    where.name = { equals: exactName, mode: 'insensitive' };
   }
   if (categoryId) where.categoryId = categoryId;
   if (category) {
@@ -49,14 +51,14 @@ const getProducts = async (query) => {
   }
   if (isActive !== undefined) where.isActive = isActive === 'true' || isActive === true;
   if (isFeatured !== undefined) where.isFeatured = isFeatured === 'true' || isFeatured === true;
-  
+
   if (minPrice !== undefined || maxPrice !== undefined) {
     where.price = {};
     if (minPrice !== undefined && minPrice !== '') where.price.gte = Number(minPrice);
     if (maxPrice !== undefined && maxPrice !== '') where.price.lte = Number(maxPrice);
     if (Object.keys(where.price).length === 0) delete where.price;
   }
-  
+
   if (maxStock !== undefined && maxStock !== '') {
     where.stock = { lte: Number(maxStock) };
   }
@@ -112,14 +114,23 @@ const createProduct = async (data) => {
   const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
   if (!category) throw ApiError.notFound('Category not found');
 
-  const slug = await ensureUniqueSlug(data.slug || generateSlug(data.name));
+  const tempSlug = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
   const product = await prisma.product.create({
-    data: { ...data, slug },
+    data: { ...data, slug: tempSlug },
     include: { category: { select: { id: true, name: true } } },
   });
 
-  return product;
+  let finalSlug = `${generateSlug(data.name)}-${product.id.slice(-6)}`;
+  finalSlug = await ensureUniqueSlug(finalSlug);
+
+  const updatedProduct = await prisma.product.update({
+    where: { id: product.id },
+    data: { slug: finalSlug },
+    include: { category: { select: { id: true, name: true } } },
+  });
+
+  return updatedProduct;
 };
 
 /**
@@ -129,9 +140,8 @@ const updateProduct = async (productId, data) => {
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) throw ApiError.notFound('Product not found');
 
-  if (data.slug) {
-    data.slug = await ensureUniqueSlug(data.slug, productId);
-  }
+  // We do not allow slug updates to prevent breaking existing links
+  if (data.slug) delete data.slug;
 
   return prisma.product.update({
     where: { id: productId },

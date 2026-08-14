@@ -3,24 +3,31 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import toast from 'react-hot-toast';
 import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useProducts';
 import uploadService from '@/services/uploadService';
+import productService from '@/services/productService';
 
 const productSchema = Yup.object().shape({
   name: Yup.string().min(3, 'Name must be at least 3 characters').required('Name is required'),
-  slug: Yup.string().min(3, 'Slug must be at least 3 characters').required('Slug is required'),
   description: Yup.string(),
   price: Yup.number().min(0, 'Price must be positive').required('Price is required'),
   comparePrice: Yup.number().transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value)).min(0, 'Compare price must be positive').nullable(),
   stock: Yup.number().integer('Stock must be an integer').min(0, 'Stock must be 0 or more').required('Stock is required'),
-  sku: Yup.string(),
   categoryId: Yup.string().required('Category is required'),
   isActive: Yup.boolean().default(true),
   isFeatured: Yup.boolean().default(false),
+  imageFile: Yup.mixed()
+    .nullable()
+    .test('fileSize', 'File is too large. Maximum size is 5MB', (value) => {
+      if (!value) return true; // Optional on edit
+      return value.size <= 5 * 1024 * 1024;
+    }),
 });
 
 export default function ProductModal({ isOpen, onClose, product = null }) {
@@ -29,6 +36,8 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -43,43 +52,80 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
   const formik = useFormik({
     initialValues: {
       name: '',
-      slug: '',
       description: '',
       price: 0,
       comparePrice: '',
       stock: 0,
-      sku: '',
       categoryId: '',
       isActive: true,
       isFeatured: false,
+      imageFile: null,
     },
     validationSchema: productSchema,
     onSubmit: async (values) => {
       try {
         setIsUploading(true);
-        let images = product?.images || [];
 
-        if (imageFile) {
-          const uploadRes = await uploadService.uploadImage(imageFile);
-          images = [uploadRes.data.data.url];
+        // Check for exact name match before proceeding
+        const checkRes = await productService.getProducts({ exactName: values.name, limit: 1 });
+        const existingProduct = checkRes.data?.data?.[0];
+
+        // If duplicate found AND it's not the product currently being edited
+        if (existingProduct && (!isEditing || existingProduct.id !== product.id)) {
+          setPendingPayload(values);
+          setDuplicateWarning(true);
+          setIsUploading(false);
+          return;
         }
 
-        const payload = { ...values, images };
-        if (!payload.comparePrice) payload.comparePrice = null;
-
-        if (isEditing) {
-          await updateMutation.mutateAsync({ id: product.id, data: payload });
-        } else {
-          await createMutation.mutateAsync(payload);
-        }
-        onClose();
+        await processSubmission(values);
       } catch (err) {
-        // Error handled by mutation hook toasts
+        if (err.config?.url?.includes('/upload')) {
+          toast.error(err.response?.data?.message || 'Failed to upload image');
+        } else {
+          toast.error('An error occurred during verification');
+        }
       } finally {
         setIsUploading(false);
       }
     },
   });
+
+  const processSubmission = async (values) => {
+    try {
+      setIsUploading(true);
+      let images = product?.images || [];
+
+      if (imageFile) {
+        const uploadRes = await uploadService.uploadImage(imageFile);
+        images = [uploadRes.data.data.url];
+      }
+
+      const payload = { ...values, images };
+      if (!payload.comparePrice) payload.comparePrice = null;
+
+      if (isEditing) {
+        await updateMutation.mutateAsync({ id: product.id, data: payload });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
+      onClose();
+    } catch (err) {
+      if (err.config?.url?.includes('/upload')) {
+        toast.error(err.response?.data?.message || 'Failed to upload image');
+      }
+    } finally {
+      setIsUploading(false);
+      setPendingPayload(null);
+    }
+  };
+
+  const handleConfirmDuplicate = async () => {
+    setDuplicateWarning(false);
+    if (pendingPayload) {
+      await processSubmission(pendingPayload);
+    }
+  };
 
   // Populate form when editing
   useEffect(() => {
@@ -87,24 +133,37 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
       formik.resetForm({
         values: {
           name: product.name,
-          slug: product.slug,
           description: product.description || '',
           price: Number(product.price),
           comparePrice: product.comparePrice ? Number(product.comparePrice) : '',
           stock: product.stock,
-          sku: product.sku || '',
           categoryId: product.categoryId,
           isActive: product.isActive,
           isFeatured: product.isFeatured,
+          imageFile: null,
         }
       });
       setImagePreview(product.images?.[0] || '');
       setImageFile(null);
     } else if (isOpen) {
-      formik.resetForm();
+      formik.resetForm({
+        values: {
+          name: '',
+          description: '',
+          price: 0,
+          comparePrice: '',
+          stock: 0,
+          categoryId: '',
+          isActive: true,
+          isFeatured: false,
+          imageFile: null,
+        }
+      });
       setImagePreview('');
       setImageFile(null);
     }
+    setDuplicateWarning(false);
+    setPendingPayload(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product, isOpen]);
 
@@ -113,8 +172,13 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      formik.setFieldValue('imageFile', file);
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+    } else {
+      formik.setFieldValue('imageFile', null);
+      setImageFile(null);
+      setImagePreview('');
     }
   };
 
@@ -137,7 +201,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
             {/* Image Upload Area */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-warm-gray">Product Image</label>
-              <div className="relative w-full h-40 border-2 border-dashed border-cloud rounded-2xl flex flex-col items-center justify-center bg-cream/50 overflow-hidden hover:bg-cream transition-colors group">
+              <div className={`relative w-full h-40 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center bg-cream/50 overflow-hidden hover:bg-cream transition-colors group ${formik.errors.imageFile ? 'border-error' : 'border-cloud'}`}>
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -156,9 +220,12 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
                   </>
                 )}
               </div>
+              {formik.errors.imageFile && (
+                <p className="text-xs text-error">{formik.errors.imageFile}</p>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Input 
                 label="Product Name" 
                 name="name"
@@ -166,14 +233,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 error={formik.touched.name && formik.errors.name ? formik.errors.name : undefined}
-              />
-              <Input 
-                label="Slug" 
-                name="slug"
-                value={formik.values.slug}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.slug && formik.errors.slug ? formik.errors.slug : undefined}
               />
             </div>
 
@@ -212,7 +271,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Input 
                 label="Stock Quantity" 
                 type="number" 
@@ -221,14 +280,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 error={formik.touched.stock && formik.errors.stock ? formik.errors.stock : undefined}
-              />
-              <Input 
-                label="SKU (Optional)" 
-                name="sku"
-                value={formik.values.sku}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.sku && formik.errors.sku ? formik.errors.sku : undefined}
               />
             </div>
 
@@ -277,6 +328,16 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
             </div>
           </form>
         </div>
+
+        <ConfirmModal
+          isOpen={duplicateWarning}
+          onClose={() => setDuplicateWarning(false)}
+          onConfirm={handleConfirmDuplicate}
+          title="Duplicate Product Name"
+          message={`A product with the exact name "${pendingPayload?.name}" already exists in the database. Are you sure you want to create a duplicate?`}
+          confirmText="Yes, Continue"
+          isDestructive={false}
+        />
 
         {/* Footer */}
         <div className="p-6 border-t border-cloud flex justify-end gap-3 shrink-0">

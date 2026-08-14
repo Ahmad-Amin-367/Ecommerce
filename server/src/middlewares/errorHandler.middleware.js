@@ -38,6 +38,16 @@ const errorHandler = (err, req, res, next) => {
     message = 'Token has expired';
   }
 
+  // ─── Handle Multer upload errors ──────────────────────────────────────────
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'File is too large. Maximum size is 5MB.';
+    } else {
+      message = `Image upload error: ${err.message}`;
+    }
+  }
+
   // ─── Log the error ────────────────────────────────────────────────────────
   if (statusCode >= 500) {
     logger.error(`[${req.method}] ${req.originalUrl} — ${message}`, {
