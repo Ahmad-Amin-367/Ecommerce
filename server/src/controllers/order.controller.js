@@ -50,59 +50,67 @@ const createOrder = async (req, res) => {
   const totalAmount = subtotal + shippingFee;
 
   // Create Order in transaction to ensure stock is updated safely
-  const order = await prisma.$transaction(async (tx) => {
-    // 1. Create the address if provided (or store as guest)
-    let addressId = null;
-    const userId = req.user.id;
+  const order = await prisma.$transaction(
+    async (tx) => {
+      // 1. Create the address if provided (or store as guest)
+      let addressId = null;
+      const userId = req.user ? req.user.id : null;
 
-    if (shippingAddress) {
-      const address = await tx.address.create({
-        data: {
-          userId: userId,
-          street: shippingAddress.address,
-          city: shippingAddress.city,
-          state: shippingAddress.state || 'N/A',
-          country: shippingAddress.country || 'Pakistan',
-          postalCode: shippingAddress.postalCode || '00000',
-        }
-      });
-      addressId = address.id;
-    }
-
-    // 2. Create the order
-    const newOrder = await tx.order.create({
-      data: {
-        orderNumber: generateOrderNumber(),
-        userId: userId,
-        addressId: addressId,
-        guestName: guestInfo?.name,
-        guestEmail: guestInfo?.email,
-        guestPhone: guestInfo?.phone,
-        paymentMethod: paymentMethod || 'CASH_ON_DELIVERY',
-        subtotal,
-        shippingFee,
-        totalAmount,
-        notes,
-        items: {
-          create: orderItemsData
-        }
-      },
-      include: {
-        items: true,
-        address: true
+      if (shippingAddress) {
+        const address = await tx.address.create({
+          data: {
+            userId: userId,
+            street: shippingAddress.address,
+            city: shippingAddress.city,
+            state: shippingAddress.state || 'N/A',
+            country: shippingAddress.country || 'Canada',
+            postalCode: shippingAddress.postalCode || '00000',
+          }
+        });
+        addressId = address.id;
       }
-    });
 
-    // 3. Deduct stock
-    for (const item of orderItemsData) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stock: { decrement: item.quantity } }
+      // 2. Create the order
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber: generateOrderNumber(),
+          userId: userId,
+          addressId: addressId,
+          guestName: guestInfo?.name,
+          guestEmail: guestInfo?.email,
+          guestPhone: guestInfo?.phone,
+          paymentMethod: paymentMethod || 'CASH_ON_DELIVERY',
+          subtotal,
+          shippingFee,
+          totalAmount,
+          notes,
+          items: {
+            create: orderItemsData
+          }
+        },
+        include: {
+          items: true,
+          address: true
+        }
       });
-    }
 
-    return newOrder;
-  });
+      // 3. Deduct stock in parallel
+      await Promise.all(
+        orderItemsData.map((item) =>
+          tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } }
+          })
+        )
+      );
+
+      return newOrder;
+    },
+    {
+      maxWait: 10000, // 10 seconds max wait for connection pool
+      timeout: 20000, // 20 seconds execution timeout for serverless DB round-trips
+    }
+  );
   sendSuccess(res, 201, 'Order placed successfully', order);
 };
 

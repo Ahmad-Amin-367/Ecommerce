@@ -13,7 +13,7 @@ const galleryItems = [
     title: 'Anniversary Fruit Arrangements',
     spanClass: 'col-span-1 sm:col-span-1 lg:col-span-3',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 25vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 25vw, 320px',
     delay: 0.1,
   },
   {
@@ -22,7 +22,7 @@ const galleryItems = [
     title: 'Chocolate Dipped Strawberries',
     spanClass: 'col-span-1 sm:col-span-1 lg:col-span-5',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 42vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 42vw, 530px',
     delay: 0.2,
   },
   {
@@ -31,7 +31,7 @@ const galleryItems = [
     title: 'Birthday Celebration Platters',
     spanClass: 'col-span-1 sm:col-span-2 lg:col-span-4',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 33vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 33vw, 420px',
     delay: 0.3,
   },
   // Row 2: 5-col + 4-col + 3-col = 12 cols
@@ -41,7 +41,7 @@ const galleryItems = [
     title: 'Exotic Gift Baskets',
     spanClass: 'col-span-1 sm:col-span-1 lg:col-span-5',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 42vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 42vw, 530px',
     delay: 0.4,
   },
   {
@@ -50,7 +50,7 @@ const galleryItems = [
     title: 'Custom Gift Boxes',
     spanClass: 'col-span-1 sm:col-span-1 lg:col-span-4',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 33vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 420px',
     delay: 0.5,
   },
   {
@@ -59,7 +59,7 @@ const galleryItems = [
     title: 'Seasonal Specials',
     spanClass: 'col-span-1 sm:col-span-2 lg:col-span-3',
     heightClass: 'h-[220px] sm:h-[260px] lg:h-[295px]',
-    sizes: '(max-width: 1024px) 100vw, 25vw',
+    sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 100vw, (max-width: 1280px) 25vw, 320px',
     delay: 0.6,
   },
 ];

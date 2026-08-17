@@ -151,52 +151,30 @@ export default function B2BPage() {
           </div>
         </div>
 
-        {/* Right side background image (Absolute on desktop, full height, fade mask on the left) */}
-        <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-[50%] z-10 overflow-hidden">
-          {/* Left Gradient Fade Mask (fades from white to transparent) */}
-          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none" />
+        {/* Hero Image (Right side on desktop, bottom block on mobile) */}
+        <div className="w-full lg:w-1/2 relative h-[280px] lg:h-auto lg:absolute lg:top-0 lg:right-0 lg:bottom-0 z-10 overflow-hidden border-t border-[#e2ece5] lg:border-t-0">
+          {/* Fade Mask: Desktop left-fade & Mobile top-fade */}
+          <div className="hidden lg:block absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none" />
+          <div className="lg:hidden absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none" />
           
           <Image
             src="/products/prod-2.jpg"
             alt="Hisna Gifts Corporate Fruit Display & Event Catering"
             fill
-            sizes="50vw"
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
             priority
           />
 
-          {/* Floating Badge (inside image) */}
-          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm shadow-soft border border-[#e2ece5] rounded-2xl p-3 flex items-center gap-3 z-30 max-w-[200px]">
-            <div className="w-8 h-8 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] shrink-0">
-              <Users size={16} />
+          {/* Floating Badge */}
+          <div className="absolute top-4 right-4 lg:top-6 lg:right-6 bg-white/95 backdrop-blur-sm shadow-soft border border-[#e2ece5] rounded-2xl p-2.5 lg:p-3 flex items-center gap-2.5 lg:gap-3 z-30 max-w-[180px] lg:max-w-[200px]">
+            <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] shrink-0">
+              <Users className="w-3 h-3 lg:w-4 lg:h-4" />
             </div>
             <div>
-              <p className="text-[10px] text-[#2c3e35] font-bold leading-tight">
-                Trusted by Couples & Businesses Across GTA
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile image fallback rendering below the content */}
-        <div className="lg:hidden w-full relative h-[280px] z-10 border-t border-[#e2ece5]">
-          <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none" />
-          <Image
-            src="/products/prod-2.jpg"
-            alt="Hisna Gifts Corporate Fruit Display & Event Catering"
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority
-          />
-          {/* Floating Badge on mobile */}
-          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm shadow-soft border border-[#e2ece5] rounded-2xl p-2.5 flex items-center gap-2.5 z-30 max-w-[180px]">
-            <div className="w-6 h-6 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] shrink-0">
-              <Users size={12} />
-            </div>
-            <div>
-              <p className="text-[9px] text-[#2c3e35] font-bold leading-tight">
-                Trusted Across GTA
+              <p className="text-[9px] lg:text-[10px] text-[#2c3e35] font-bold leading-tight">
+                <span className="lg:hidden">Trusted Across GTA</span>
+                <span className="hidden lg:inline">Trusted by Couples & Businesses Across GTA</span>
               </p>
             </div>
           </div>

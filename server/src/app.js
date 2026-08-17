@@ -27,6 +27,9 @@ app.use(
 // ─── Performance ──────────────────────────────────────────────────────────────
 app.use(compression());
 
+// ─── Stripe Webhook Raw Parsing (Must be placed before express.json) ─────────
+app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
+
 // ─── Request parsing ──────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

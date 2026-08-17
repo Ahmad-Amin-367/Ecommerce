@@ -2,6 +2,7 @@ import api from './api';
 
 const orderService = {
   placeOrder: (data) => api.post('/orders', data),
+  createPaymentIntent: (orderId) => api.post('/payments/create-intent', { orderId }),
   getMyOrders: (params) => api.get('/orders/my-orders', { params }),
   getOrder: (id) => api.get(`/orders/${id}`),
   cancelOrder: (id) => api.patch(`/orders/${id}/cancel`),

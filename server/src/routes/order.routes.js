@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/order.controller');
-const { protect } = require('../middlewares/auth.middleware');
+const { protect, optionalAuth } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
 
-router.post('/', protect, orderController.createOrder);
+router.post('/', optionalAuth, orderController.createOrder);
 
 // Private route for customers to get their own orders
 router.get('/my-orders', protect, orderController.getMyOrders);
