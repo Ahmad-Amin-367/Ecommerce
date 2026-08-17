@@ -1,8 +1,24 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Briefcase, Sparkles, CheckCircle2, ShieldCheck, Truck, Users, Award, Clock, ArrowDown, UtensilsCrossed, Gift, HeartHandshake, ArrowRight } from 'lucide-react';
+import {
+  Briefcase,
+  Sparkles,
+  CheckCircle2,
+  ShieldCheck,
+  Truck,
+  Users,
+  UtensilsCrossed,
+  Gift,
+  HeartHandshake,
+  ArrowRight,
+  Heart,
+  Star,
+  MessageSquare,
+  ChevronRight,
+} from 'lucide-react';
 import B2BQuoteFormWrapper from '@/components/b2b/B2BQuoteFormWrapper';
 import WhyChooseUsSlider from '@/components/b2b/WhyChooseUsSlider';
+import B2BTestimonialsSlider from '@/components/b2b/B2BTestimonialsSlider';
 
 export const metadata = {
   title: 'B2B & Corporate Gifting | Hisna Gifts — Bulk Orders & Event Displays',
@@ -10,119 +26,396 @@ export const metadata = {
   keywords: 'B2B corporate gifts Toronto, bulk edible arrangements GTA, wedding fruit tables, live chocolate dipping station, corporate fruit platters',
 };
 
-const b2bServices = [
+const services = [
   {
-    title: 'Corporate Gift Boxes & Bundles',
-    badge: 'Employee & Client Gifting',
+    title: 'Weddings',
+    desc: 'Romantic, elegant arrangements for your special day.',
     image: '/products/prod-1.jpg',
-    description: 'Custom chocolate-dipped strawberries, fruit bouquets, and gourmet hampers branded with your corporate logo plaque and custom ribbon colors.',
-    features: ['Custom Logo Plaques', 'Bulk Quantity Tier Discounts', 'Individual Recipient Delivery Available'],
+    icon: Heart,
   },
   {
-    title: 'Wedding & Event Fruit Tables',
-    badge: '4ft — 6ft Displays',
+    title: 'Corporate Gifting',
+    desc: 'Impress clients and appreciate teams with thoughtful gifts.',
+    image: '/products/prod-6.jpg',
+    icon: Briefcase,
+  },
+  {
+    title: 'Fruit Tables',
+    desc: 'Stunning spreads that bring freshness and color to any event.',
     image: '/products/prod-2.jpg',
-    description: 'Show-stopping fruit arrangements carved and assembled live for weddings, galas, anniversaries, and grand corporate launches across the GTA.',
-    features: ['Custom Height & Theme Colors', 'On-site Professional Setup', 'Fresh Season Fruit Towers'],
+    icon: UtensilsCrossed,
   },
   {
-    title: 'Live Dipping & Chocolate Station',
-    badge: 'Interactive Guest Experience',
+    title: 'Dessert Cups',
+    desc: 'Individual desserts that are as beautiful as they are delicious.',
     image: '/products/prod-3.jpg',
-    description: 'Add an unforgettable interactive station with warm melted chocolate, freshly sliced fruits, and custom toppings served live to your event guests.',
-    features: ['Professional Uniformed Attendant', 'Warm Melted Chocolate Fountains', 'Interactive Custom Toppings Bar'],
+    icon: Sparkles,
   },
   {
-    title: 'Gourmet Platters & Fruit Trees',
-    badge: 'Catering & Buffets',
+    title: 'Chocolate Fountain',
+    desc: 'A crowd favorite that adds wow to any celebration.',
     image: '/products/prod-4.jpg',
-    description: 'Artisanal charcuterie fruit trays, candy trees, and edible fruit sculptures crafted for office meetings, boardrooms, and private VIP events.',
-    features: ['Ready-to-serve Eco Platters', 'Dietary Restrictions Accommodated', 'Scheduled GTA Delivery'],
+    icon: Sparkles,
+  },
+  {
+    title: 'Custom Displays',
+    desc: 'Tailored designs crafted to match your vision.',
+    image: '/products/prod-5.jpg',
+    icon: Gift,
   },
 ];
 
-const b2bStats = [
-  { label: 'Corporate Events & Galas', value: '500+' },
-  { label: 'Satisfaction Rating', value: '99.8%' },
-  { label: 'Freshness Guarantee', value: '100%' },
-  { label: 'Lead Time Required', value: '24-48 hrs' },
+const features = [
+  {
+    title: 'Freshly Prepared',
+    desc: 'We use premium, fresh ingredients for every order.',
+    icon: UtensilsCrossed,
+  },
+  {
+    title: 'Elegant Presentation',
+    desc: 'Designed with attention to detail for a premium look.',
+    icon: Sparkles,
+  },
+  {
+    title: 'Customizable Menus',
+    desc: 'Tailored arrangements to suit your theme and preferences.',
+    icon: HeartHandshake,
+  },
+  {
+    title: 'Halal-Friendly Options',
+    desc: 'A wide selection of halal-friendly ingredients and treats.',
+    icon: CheckCircle2,
+  },
+  {
+    title: 'Reliable Delivery & Setup',
+    desc: 'On-time delivery and professional setup across the GTA.',
+    icon: Truck,
+  },
 ];
 
 export default function B2BPage() {
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-[#f4f7f5] min-h-screen text-[#2c3e35] pt-0">
       {/* ═══════════════════════════════════════════════════════════════════════
-          B2B HERO SECTION — Matches Hisna Gifts B2C Warm Gradient Hero
+          B2B HERO SECTION — Clean Green & White Layout
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="overview" className="relative bg-gradient-hero text-charcoal overflow-hidden py-10 sm:py-14 border-b border-cloud">
-        {/* Background Decorative Blur Shapes */}
-        <div className="absolute w-[400px] h-[400px] bg-blush/40 rounded-full blur-[100px] top-[-10%] right-[-5%] pointer-events-none animate-pulse" />
-        <div className="absolute w-[300px] h-[300px] bg-primary/10 rounded-full bottom-[-10%] left-[-5%] pointer-events-none" />
+      <section id="overview" className="relative bg-white border-b border-[#e2ece5] min-h-[480px] lg:h-[500px] flex flex-col lg:flex-row lg:items-center overflow-hidden">
+        {/* Background Decorative Blob */}
+        <div className="absolute w-[400px] h-[400px] bg-[#325247]/5 rounded-full blur-[100px] top-[-10%] right-[30%] pointer-events-none animate-pulse" />
 
-        <div className="relative w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Copy */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
-            <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] sm:leading-[1.1] tracking-tight text-charcoal">
-              Luxury Corporate Gifting & <br className="hidden sm:inline" />
-              <span className="relative inline-block text-primary">
-                <span>Unforgettable Event Catering</span>
-                <span className="absolute bottom-1 left-0 right-0 h-2.5 sm:h-3 bg-blush/50 -z-10 rounded-sm" aria-hidden="true" />
-              </span>
+        {/* Left Content Container */}
+        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-20">
+          <div className="lg:col-span-6 space-y-5 text-center lg:text-left py-12 lg:py-0">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#4e7350] block">
+              Weddings, Events & Corporate
+            </span>
+            
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] text-[#325247] tracking-tight">
+              Elevate Every <br className="hidden sm:inline" /> Celebration
             </h1>
 
-            <p className="text-xs sm:text-base text-warm-gray leading-relaxed max-w-2xl font-sans">
-              From elegant employee appreciation gifts to 6-foot centerpiece fruit tables and interactive live chocolate dipping stations — we create handcrafted, fresh edible experiences tailored for your business across Toronto & nationwide.
+            {/* Heart Separator */}
+            {/* <div className="py-2 text-center lg:text-left">
+              <Heart size={16} className="text-[#325247] fill-[#325247] opacity-85 inline-block" />
+            </div> */}
+
+            <p className="text-sm sm:text-base text-[#4e6358] leading-relaxed max-w-xl font-sans mx-auto lg:mx-0">
+              From romantic weddings to corporate milestones, we create stunning fruit tables, dessert displays, and custom edible arrangements that impress your guests and leave a lasting impression.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-1 w-full max-w-md mx-auto lg:mx-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4 pt-2 w-full max-w-md mx-auto lg:mx-0">
               <a
                 href="#quote-section"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-xs sm:text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-center"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#325247] text-white hover:bg-[#253e35] rounded-full font-bold text-xs sm:text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-center"
               >
-                <span>Request a Corporate Quote</span>
-                <ArrowDown size={15} className="shrink-0" />
+                <span>Request a Quote</span>
+                <ArrowRight size={15} className="shrink-0" />
               </a>
               <a
-                href="#b2b-offerings"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-3.5 bg-white hover:bg-background-hover text-charcoal border-2 border-cloud rounded-full font-semibold text-xs sm:text-sm tracking-wide transition-all duration-300 cursor-pointer shadow-sm text-center"
+                href="#services-section"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-[#f4f7f5] text-[#325247] border-2 border-[#325247] rounded-full font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 cursor-pointer shadow-sm text-center"
               >
-                <span>Explore Offerings</span>
+                <span>Explore Services</span>
               </a>
             </div>
 
-            {/* Quality Badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-cloud">
-              {b2bStats.map((stat, idx) => (
-                <div key={idx} className="text-center lg:text-left">
-                  <div className="font-serif text-2xl sm:text-3xl font-bold text-primary">{stat.value}</div>
-                  <div className="text-xs text-warm-gray mt-0.5">{stat.label}</div>
-                </div>
-              ))}
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 pt-6 border-t border-[#e2ece5] text-xs font-semibold text-[#4e7350]">
+              <span className="flex items-center gap-2">
+                <Truck size={16} className="text-[#325247]" /> Delivery & Setup GTA
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-[#325247]" /> Trusted by 500+ Clients
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right side background image (Absolute on desktop, full height, fade mask on the left) */}
+        <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-[50%] z-10 overflow-hidden">
+          {/* Left Gradient Fade Mask (fades from white to transparent) */}
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none" />
+          
+          <Image
+            src="/products/prod-2.jpg"
+            alt="Hisna Gifts Corporate Fruit Display & Event Catering"
+            fill
+            sizes="50vw"
+            className="object-cover"
+            priority
+          />
+
+          {/* Floating Badge (inside image) */}
+          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm shadow-soft border border-[#e2ece5] rounded-2xl p-3 flex items-center gap-3 z-30 max-w-[200px]">
+            <div className="w-8 h-8 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] shrink-0">
+              <Users size={16} />
+            </div>
+            <div>
+              <p className="text-[10px] text-[#2c3e35] font-bold leading-tight">
+                Trusted by Couples & Businesses Across GTA
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile image fallback rendering below the content */}
+        <div className="lg:hidden w-full relative h-[280px] z-10 border-t border-[#e2ece5]">
+          <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none" />
+          <Image
+            src="/products/prod-2.jpg"
+            alt="Hisna Gifts Corporate Fruit Display & Event Catering"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          {/* Floating Badge on mobile */}
+          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm shadow-soft border border-[#e2ece5] rounded-2xl p-2.5 flex items-center gap-2.5 z-30 max-w-[180px]">
+            <div className="w-6 h-6 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] shrink-0">
+              <Users size={12} />
+            </div>
+            <div>
+              <p className="text-[9px] text-[#2c3e35] font-bold leading-tight">
+                Trusted Across GTA
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SERVICES SECTION — Grid of 6 Themed Service Cards
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section id="services-section" className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
+        <div className="w-full max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#325247]">
+              Our Event & Corporate Services
+            </h2>
+            
+            {/* Heart Separator */}
+            <div className="flex items-center justify-center gap-2 mt-3 mb-6">
+              <div className="h-[1px] w-12 bg-[#325247]/20" />
+              <Heart size={14} className="text-[#325247] fill-[#325247] opacity-80 shrink-0" />
+              <div className="h-[1px] w-12 bg-[#325247]/20" />
             </div>
           </div>
 
-          {/* Hero Feature Showcase Card */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none rounded-3xl overflow-hidden shadow-lifted border-4 border-white bg-white">
-              <div className="relative h-64 sm:h-72">
-                <Image
-                  src="/products/prod-2.jpg"
-                  alt="Hisna Gifts Corporate Fruit Display & Event Catering"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 450px"
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
-              </div>
-              <div className="p-5 text-white bg-charcoal space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blush">Featured B2B Experience</span>
-                  <span className="text-[11px] bg-primary/20 text-blush px-2.5 py-0.5 rounded-full border border-primary/30">GTA & Canada</span>
+          {/* Grid of 6 Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((svc, idx) => {
+              const Icon = svc.icon;
+              return (
+                <div
+                  key={idx}
+                  className="flex flex-row items-stretch bg-[#f4f7f5] border border-[#e2ece5] rounded-3xl overflow-hidden shadow-soft hover:shadow-card hover:border-[#325247]/30 transition-all duration-300 p-4 min-h-[160px] group"
+                >
+                  {/* Left content */}
+                  <div className="flex-1 flex flex-col justify-between pr-3 py-1">
+                    <div>
+                      {/* Icon */}
+                      <div className="w-9 h-9 rounded-full bg-[#e9f0eb] flex items-center justify-center text-[#325247] mb-2.5">
+                        <Icon size={16} />
+                      </div>
+                      {/* Title */}
+                      <h3 className="font-serif text-base sm:text-lg font-bold text-[#325247] mb-1">
+                        {svc.title}
+                      </h3>
+                      {/* Description */}
+                      <p className="text-[11px] text-[#4e6358] leading-relaxed">
+                        {svc.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right image */}
+                  <div className="w-[100px] sm:w-[120px] shrink-0 relative rounded-2xl overflow-hidden shadow-sm">
+                    <Image
+                      src={svc.image}
+                      alt={svc.title}
+                      fill
+                      sizes="(max-width: 640px) 100px, 120px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                 </div>
-                <h3 className="font-serif text-lg font-bold">Custom Branded Fruit Tables & Displays</h3>
-                <p className="text-xs text-cloud-light/80 leading-relaxed">
-                  Tailored colors, custom carved initials/logos, and premium Belgian chocolate dipping stations for your high-profile event.
+              );
+            })}
+          </div>
+
+          {/* Horizontal Features Bar */}
+          <div className="flex flex-wrap items-stretch justify-center gap-6 lg:gap-10 py-6 px-6 bg-[#f4f7f5] rounded-2xl border border-[#e2ece5] mt-12 max-w-6xl mx-auto">
+            {features.map((feat, idx) => {
+              const FeatIcon = feat.icon;
+              return (
+                <div key={idx} className="flex gap-3 max-w-[210px] items-start">
+                  <div className="p-1.5 rounded-lg bg-[#e9f0eb] text-[#325247] shrink-0">
+                    <FeatIcon size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-[#325247]">
+                      {feat.title}
+                    </h4>
+                    <p className="text-[10px] text-[#4e6358] mt-0.5 leading-normal">
+                      {feat.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          CREATIONS & TESTIMONIALS SECTION
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
+        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          {/* Left Column: Glimpse of Creations */}
+          <div className="lg:col-span-7 space-y-6">
+            <div>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#325247]">
+                A Glimpse of Our Creations
+              </h2>
+              {/* Heart Separator */}
+              <div className="flex items-center gap-2 mt-3 mb-6">
+                <div className="h-[1px] w-12 bg-[#325247]/20" />
+                <Heart size={14} className="text-[#325247] fill-[#325247] opacity-80 shrink-0" />
+                <div className="h-[1px] w-12 bg-[#325247]/20" />
+              </div>
+            </div>
+
+            {/* 5 rounded portrait images */}
+            <div className="grid grid-cols-5 gap-2.5">
+              {[
+                '/products/prod-1.jpg',
+                '/products/prod-2.jpg',
+                '/products/prod-3.jpg',
+                '/products/prod-4.jpg',
+                '/products/prod-5.jpg',
+              ].map((img, idx) => (
+                <div
+                  key={idx}
+                  className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-[#d0ded5] shadow-sm hover:scale-105 transition-transform duration-300"
+                >
+                  <Image
+                    src={img}
+                    alt={`Creation display ${idx + 1}`}
+                    fill
+                    sizes="120px"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* View More link */}
+            <div className="text-center lg:text-left pt-2">
+              <a
+                href="#why-us"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#325247] hover:underline"
+              >
+                <span>View More Inspiration</span>
+                <ArrowRight size={14} />
+              </a>
+            </div>
+          </div>
+
+          {/* Right Column: Testimonial Slider */}
+          <div className="lg:col-span-5 relative">
+            <B2BTestimonialsSlider />
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          PROCESS SECTION — Simple 3-step timeline
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
+        <div className="w-full max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#325247]">
+              Our Simple Process
+            </h2>
+            
+            {/* Heart Separator */}
+            <div className="flex items-center justify-center gap-2 mt-3 mb-6">
+              <div className="h-[1px] w-12 bg-[#325247]/20" />
+              <Heart size={14} className="text-[#325247] fill-[#325247] opacity-80 shrink-0" />
+              <div className="h-[1px] w-12 bg-[#325247]/20" />
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 max-w-6xl mx-auto">
+            {/* Step 1 */}
+            <div className="flex-1 w-full bg-[#f4f7f5] border border-[#e2ece5] rounded-3xl p-6 flex items-center gap-4 hover:shadow-soft transition-all duration-300">
+              <span className="text-sm font-bold text-[#325247] bg-white px-3 py-1.5 rounded-full border border-[#d0ded5]">
+                01
+              </span>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#325247] shrink-0 shadow-sm">
+                <MessageSquare size={18} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#325247]">Share Your Vision</h4>
+                <p className="text-[11px] text-[#4e6358] leading-normal mt-0.5">
+                  Tell us about your event, theme, guest count, and preferences.
+                </p>
+              </div>
+            </div>
+
+            <ChevronRight className="hidden lg:block text-[#325247]/30 shrink-0" size={24} />
+
+            {/* Step 2 */}
+            <div className="flex-1 w-full bg-[#f4f7f5] border border-[#e2ece5] rounded-3xl p-6 flex items-center gap-4 hover:shadow-soft transition-all duration-300">
+              <span className="text-sm font-bold text-[#325247] bg-white px-3 py-1.5 rounded-full border border-[#d0ded5]">
+                02
+              </span>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#325247] shrink-0 shadow-sm">
+                <Gift size={18} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#325247]">We Curate Your Experience</h4>
+                <p className="text-[11px] text-[#4e6358] leading-normal mt-0.5">
+                  We design a custom proposal and menu just for your event.
+                </p>
+              </div>
+            </div>
+
+            <ChevronRight className="hidden lg:block text-[#325247]/30 shrink-0" size={24} />
+
+            {/* Step 3 */}
+            <div className="flex-1 w-full bg-[#f4f7f5] border border-[#e2ece5] rounded-3xl p-6 flex items-center gap-4 hover:shadow-soft transition-all duration-300">
+              <span className="text-sm font-bold text-[#325247] bg-white px-3 py-1.5 rounded-full border border-[#d0ded5]">
+                03
+              </span>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#325247] shrink-0 shadow-sm">
+                <Truck size={18} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#325247]">We Deliver & Set Up</h4>
+                <p className="text-[11px] text-[#4e6358] leading-normal mt-0.5">
+                  We handle delivery, setup, and ensure everything is perfect for your big day.
                 </p>
               </div>
             </div>
@@ -131,159 +424,19 @@ export default function B2BPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          INTRO & BRAND STORY SECTION
+          WHY CHOOSE HISNA GIFTS (EMBLA SLIDER) — Dark Green Brand Section
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-10 sm:py-14 bg-background-secondary border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary block">
-              Handcrafted Corporate Experiences
-            </span>
-            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-charcoal leading-snug">
-              From thoughtful corporate gifts to show-stopping fruit tables, Hisna Gifts creates fresh, handcrafted experiences for every celebration across Toronto and the GTA.
-            </h2>
-            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-primary pt-1">
-              Fresh Fruit • Premium Chocolate • Made to Order
-            </p>
-            <p className="text-sm text-warm-gray leading-relaxed font-sans">
-              Every Hisna Gifts creation is made to order using fresh fruit, premium chocolate and careful attention to detail. From corporate gifting and fruit bouquets to four-to-six-foot fruit tables and live chocolate-dipped fruit experiences, we customize every creation for your occasion.
-            </p>
-          </div>
-
-          <div className="lg:col-span-5 flex justify-center">
-            {/* Oval Tower Showcase Slider */}
-            <div className="relative w-64 sm:w-72 h-80 sm:h-96 rounded-[120px] overflow-hidden border-4 border-white shadow-lifted">
-              <Image
-                src="/products/prod-1.jpg"
-                alt="Strawberry & Chocolate Tower Display"
-                fill
-                sizes="300px"
-                className="object-cover hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-0 right-0 text-center text-white p-4">
-                <p className="font-serif text-sm font-bold">Handcrafted Strawberry Towers</p>
-                <p className="text-[10px] text-blush">Made Fresh for Corporate & Weddings</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          PLATTER & CHARCUTERIE SHOWCASE GRID
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-10 sm:py-14 bg-white border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-5 space-y-5">
-            <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary block">Gourmet Catering</span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-                Charcuterie Trays • Fruit Platters • Veggie Platters • Gourmet Baskets
-              </h2>
-            </div>
-            <p className="text-sm text-warm-gray leading-relaxed">
-              Elevate your boardroom meetings, office celebrations, and private receptions with ready-to-serve artisanal platters overflowing with fresh seasonal berries, exotic fruits, imported cheeses, and chocolate treats.
-            </p>
-            <div className="grid grid-cols-2 gap-4 pt-1">
-              <div className="relative h-40 overflow-hidden shadow-card border border-cloud">
-                <Image src="/products/prod-4.jpg" alt="Fruit Platter Tray" fill sizes="(max-width: 768px) 50vw, 250px" className="object-cover" />
-              </div>
-              <div className="relative h-40 overflow-hidden shadow-card border border-cloud">
-                <Image src="/products/prod-6.jpg" alt="Veggie & Gourmet Basket" fill sizes="(max-width: 768px) 50vw, 250px" className="object-cover" />
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7">
-            <div className="relative h-80 sm:h-96 overflow-hidden shadow-lifted border-4 border-white">
-              <Image src="/products/prod-3.jpg" alt="Rich Charcuterie Board & Fruit Display" fill sizes="(max-width: 1024px) 100vw, 650px" className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <span className="text-xs font-bold uppercase tracking-wider text-blush bg-primary/80 px-3 py-1 rounded-full">
-                  Artisanal Catering
-                </span>
-                <h3 className="font-serif text-xl sm:text-2xl font-bold mt-2">Executive Office Platters & Charcuterie Trays</h3>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          B2B OFFERINGS SHOWCASE
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="b2b-offerings" className="py-10 sm:py-14 bg-background-secondary">
+      <section id="why-us" className="py-16 lg:py-20 bg-[#325247] text-white border-b border-[#e2ece5]">
         <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-1 block">
-                Tailored Services
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-                Our Signature B2B Solutions
-              </h2>
-            </div>
-            <p className="text-sm text-warm-gray max-w-md">
-              Whether you need 25 employee gift boxes or a 6-foot fruit table for 300 guests, we scale perfectly to your requirements.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {b2bServices.map((service, idx) => (
-              <div key={idx} className="bg-white overflow-hidden border border-cloud shadow-card flex flex-col sm:flex-row group hover:shadow-lifted transition-all duration-300">
-                <div className="relative w-full sm:w-2/5 h-56 sm:h-auto shrink-0 overflow-hidden">
-                  <Image
-                    src={service.image}
-                    alt={service.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 300px"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-3 left-3 bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md">
-                    {service.badge}
-                  </span>
-                </div>
-                <div className="p-5 sm:p-6 flex flex-col justify-between flex-1">
-                  <div>
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-charcoal mb-2">{service.title}</h3>
-                    <p className="text-xs text-warm-gray leading-relaxed mb-3">{service.description}</p>
-                    <ul className="space-y-1.5 mb-4">
-                      {service.features.map((feat, fIdx) => (
-                        <li key={fIdx} className="flex items-center gap-2 text-xs font-medium text-charcoal">
-                          <CheckCircle2 size={14} className="text-primary shrink-0" />
-                          {feat}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <a
-                    href="#quote-section"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-dark transition-colors whitespace-nowrap"
-                  >
-                    Request Quote for this Offering →
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          WHY CHOOSE HISNA GIFTS (EXACT REFERENCE DESIGN WITH EMBLA SLIDER)
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="why-us" className="py-10 sm:py-14 bg-[#325247] text-white border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-6">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200 mb-1 block">
+          <div className="text-center max-w-3xl mx-auto mb-8">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200 mb-1.5 block">
               Established 2018
             </span>
             <h2 className="font-serif text-3xl sm:text-5xl font-bold text-white">
               Why Choose Hisna Gifts
             </h2>
-            <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed font-serif mt-3">
-              Hisna Gifts began its operations in 2018 with a passion for transforming fresh fruit and premium chocolate into memorable gifts and impressive event displays. Every creation is made to order, carefully handcrafted and customized for your occasion. From thoughtful personal gifts to large celebrations, we bring creativity, freshness and beautiful presentation to every detail, making each moment feel truly special.
+            <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed font-serif mt-3 max-w-2xl mx-auto">
+              Hisna Gifts began its operations in 2018 with a passion for transforming fresh fruit and premium chocolate into memorable gifts and impressive event displays. Every creation is made to order, carefully handcrafted and customized for your occasion.
             </p>
           </div>
 
@@ -291,21 +444,21 @@ export default function B2BPage() {
           <WhyChooseUsSlider />
 
           {/* Bottom 2-Column Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 max-w-5xl mx-auto pt-8 border-t border-white/15">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-5xl mx-auto pt-10 border-t border-white/15">
             <div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
                 Made Fresh to Order
               </h3>
-              <p className="text-sm sm:text-base text-emerald-100/85 leading-relaxed font-serif">
+              <p className="text-sm text-emerald-100/80 leading-relaxed">
                 Every creation is handcrafted using fresh fruit, premium chocolate and careful attention to detail.
               </p>
             </div>
 
             <div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
                 Customized for You
               </h3>
-              <p className="text-sm sm:text-base text-emerald-100/85 leading-relaxed font-serif">
+              <p className="text-sm text-emerald-100/80 leading-relaxed">
                 Colours, flavours, presentation and scale are tailored to your occasion, theme and guest count.
               </p>
             </div>
@@ -314,56 +467,11 @@ export default function B2BPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          INTERACTIVE CALCULATOR & QUOTE FORM SECTION
+          INTERACTIVE CALCULATOR & QUOTE FORM SECTION — Intact
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section id="quote-section" className="py-10 sm:py-14 bg-background-secondary">
-        <div className="w-full max-w-7xl mx-auto px-6">
+      <section id="quote-section" className="py-16 lg:py-20 bg-white">
+        <div className="w-full max-w-5xl mx-auto px-6">
           <B2BQuoteFormWrapper />
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════
-          FINAL CTA BANNER: LET'S CREATE SOMETHING UNFORGETTABLE
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-10 sm:py-14 bg-white border-t border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary block">
-              Get Started Today
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-charcoal leading-tight">
-              Let's Create Something Unforgettable
-            </h2>
-            <p className="text-base text-warm-gray leading-relaxed max-w-xl">
-              Tell us about your occasion, guest count and vision. We'll create a fresh, customized experience for your celebration.
-            </p>
-            <div>
-              <a
-                href="#b2b-quote-form"
-                className="inline-flex items-center gap-2 px-5 sm:px-7 py-3 sm:py-3.5 bg-primary text-white hover:bg-primary-dark rounded-full font-bold text-xs sm:text-sm tracking-wide shadow-glow hover:shadow-lifted transition-all duration-300 cursor-pointer whitespace-nowrap"
-              >
-                Request a Quote
-                <ArrowRight size={16} />
-              </a>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md h-80 sm:h-96 overflow-hidden shadow-lifted border-4 border-white">
-              <Image
-                src="/products/prod-2.jpg"
-                alt="Unforgettable Event Fruit Display"
-                fill
-                sizes="(max-width: 1024px) 100vw, 450px"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 text-white text-center">
-                <p className="font-serif text-lg font-bold">Hisna Gifts Corporate & Event Catering</p>
-                <p className="text-xs text-blush">Toronto • Milton • Mississauga • GTA</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
     </div>

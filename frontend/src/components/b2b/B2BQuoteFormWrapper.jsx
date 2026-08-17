@@ -8,7 +8,7 @@ export default function B2BQuoteFormWrapper() {
 
   return (
     <div className="space-y-12">
-      {/* 1. Interactive Estimator Widget */}
+      {/* 1. Interactive Estimator Widget — Commented out for now
       <div>
         <div className="text-center max-w-xl mx-auto mb-8">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
@@ -23,14 +23,15 @@ export default function B2BQuoteFormWrapper() {
         </div>
         <B2BCalculator onSelectService={setCalculatorSelection} />
       </div>
+      */}
 
       {/* 2. Official Quote Form */}
       <div>
         <div className="text-center max-w-xl mx-auto mb-8">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2 block">
-            Step 2: Submit Details
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#325247] mb-2 block">
+            Submit Details
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#325247]">
             Lock In Your Corporate Quote Request
           </h2>
         </div>

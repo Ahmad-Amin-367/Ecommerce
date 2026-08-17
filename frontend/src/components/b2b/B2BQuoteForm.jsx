@@ -71,18 +71,18 @@ export default function B2BQuoteForm({ initialValues = {} }) {
 
   if (submittedQuote) {
     return (
-      <div id="b2b-quote-form" className="bg-primary-glow rounded-3xl border border-primary/20 p-8 sm:p-12 text-center animate-fade-in">
-        <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
+      <div id="b2b-quote-form" className="bg-[#e9f0eb] rounded-3xl border border-[#325247]/20 p-8 sm:p-12 text-center animate-fade-in">
+        <div className="w-16 h-16 bg-[#325247] text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
           <CheckCircle size={32} />
         </div>
-        <span className="inline-block px-3 py-1 bg-white text-primary border border-cloud rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+        <span className="inline-block px-3 py-1 bg-white text-[#325247] border border-cloud rounded-full text-xs font-bold uppercase tracking-wider mb-2">
           Quote Reference: {submittedQuote.quoteNumber}
         </span>
         <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal mb-4">
           Quote Request Received!
         </h3>
         <p className="text-warm-gray text-base max-w-lg mx-auto mb-6 leading-relaxed">
-          Thank you, <strong className="text-charcoal">{submittedQuote.contactName}</strong>. We have received the B2B inquiry for <strong className="text-primary">{submittedQuote.companyName}</strong>. Our corporate event specialist will contact you within 24 business hours.
+          Thank you, <strong className="text-charcoal">{submittedQuote.contactName}</strong>. We have received the B2B inquiry for <strong className="text-[#325247]">{submittedQuote.companyName}</strong>. Our corporate event specialist will contact you within 24 business hours.
         </p>
         
         <div className="bg-white rounded-2xl p-6 border border-cloud max-w-md mx-auto text-left mb-8 shadow-sm space-y-2 text-sm text-warm-gray">
@@ -106,7 +106,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             setSubmittedQuote(null);
             formik.resetForm();
           }}
-          className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-primary text-white rounded-full font-bold text-xs sm:text-sm whitespace-nowrap hover:bg-primary-dark transition-all cursor-pointer shadow-glow"
+          className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 bg-[#325247] text-white rounded-full font-bold text-xs sm:text-sm whitespace-nowrap hover:bg-[#253e35] transition-all cursor-pointer shadow-sm"
         >
           Submit Another Request
         </button>
@@ -135,7 +135,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Company Name */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Building size={14} className="text-primary" />
+            <Building size={14} className="text-[#325247]" />
             Company / Organization Name *
           </label>
           <input
@@ -148,7 +148,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none transition-all ${
               formik.touched.companyName && formik.errors.companyName
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           />
           {formik.touched.companyName && formik.errors.companyName && (
@@ -159,7 +159,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Contact Name */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <User size={14} className="text-primary" />
+            <User size={14} className="text-[#325247]" />
             Contact Person Name *
           </label>
           <input
@@ -172,7 +172,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none transition-all ${
               formik.touched.contactName && formik.errors.contactName
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           />
           {formik.touched.contactName && formik.errors.contactName && (
@@ -183,7 +183,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Corporate Email */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Mail size={14} className="text-primary" />
+            <Mail size={14} className="text-[#325247]" />
             Work Email Address *
           </label>
           <input
@@ -196,7 +196,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none transition-all ${
               formik.touched.email && formik.errors.email
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           />
           {formik.touched.email && formik.errors.email && (
@@ -207,7 +207,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Canadian Phone Number with Yup Validation */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Phone size={14} className="text-primary" />
+            <Phone size={14} className="text-[#325247]" />
             Canadian Phone Number *
           </label>
           <input
@@ -220,7 +220,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             className={`w-full px-4 py-3 rounded-xl border text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none transition-all ${
               formik.touched.phone && formik.errors.phone
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           />
           {formik.touched.phone && formik.errors.phone && (
@@ -231,7 +231,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Event Type Dropdown */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Sparkles size={14} className="text-primary" />
+            <Sparkles size={14} className="text-[#325247]" />
             Occasion / Event Type *
           </label>
           <select
@@ -244,7 +244,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             } ${
               formik.touched.eventType && formik.errors.eventType
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           >
             <option value="" disabled hidden>Select an option</option>
@@ -264,7 +264,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Service Type Dropdown */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <FileText size={14} className="text-primary" />
+            <FileText size={14} className="text-[#325247]" />
             Primary Service Required *
           </label>
           <select
@@ -277,15 +277,16 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             } ${
               formik.touched.serviceType && formik.errors.serviceType
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           >
             <option value="" disabled hidden>Select an option</option>
-            <option value="Corporate Gift Boxes">Corporate Gift Boxes & Packaging</option>
-            <option value="Wedding & Event Fruit Tables">Wedding & Event Fruit Tables (4ft-6ft)</option>
-            <option value="Live Dipping Station">Live Fruit & Chocolate Dipping Station</option>
-            <option value="Fruit Platters & Baskets">Gourmet Fruit Platters & Baskets</option>
-            <option value="Custom Logo Plaques">Custom Logo Plaques & Dipped Bouquets</option>
+            <option value="Weddings">Weddings</option>
+            <option value="Corporate Gifting">Corporate Gifting</option>
+            <option value="Fruit Tables">Fruit Tables</option>
+            <option value="Dessert Cups">Dessert Cups</option>
+            <option value="Chocolate Fountain">Chocolate Fountain</option>
+            <option value="Custom Displays">Custom Displays</option>
           </select>
           {formik.touched.serviceType && formik.errors.serviceType && (
             <p className="text-xs text-error mt-1.5 font-semibold">{formik.errors.serviceType}</p>
@@ -295,7 +296,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Headcount / Quantity Dropdown */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Users size={14} className="text-primary" />
+            <Users size={14} className="text-[#325247]" />
             Estimated Guest Count / Units *
           </label>
           <select
@@ -308,7 +309,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             } ${
               formik.touched.guestCount && formik.errors.guestCount
                 ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-                : 'border-cloud focus:border-primary focus:ring-2 focus:ring-primary-glow'
+                : 'border-cloud focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20'
             }`}
           >
             <option value="" disabled hidden>Select an option</option>
@@ -326,7 +327,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
         {/* Target Event Date */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-            <Calendar size={14} className="text-primary" />
+            <Calendar size={14} className="text-[#325247]" />
             Target Delivery / Event Date
           </label>
           <input
@@ -335,7 +336,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
             value={formik.values.eventDate}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className="w-full px-4 py-3 rounded-xl border border-cloud text-sm font-medium text-charcoal bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-cloud text-sm font-medium text-charcoal bg-white focus:outline-none focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20 transition-all"
           />
         </div>
       </div>
@@ -343,7 +344,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
       {/* Budget Range Selection */}
       <div className="mb-6">
         <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2 flex items-center gap-1.5">
-          <DollarSign size={14} className="text-primary" />
+          <DollarSign size={14} className="text-[#325247]" />
           Estimated Budget Target (CAD) *
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -354,7 +355,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
               onClick={() => formik.setFieldValue('budgetRange', budget)}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 formik.values.budgetRange === budget
-                  ? 'bg-primary text-white border-primary shadow-sm'
+                  ? 'bg-[#325247] text-white border-[#325247] shadow-sm'
                   : formik.touched.budgetRange && formik.errors.budgetRange
                   ? 'bg-white text-charcoal border-error'
                   : 'bg-white text-charcoal border-cloud hover:border-cloud-dark'
@@ -371,7 +372,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
 
       {/* Custom Notes */}
       <div className="mb-8">
-        <label className="block text-xs font-bold uppercase tracking-wider text-charcoal mb-2">
+        <label className="block text-xs font-bold uppercase tracking-wider text-[#2c3e35] mb-2 font-semibold">
           Customization Requirements & Notes
         </label>
         <textarea
@@ -381,7 +382,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           placeholder="Specify dietary restrictions, corporate branding colors, plaque details, delivery address, or special setup requests..."
-          className="w-full px-4 py-3 rounded-xl border border-cloud text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all resize-none"
+          className="w-full px-4 py-3 rounded-xl border border-cloud text-sm font-medium text-charcoal placeholder:text-text-muted focus:outline-none focus:border-[#325247] focus:ring-2 focus:ring-[#325247]/20 transition-all resize-none"
         ></textarea>
       </div>
 
@@ -389,7 +390,7 @@ export default function B2BQuoteForm({ initialValues = {} }) {
       <button
         type="submit"
         disabled={formik.isSubmitting}
-        className="w-full inline-flex items-center justify-center gap-2 py-3.5 sm:py-4 px-3 sm:px-6 bg-primary hover:bg-primary-dark text-white rounded-2xl font-bold text-xs sm:text-sm md:text-base tracking-wide shadow-glow hover:shadow-lifted transition-all duration-200 cursor-pointer disabled:opacity-50 text-center"
+        className="w-full inline-flex items-center justify-center gap-2 py-3.5 sm:py-4 px-3 sm:px-6 bg-[#325247] hover:bg-[#253e35] text-white rounded-2xl font-bold text-xs sm:text-sm md:text-base tracking-wide shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50 text-center"
       >
         {formik.isSubmitting ? (
           <>

@@ -1,8 +1,16 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Gift, Mail, Phone, MapPin } from 'lucide-react';
+import B2BFooter from './B2BFooter';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith('/b2b')) {
+    return <B2BFooter />;
+  }
+
   return (
     <footer className="bg-charcoal text-cloud mt-0">
       {/* Main Footer */}
