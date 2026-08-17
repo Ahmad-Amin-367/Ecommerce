@@ -90,9 +90,8 @@ function ProductDetailsInner({ slug }) {
                   <button
                     key={idx}
                     onClick={() => setActiveImage(idx)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                      activeImage === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'
-                    }`}
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${activeImage === idx ? 'border-primary' : 'border-transparent hover:border-primary/50'
+                      }`}
                   >
                     <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-cover" sizes="80px" />
                   </button>
@@ -107,7 +106,7 @@ function ProductDetailsInner({ slug }) {
               <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-charcoal leading-tight mb-3">
                 {product.name}
               </h1>
-              
+
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex text-primary">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -146,7 +145,7 @@ function ProductDetailsInner({ slug }) {
                 <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                   {/* Quantity Selector */}
                   <div className="flex items-center bg-background border border-border rounded-xl p-1 h-12 flex-1 sm:flex-none">
-                    <button 
+                    <button
                       onClick={decreaseQuantity}
                       disabled={quantity <= 1}
                       className="w-10 h-full flex items-center justify-center text-text-secondary hover:text-charcoal hover:bg-cloud rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
@@ -154,7 +153,7 @@ function ProductDetailsInner({ slug }) {
                       <Minus size={16} />
                     </button>
                     <span className="w-12 text-center font-medium text-charcoal">{quantity}</span>
-                    <button 
+                    <button
                       onClick={increaseQuantity}
                       disabled={quantity >= product.stock}
                       className="w-10 h-full flex items-center justify-center text-text-secondary hover:text-charcoal hover:bg-cloud rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
@@ -165,8 +164,8 @@ function ProductDetailsInner({ slug }) {
                 </div>
 
                 {/* Add to Cart Button */}
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   className="w-full sm:flex-1 h-12 text-lg"
                   onClick={handleAddToCart}
                   disabled={product.stock === 0 || isAdding}
@@ -184,12 +183,6 @@ function ProductDetailsInner({ slug }) {
                 <span className="w-32 font-medium text-charcoal">Category:</span>
                 <span>{product.category?.name || 'Uncategorized'}</span>
               </div>
-              {product.sku && (
-                <div className="flex">
-                  <span className="w-32 font-medium text-charcoal">SKU:</span>
-                  <span>{product.sku}</span>
-                </div>
-              )}
               {product.tags?.length > 0 && (
                 <div className="flex">
                   <span className="w-32 font-medium text-charcoal">Tags:</span>
@@ -217,7 +210,7 @@ function ProductDetailsInner({ slug }) {
           {/* Quantity + Add to Cart */}
           <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-3 shrink-0">
             <div className="flex items-center bg-background border border-border rounded-xl p-0.5 h-10">
-              <button 
+              <button
                 onClick={decreaseQuantity}
                 disabled={quantity <= 1}
                 className="w-8 h-full flex items-center justify-center text-text-secondary hover:text-charcoal rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
@@ -225,7 +218,7 @@ function ProductDetailsInner({ slug }) {
                 <Minus size={14} />
               </button>
               <span className="w-8 text-center text-sm font-medium text-charcoal">{quantity}</span>
-              <button 
+              <button
                 onClick={increaseQuantity}
                 disabled={quantity >= product.stock}
                 className="w-8 h-full flex items-center justify-center text-text-secondary hover:text-charcoal rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
@@ -255,7 +248,7 @@ function ProductDetailsInner({ slug }) {
 export default function ProductDetailsPage() {
   const { slug } = useParams();
   const [mounted, setMounted] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
