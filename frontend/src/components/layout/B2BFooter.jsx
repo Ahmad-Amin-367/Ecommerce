@@ -157,7 +157,7 @@ export default function B2BFooter() {
             </p>
           </div>
           <Link
-            href="/"
+            href="/b2c"
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
           >
             <span>Go to Retail Shop</span>
