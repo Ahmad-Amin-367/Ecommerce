@@ -19,6 +19,8 @@ const useUIStore = create((set) => ({
   isSearchOpen: false,
   openSearch: () => set({ isSearchOpen: true }),
   closeSearch: () => set({ isSearchOpen: false }),
+  toggleSearch: () => set((s) => ({ isSearchOpen: !s.isSearchOpen })),
+  setIsSearchOpen: (isOpen) => set({ isSearchOpen: isOpen }),
 
   // Global loading (e.g. route changes)
   isLoading: false,

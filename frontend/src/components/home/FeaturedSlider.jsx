@@ -11,7 +11,7 @@ import ProductSkeleton from '@/components/product/ProductSkeleton';
 function FeaturedSliderInner() {
   const { data: productsData, isLoading, isError } = useProducts({ isFeatured: true, limit: 12 });
   const originalProducts = productsData?.data || [];
-  
+
   // Duplicate products to ensure smooth infinite loop if there are too few slides
   const products = originalProducts.length > 0 && originalProducts.length < 8
     ? [...originalProducts, ...originalProducts, ...originalProducts].slice(0, 12)
@@ -89,11 +89,8 @@ function FeaturedSliderInner() {
       {/* Header and Controls Row */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
-            Handpicked for you
-          </p>
           <h2 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-charcoal">
-            Featured Products
+            Best Sellers
           </h2>
         </div>
 
@@ -104,19 +101,19 @@ function FeaturedSliderInner() {
           >
             View All <ArrowRight size={16} />
           </Link>
-          
+
           {/* Navigation Arrows (Desktop mostly) */}
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={scrollPrev}
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-white border-2 border-cloud text-charcoal hover:border-primary hover:text-primary transition-all hover:scale-105 active:scale-95 shadow-sm"
+              className="w-11 h-11 rounded-full flex items-center justify-center bg-white border-2 border-cloud text-warm-gray cursor-pointer transition-all duration-300 shadow-sm hover:bg-primary hover:border-primary hover:text-white hover:scale-105 hover:shadow-glow active:scale-95"
               aria-label="Previous slide"
             >
               <ChevronLeft size={22} strokeWidth={2.5} />
             </button>
             <button
               onClick={scrollNext}
-              className="w-11 h-11 rounded-full flex items-center justify-center bg-primary border-2 border-primary text-white hover:bg-primary-dark hover:border-primary-dark transition-all hover:scale-105 active:scale-95 shadow-glow"
+              className="w-11 h-11 rounded-full flex items-center justify-center bg-white border-2 border-cloud text-warm-gray cursor-pointer transition-all duration-300 shadow-sm hover:bg-primary hover:border-primary hover:text-white hover:scale-105 hover:shadow-glow active:scale-95"
               aria-label="Next slide"
             >
               <ChevronRight size={22} strokeWidth={2.5} />
@@ -147,9 +144,8 @@ function FeaturedSliderInner() {
               key={index}
               onClick={() => emblaApi && emblaApi.scrollTo(index)}
               type="button"
-              className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
-                isActive ? 'w-12 bg-primary' : 'w-3 bg-primary/30 hover:bg-primary/50'
-              }`}
+              className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${isActive ? 'w-12 bg-primary' : 'w-3 bg-primary/30 hover:bg-primary/50'
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           );
@@ -161,7 +157,7 @@ function FeaturedSliderInner() {
 
 export default function FeaturedSlider() {
   const [mounted, setMounted] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
