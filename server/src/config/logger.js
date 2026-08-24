@@ -1,5 +1,17 @@
+const fs = require('fs');
+const path = require('path');
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, printf, colorize, errors } = format;
+
+// Ensure logs directory exists
+const logDir = path.join(process.cwd(), 'logs');
+if (!fs.existsSync(logDir)) {
+  try {
+    fs.mkdirSync(logDir, { recursive: true });
+  } catch (err) {
+    console.warn('Could not create logs directory:', err.message);
+  }
+}
 
 // Custom log format
 const logFormat = printf(({ level, message, timestamp, stack }) => {
@@ -23,18 +35,18 @@ const logger = createLogger({
         logFormat
       ),
     }),
-    // Error log file (production)
+    // Error log file
     new transports.File({
-      filename: 'logs/error.log',
+      filename: path.join(logDir, 'error.log'),
       level: 'error',
     }),
-    // Combined log file (production)
+    // Combined log file
     new transports.File({
-      filename: 'logs/combined.log',
+      filename: path.join(logDir, 'combined.log'),
     }),
   ],
-  exceptionHandlers: [new transports.File({ filename: 'logs/exceptions.log' })],
-  rejectionHandlers: [new transports.File({ filename: 'logs/rejections.log' })],
+  exceptionHandlers: [new transports.File({ filename: path.join(logDir, 'exceptions.log') })],
+  rejectionHandlers: [new transports.File({ filename: path.join(logDir, 'rejections.log') })],
 });
 
 module.exports = logger;

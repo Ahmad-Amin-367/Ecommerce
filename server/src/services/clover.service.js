@@ -1,4 +1,3 @@
-const axios = require('axios');
 const logger = require('../config/logger');
 const ApiError = require('../utils/apiError');
 
@@ -75,36 +74,44 @@ const createCharge = async ({
   try {
     logger.info(`Sending Clover charge request. Amount: ${amountInCents} ${currency}, IdempotencyKey: ${idempotencyKey}`);
 
-    const response = await axios.post(`${baseUrl}/v1/charges`, payload, {
+    const response = await fetch(`${baseUrl}/v1/charges`, {
+      method: 'POST',
       headers,
-      timeout: 25000, // 25s timeout
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(25000), // 25s timeout
     });
 
-    logger.info(`✅ Clover charge successful. Charge ID: ${response.data.id}, Status: ${response.data.status || 'paid'}`);
-    return response.data;
-  } catch (error) {
-    logger.error('❌ Clover charge error:', error?.response?.data || error.message);
+    const data = await response.json().catch(() => ({}));
 
-    if (error.response) {
-      const { status, data } = error.response;
+    if (!response.ok) {
+      logger.error('❌ Clover charge error response:', data);
       const errorMessage =
         data?.message ||
         data?.error?.message ||
         data?.error ||
-        `Clover payment processing failed (${status})`;
+        `Clover payment processing failed (${response.status})`;
 
-      if (status === 401 || status === 403) {
+      if (response.status === 401 || response.status === 403) {
         throw ApiError.internal('Payment gateway authentication failed. Please verify CLOVER_ACCESS_TOKEN.');
       }
 
-      if (status === 402 || status === 400) {
+      if (response.status === 402 || response.status === 400) {
         throw ApiError.badRequest(errorMessage);
       }
 
       throw ApiError.internal(errorMessage);
     }
 
-    if (error.code === 'ECONNABORTED') {
+    logger.info(`✅ Clover charge successful. Charge ID: ${data.id}, Status: ${data.status || 'paid'}`);
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    logger.error('❌ Clover charge exception:', error.message);
+
+    if (error.name === 'TimeoutError') {
       throw ApiError.internal('Payment gateway timed out. Please retry or check your orders.');
     }
 
@@ -140,15 +147,28 @@ const refundCharge = async ({ chargeId, amountInCents, idempotencyKey }) => {
   }
 
   try {
-    const response = await axios.post(`${baseUrl}/v1/refunds`, payload, {
+    const response = await fetch(`${baseUrl}/v1/refunds`, {
+      method: 'POST',
       headers,
-      timeout: 20000,
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(20000),
     });
-    return response.data;
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      logger.error('❌ Clover refund error:', data);
+      const message = data?.message || 'Refund failed';
+      throw ApiError.badRequest(message);
+    }
+
+    return data;
   } catch (error) {
-    logger.error('❌ Clover refund error:', error?.response?.data || error.message);
-    const message = error.response?.data?.message || 'Refund failed';
-    throw ApiError.badRequest(message);
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    logger.error('❌ Clover refund exception:', error.message);
+    throw ApiError.badRequest(error.message || 'Refund failed');
   }
 };
 
