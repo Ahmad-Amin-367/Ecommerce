@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, StarHalf } from 'lucide-react';
 import { formatCurrency, getDiscountPercent } from '@/utils/formatCurrency';
 import useCart from '@/hooks/useCart';
 import Badge from '@/components/ui/Badge';
@@ -10,6 +10,10 @@ import { useAnimationStore } from '@/store/animationStore';
 export default function ProductCard({ product, priority = false }) {
   const { addToCart, isAdding } = useCart();
   const discount = getDiscountPercent(product.price, product.comparePrice);
+
+  // Dynamic rating and review count
+  const rating = Number(product.averageRating || product.rating || 0);
+  const reviewCount = product._count?.reviews || 0;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -24,16 +28,16 @@ export default function ProductCard({ product, priority = false }) {
       className="group flex flex-col bg-white border border-cloud rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-card hover:-translate-y-1"
     >
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-cream/40">
+      <div className="relative aspect-[4/3] overflow-hidden bg-cream/40">
         {product.images?.[0] ? (
-            <Image
-              src={product.images[0]}
-              alt={product.name}
-              fill
-              priority={priority}
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-            />
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            priority={priority}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-cloud">
             <ShoppingCart size={32} />
@@ -68,30 +72,42 @@ export default function ProductCard({ product, priority = false }) {
       </div>
 
       {/* Info */}
-      <div className="p-3 flex flex-col gap-1 flex-1">
+      <div className="p-2 sm:p-5 flex flex-col flex-1">
         {product.category && (
-          <p className="text-[10px] text-accent font-semibold uppercase tracking-[0.1em]">
+          <p className="text-[11px] text-primary font-semibold uppercase tracking-[0.05em] mb-1">
             {product.category.name}
           </p>
         )}
-        <h3 className="font-serif text-[13px] font-semibold text-charcoal leading-tight line-clamp-2">
+        <h3 className="font-sans text-[15px] sm:text-[16px] font-bold text-charcoal leading-snug line-clamp-1 mb-4">
           {product.name}
         </h3>
 
-        {/* Rating */}
-        {product._count?.reviews > 0 && (
-          <div className="flex items-center gap-1 text-xs text-warning">
-            <Star size={12} fill="currentColor" />
-            <span>{product._count.reviews} reviews</span>
+        <div className="flex flex-wrap items-end sm:items-center justify-between gap-x-2 gap-y-1.5 mt-auto">
+          {/* Rating */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex text-[#F5A623] gap-[1px]">
+              {[1, 2, 3, 4, 5].map((index) => {
+                if (rating >= index) {
+                  return <Star key={index} size={14} fill="currentColor" strokeWidth={0} />;
+                } else if (rating >= index - 0.5) {
+                  return <StarHalf key={index} size={14} fill="currentColor" strokeWidth={0} />;
+                } else {
+                  return <Star key={index} size={14} strokeWidth={1.5} className="text-[#F5A623]/30" />;
+                }
+              })}
+            </div>
+            <span className="text-[12px] sm:text-[13px] font-medium text-warm-gray">
+              ({reviewCount})
+            </span>
           </div>
-        )}
 
-        {/* Price */}
-        <div className="flex items-center gap-1.5 mt-auto pt-1.5">
-          <span className="text-sm font-bold text-charcoal">{formatCurrency(product.price)}</span>
-          {product.comparePrice && product.comparePrice > product.price && (
-            <span className="text-[11px] text-text-muted line-through">{formatCurrency(product.comparePrice)}</span>
-          )}
+          {/* Price */}
+          <div className="flex flex-col items-start sm:items-end leading-none">
+            {product.comparePrice && product.comparePrice > product.price && (
+              <span className="text-[11px] text-text-muted line-through mb-0.5">{formatCurrency(product.comparePrice)}</span>
+            )}
+            <span className="text-[14px] sm:text-[15px] font-bold text-charcoal">{formatCurrency(product.price)}</span>
+          </div>
         </div>
       </div>
     </Link>

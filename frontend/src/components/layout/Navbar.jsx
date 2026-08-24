@@ -12,12 +12,7 @@ import { useState, useRef, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const announcements = [
-  '🎁 Free gift wrapping on orders above $100',
-  '✨ Customized edible arrangements available — order yours today',
-  '🚚 Nationwide delivery across Canada',
-  '💝 Personalize every gift — make it truly special',
-];
+import AnnouncementBar from './AnnouncementBar';
 
 const megaMenuCategories = [
   { name: 'Birthday Gifts', slug: 'birthday', icon: Cake, color: 'text-[#E88A4D]', bg: 'bg-[#FFF0E6]' },
@@ -26,6 +21,14 @@ const megaMenuCategories = [
   { name: 'Custom Gifts', slug: 'custom', icon: Sparkles, color: 'text-[#8B5CA8]', bg: 'bg-[#F0E8F5]' },
   { name: 'Corporate', slug: 'corporate', icon: Briefcase, color: 'text-[#5A6B8C]', bg: 'bg-[#E8EDF5]' },
   { name: 'Thank You', slug: 'thank-you', icon: HandHeart, color: 'text-[#C67D5C]', bg: 'bg-[#FBF0E4]' },
+];
+
+const NAV_LINKS = [
+  { href: '/category/birthday', label: 'Birthday' },
+  { href: '/category/anniversary', label: 'Anniversary' },
+  { href: '/category/eid-special', label: 'Eid Special' },
+  { href: '/category/thank-you', label: 'Thank You' },
+  { href: '/category/custom', label: 'Custom Gifts' },
 ];
 
 export default function Navbar() {
@@ -52,18 +55,7 @@ function B2CNavbarContent() {
   const [isShopMenuOpen, setIsShopMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [announcementIdx, setAnnouncementIdx] = useState(0);
 
-  // Auto-advance announcement
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const nextAnnouncement = () => setAnnouncementIdx((prev) => (prev + 1) % announcements.length);
-  const prevAnnouncement = () => setAnnouncementIdx((prev) => (prev - 1 + announcements.length) % announcements.length);
 
   useEffect(() => {
     setMounted(true);
@@ -148,47 +140,11 @@ function B2CNavbarContent() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-sticky" suppressHydrationWarning>
-      {/* ─── Announcement Bar ─────────────────────────────────────────── */}
-      <div className="bg-primary text-text-inverse relative h-9 flex items-center justify-center overflow-hidden">
-        <div className="w-full max-w-3xl mx-auto relative flex items-center justify-between px-2 sm:px-4 h-full">
-          <button
-            onClick={prevAnnouncement}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors z-20 text-white cursor-pointer shrink-0"
-            aria-label="Previous announcement"
-          >
-            <ChevronLeft size={16} />
-          </button>
-
-          <div className="flex-1 relative h-full flex items-center justify-center overflow-hidden px-4">
-            {mounted && (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={announcementIdx}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -50 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="text-xs sm:text-sm font-medium tracking-wide whitespace-nowrap absolute"
-                >
-                  {announcements[announcementIdx]}
-                </motion.div>
-              </AnimatePresence>
-            )}
-          </div>
-
-          <button
-            onClick={nextAnnouncement}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors z-20 text-white cursor-pointer shrink-0"
-            aria-label="Next announcement"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+      <AnnouncementBar />
 
       {/* ─── Main Navigation ──────────────────────────────────────────── */}
       <nav className="relative z-50 bg-white/95 backdrop-blur-md border-b border-cloud">
-        <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 flex items-center justify-between h-[68px] gap-0 sm:gap-4">
+        <div className="w-full max-w-8xl mx-auto px-2 sm:px-6 flex items-center justify-between h-[68px] gap-0 sm:gap-4">
           {/* Mobile menu toggle */}
           <button
             className="flex lg:hidden w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
@@ -212,52 +168,49 @@ function B2CNavbarContent() {
             </span>
           </Link>
 
-          {/* Desktop Search Bar */}
-          <form
-            onSubmit={handleSearch}
-            className="hidden lg:flex items-center flex-1 max-w-md mx-4"
-          >
-            <div className="relative w-full">
-              <button
-                type="submit"
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
-                aria-label="Submit search"
-              >
-                <Search size={16} />
-              </button>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search gifts, occasions…"
-                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-background border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
-              />
-            </div>
-          </form>
 
           {/* Desktop Links */}
-          <ul className="hidden lg:flex items-center gap-0.5 shrink-0">
-            <li>
+          <ul className="hidden lg:flex items-center gap-0 xl:gap-0.5 shrink-0 h-full">
+            <li className="relative h-full flex items-center">
               <Link
-                href="/"
-                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+                href="/b2c"
+                className={`relative z-10 px-2 xl:px-3 py-2 text-[0.75rem] xl:text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 h-full flex items-center whitespace-nowrap ${
+                  pathname === '/b2c' ? 'text-primary' : 'text-warm-gray hover:text-primary'
+                }`}
               >
-                Home
+                <span>Home</span>
+                {pathname === '/b2c' && (
+                  <motion.div
+                    layoutId="activeB2CUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </Link>
             </li>
+            
             {/* Shop with Mega Menu */}
             <li
-              className="relative"
+              className="relative h-full flex items-center"
               ref={shopMenuRef}
               onMouseEnter={handleShopMenuEnter}
               onMouseLeave={handleShopMenuLeave}
             >
               <Link
                 href="/category/all"
-                className="inline-flex items-center gap-1 px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
+                className={`relative z-10 inline-flex items-center gap-1 px-2 xl:px-3 py-2 text-[0.75rem] xl:text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 h-full flex items-center whitespace-nowrap ${
+                  pathname?.startsWith('/category/all') ? 'text-primary' : 'text-warm-gray hover:text-primary'
+                }`}
               >
-                Shop
+                <span>Shop</span>
                 <ChevronDown size={14} className={`transition-transform duration-200 ${isShopMenuOpen ? 'rotate-180' : ''}`} />
+                {pathname?.startsWith('/category/all') && (
+                  <motion.div
+                    layoutId="activeB2CUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </Link>
 
               {/* Mega Menu Dropdown */}
@@ -301,48 +254,61 @@ function B2CNavbarContent() {
                 </div>
               )}
             </li>
-            <li>
-              <Link
-                href="/category/birthday"
-                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
-              >
-                Birthday
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/eid-special"
-                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-warm-gray rounded-lg transition-all duration-200 hover:text-primary hover:bg-primary-glow"
-              >
-                Eid Special
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/category/all?maxPrice=50"
-                className="px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary rounded-lg transition-all duration-200 hover:bg-primary-glow"
-              >
-                Under $50
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/b2b"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[0.8rem] font-bold uppercase tracking-[0.08em] bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-full transition-all duration-200 shadow-sm"
-              >
-                <Briefcase size={13} />
-                B2B Bulk Orders
-              </Link>
-            </li>
+
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <li key={link.href} className="relative h-full flex items-center">
+                  <Link
+                    href={link.href}
+                    className={`relative z-10 px-2 xl:px-3 py-2 text-[0.75rem] xl:text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 h-full flex items-center whitespace-nowrap ${
+                      isActive ? 'text-primary' : 'text-warm-gray hover:text-primary'
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeB2CUnderline"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
 
           {/* Actions */}
           <div className="flex items-center gap-0 sm:gap-1 shrink-0">
+            {/* Desktop Search Bar (Moved to right) */}
+            <form
+              onSubmit={handleSearch}
+              className="hidden xl:flex items-center w-[240px] mr-2"
+            >
+              <div className="relative w-full">
+                <button
+                  type="submit"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
+                  aria-label="Submit search"
+                >
+                  <Search size={16} />
+                </button>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search gifts..."
+                  className="w-full pl-10 pr-4 py-2 rounded-full bg-background border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
+                />
+              </div>
+            </form>
+
             {/* Mobile Search Toggle */}
             <button
               ref={searchToggleButtonRef}
-              className="flex lg:hidden items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
+              className="flex xl:hidden items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Search"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
@@ -416,7 +382,7 @@ function B2CNavbarContent() {
             ) : (
               <Link
                 href="/login"
-                className="hidden md:inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-full text-sm font-semibold tracking-wide transition-all duration-200 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[1px]"
+                className="hidden md:inline-flex items-center px-4 py-2 bg-primary text-white rounded-full text-[13px] font-semibold tracking-wide transition-all duration-200 hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[1px]"
               >
                 Sign In
               </Link>
@@ -426,7 +392,7 @@ function B2CNavbarContent() {
 
         {/* ─── Mobile Search Bar ─────────────────────────────────────────── */}
         {isSearchOpen && (
-          <div ref={searchContainerRef} className="lg:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
+          <div ref={searchContainerRef} className="xl:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
             <form onSubmit={handleSearch} className="relative">
               <button
                 type="submit"
