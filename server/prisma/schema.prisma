@@ -39,7 +39,7 @@ enum PaymentMethod {
   CREDIT_CARD
   DEBIT_CARD
   BANK_TRANSFER
-  STRIPE
+  CLOVER
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -185,8 +185,8 @@ model Order {
   shippingFee     Decimal       @default(0) @db.Decimal(10, 2)
   discount        Decimal       @default(0) @db.Decimal(10, 2)
   totalAmount     Decimal       @db.Decimal(10, 2)
-  stripePaymentIntentId String? @unique
-  stripeClientSecret    String?
+  cloverChargeId        String?       @unique
+  cloverToken           String?
   notes           String?
   deliveredAt     DateTime?
   createdAt       DateTime      @default(now())
