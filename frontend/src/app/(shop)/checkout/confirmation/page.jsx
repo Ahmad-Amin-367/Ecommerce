@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,36 +7,79 @@ import orderService from '@/services/orderService';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { CheckCircle2, PackageCheck, ArrowRight, ShoppingBag, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle2, PackageCheck, ShoppingBag, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 function ConfirmationContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
   const redirectStatus = searchParams.get('redirect_status');
+  const paymentIntentId = searchParams.get('payment_intent');
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchOrder = useCallback(async (isPolling = false) => {
     if (!orderId) {
       setLoading(false);
       return;
     }
 
-    const fetchOrder = async () => {
-      try {
-        const res = await orderService.getOrder(orderId);
-        setOrder(res.data.data);
-      } catch (err) {
+    try {
+      // If returning from 3DS with succeeded status and we have paymentIntentId
+      if (redirectStatus === 'succeeded' && paymentIntentId && !isPolling) {
+        try {
+          await orderService.confirmPayment({ orderId, paymentIntentId });
+        } catch (e) {
+          // May already be confirmed by webhook
+        }
+      }
+
+      const res = await orderService.getOrder(orderId);
+      setOrder(res.data.data);
+    } catch (err) {
+      if (!isPolling) {
         toast.error('Could not load order details');
-      } finally {
+      }
+    } finally {
+      if (!isPolling) {
         setLoading(false);
       }
-    };
+    }
+  }, [orderId, redirectStatus, paymentIntentId]);
 
+  useEffect(() => {
     fetchOrder();
-  }, [orderId]);
+  }, [fetchOrder]);
+
+  // Polling fallback: if order is still UNPAID and redirect_status is succeeded or card payment, poll for 10s
+  useEffect(() => {
+    if (!order || order.paymentStatus === 'PAID' || order.paymentMethod === 'CASH_ON_DELIVERY') {
+      return;
+    }
+
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts += 1;
+      if (attempts > 5) {
+        clearInterval(interval);
+        return;
+      }
+
+      try {
+        const res = await orderService.getOrder(orderId);
+        const fetched = res.data.data;
+        if (fetched.paymentStatus === 'PAID') {
+          setOrder(fetched);
+          clearInterval(interval);
+        }
+      } catch (err) {
+        // silent polling catch
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [order, orderId]);
 
   if (loading) {
     return (

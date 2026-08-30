@@ -172,6 +172,7 @@ export default function AdminOrdersPage() {
                     className="w-full sm:w-auto px-3 py-2 border border-cloud rounded-lg text-sm bg-white focus:outline-none focus:border-primary text-charcoal"
                   >
                     <option value="">Any Payment Method</option>
+                    <option value="STRIPE">Stripe (Card)</option>
                     <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
                     <option value="CREDIT_CARD">Credit Card</option>
                     <option value="BANK_TRANSFER">Bank Transfer</option>

@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 export const checkoutSchema = Yup.object().shape({
   addressId: Yup.string().required('Please select a delivery address'),
   paymentMethod: Yup.string().oneOf(
-    ['CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER'],
+    ['CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER', 'STRIPE'],
     'Please select a valid payment method'
   ).required('Please select a payment method'),
   notes: Yup.string().max(500, 'Notes cannot exceed 500 characters'),

@@ -2,8 +2,8 @@ import api from './api';
 
 const orderService = {
   placeOrder: (data) => api.post('/orders', data),
-  processCloverPayment: (orderId, cloverToken) =>
-    api.post('/payments/clover-charge', { orderId, cloverToken }),
+  createPaymentIntent: (data) => api.post('/payments/create-intent', data),
+  confirmPayment: (data) => api.post('/payments/confirm', data),
   getMyOrders: (params) => api.get('/orders/my-orders', { params }),
   getOrder: (id) => api.get(`/orders/${id}`),
   cancelOrder: (id) => api.patch(`/orders/${id}/cancel`),

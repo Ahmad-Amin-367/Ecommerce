@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,21 +9,24 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
 import orderService from '@/services/orderService';
 import Button from '@/components/ui/Button';
-import CloverCardForm from '@/components/checkout/CloverCardForm';
+import StripeContainer from '@/components/checkout/StripeContainer';
+import StripeCardForm from '@/components/checkout/StripeCardForm';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { ChevronLeft, Lock, CreditCard, Banknote, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, CreditCard, Banknote, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const { user } = useAuthStore();
-  const cloverRef = useRef(null);
+  const stripeRef = useRef(null);
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('CLOVER'); // 'CLOVER' | 'CASH_ON_DELIVERY'
+  const [paymentMethod, setPaymentMethod] = useState('STRIPE'); // 'STRIPE' | 'CASH_ON_DELIVERY'
+  const [clientSecret, setClientSecret] = useState('');
+  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -51,8 +54,36 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  const shippingFee = 200; // Flat rate
+  const shippingFee = subtotal >= 500 ? 0 : 200; // Free shipping over $500 CAD, else flat $200
   const total = subtotal + shippingFee;
+
+  // Initialize or fetch Stripe PaymentIntent clientSecret
+  const initPaymentIntent = useCallback(async () => {
+    if (items.length === 0 || paymentMethod !== 'STRIPE') return;
+
+    try {
+      setIsInitializingPayment(true);
+      const res = await orderService.createPaymentIntent({
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        email: formData.email || user?.email,
+      });
+
+      if (res.data?.data?.clientSecret) {
+        setClientSecret(res.data.data.clientSecret);
+      }
+    } catch (err) {
+      console.error('Failed to initialize Stripe PaymentIntent:', err);
+    } finally {
+      setIsInitializingPayment(false);
+    }
+  }, [items, paymentMethod, formData.email, user?.email]);
+
+  useEffect(() => {
+    initPaymentIntent();
+  }, [initPaymentIntent]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,27 +96,15 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (paymentMethod === 'STRIPE' && !stripeRef.current) {
+      toast.error('Payment gateway is initializing. Please wait a moment.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      let cloverToken = null;
-
-      // 1. If paying with Card via Clover, tokenize card details first
-      if (paymentMethod === 'CLOVER') {
-        if (!cloverRef.current) {
-          throw new Error('Payment gateway is still initializing. Please wait a moment.');
-        }
-
-        try {
-          cloverToken = await cloverRef.current.tokenize();
-        } catch (tokenErr) {
-          setIsSubmitting(false);
-          toast.error(tokenErr.message || 'Please check your card details.');
-          return;
-        }
-      }
-
-      // 2. Create the Order in Database
+      // 1. Create the Order in Database (PENDING state)
       const payload = {
         items: items.map((item) => ({
           productId: item.product.id,
@@ -108,24 +127,31 @@ export default function CheckoutPage() {
       const res = await api.post('/orders', payload);
       const createdOrder = res.data.data;
 
-      // 3. Handle Payment Method Branch
+      // 2. Handle Payment Method Branch
       if (paymentMethod === 'CASH_ON_DELIVERY') {
         clearCart();
         toast.success('Order placed successfully!');
         router.push(`/checkout/confirmation?orderId=${createdOrder.id}`);
-      } else if (paymentMethod === 'CLOVER') {
-        // 4. Charge the single-use token on Clover via Backend
+      } else if (paymentMethod === 'STRIPE') {
+        // 3. Confirm Stripe Payment in-page via Stripe Elements
         try {
-          await orderService.processCloverPayment(createdOrder.id, cloverToken);
-          clearCart();
-          toast.success('Payment confirmed! Your order has been placed.');
-          router.push(`/checkout/confirmation?orderId=${createdOrder.id}`);
-        } catch (chargeErr) {
-          const errMsg =
-            chargeErr?.response?.data?.message ||
-            chargeErr?.message ||
-            'Payment processing failed. Please try another card.';
-          toast.error(errMsg);
+          const paymentResult = await stripeRef.current.confirm(createdOrder.id);
+
+          if (paymentResult?.success && paymentResult?.paymentIntent?.id) {
+            // Confirm on backend database
+            await orderService.confirmPayment({
+              orderId: createdOrder.id,
+              paymentIntentId: paymentResult.paymentIntent.id,
+            });
+
+            clearCart();
+            toast.success('Payment confirmed! Your order has been placed.');
+            router.push(`/checkout/confirmation?orderId=${createdOrder.id}`);
+          }
+        } catch (cardErr) {
+          setIsSubmitting(false);
+          toast.error(cardErr.message || 'Payment processing failed. Please check your card.');
+          return;
         }
       }
     } catch (error) {
@@ -134,7 +160,6 @@ export default function CheckoutPage() {
           error?.message ||
           'Failed to process checkout. Please check your information.'
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -164,7 +189,7 @@ export default function CheckoutPage() {
           </button>
           <div className="flex items-center gap-1.5 text-sm text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full font-medium border border-emerald-200">
             <ShieldCheck size={16} />
-            Secure Encrypted Checkout
+            Secure 256-bit SSL Checkout
           </div>
         </div>
 
@@ -276,11 +301,11 @@ export default function CheckoutPage() {
               {/* Payment Method Selection */}
               <h2 className="font-serif text-2xl font-bold text-charcoal mb-4">Payment Method</h2>
               <div className="grid grid-cols-1 gap-4 mb-6">
-                {/* Clover Card Payment Option */}
+                {/* Stripe Card Payment Option */}
                 <div
-                  onClick={() => setPaymentMethod('CLOVER')}
+                  onClick={() => setPaymentMethod('STRIPE')}
                   className={`border rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all ${
-                    paymentMethod === 'CLOVER'
+                    paymentMethod === 'STRIPE'
                       ? 'border-primary bg-primary-glow/60 shadow-sm'
                       : 'border-cloud hover:border-primary/40 bg-white'
                   }`}
@@ -288,25 +313,25 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                        paymentMethod === 'CLOVER' ? 'border-primary' : 'border-gray-300'
+                        paymentMethod === 'STRIPE' ? 'border-primary' : 'border-gray-300'
                       }`}
                     >
-                      {paymentMethod === 'CLOVER' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                      {paymentMethod === 'STRIPE' && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                     </div>
                     <div className="flex items-center gap-2">
                       <CreditCard
                         size={20}
-                        className={paymentMethod === 'CLOVER' ? 'text-primary' : 'text-text-secondary'}
+                        className={paymentMethod === 'STRIPE' ? 'text-primary' : 'text-text-secondary'}
                       />
                       <div>
                         <p
                           className={`font-medium text-sm ${
-                            paymentMethod === 'CLOVER' ? 'text-primary' : 'text-charcoal'
+                            paymentMethod === 'STRIPE' ? 'text-primary' : 'text-charcoal'
                           }`}
                         >
-                          Credit / Debit Card (TD / Clover)
+                          Credit / Debit Card (Stripe)
                         </p>
-                        <p className="text-xs text-text-muted">Visa, Mastercard, Amex, Interac</p>
+                        <p className="text-xs text-text-muted">Visa, Mastercard, Amex, Discover</p>
                       </div>
                     </div>
                   </div>
@@ -354,10 +379,12 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Embedded Clover Card Iframe Form (Shown when Card is selected) */}
-              {paymentMethod === 'CLOVER' && (
+              {/* Embedded Stripe Card Form (Shown when Card is selected) */}
+              {paymentMethod === 'STRIPE' && (
                 <div className="mb-8">
-                  <CloverCardForm ref={cloverRef} />
+                  <StripeContainer clientSecret={clientSecret}>
+                    <StripeCardForm ref={stripeRef} />
+                  </StripeContainer>
                 </div>
               )}
 
@@ -365,9 +392,9 @@ export default function CheckoutPage() {
                 type="submit"
                 variant="primary"
                 className="w-full h-14 text-lg font-semibold shadow-md cursor-pointer"
-                isLoading={isSubmitting}
+                isLoading={isSubmitting || isInitializingPayment}
               >
-                {paymentMethod === 'CLOVER'
+                {paymentMethod === 'STRIPE'
                   ? `Place Order & Pay (${formatCurrency(total)})`
                   : `Place Order (COD - ${formatCurrency(total)})`}
               </Button>

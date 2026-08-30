@@ -5,7 +5,7 @@ const placeOrder = Joi.object({
     'any.required': 'Delivery address is required',
   }),
   paymentMethod: Joi.string()
-    .valid('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER')
+    .valid('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER', 'STRIPE')
     .default('CASH_ON_DELIVERY'),
   notes: Joi.string().max(500).optional().allow(''),
 });
@@ -28,7 +28,7 @@ const query = Joi.object({
     .valid('PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED')
     .optional(),
   paymentStatus: Joi.string().valid('UNPAID', 'PAID', 'FAILED', 'REFUNDED').optional(),
-  paymentMethod: Joi.string().valid('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER').optional(),
+  paymentMethod: Joi.string().valid('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER', 'STRIPE').optional(),
   startDate: Joi.date().iso().optional(),
   endDate: Joi.date().iso().optional(),
   minTotal: Joi.number().min(0).optional(),

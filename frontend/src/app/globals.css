@@ -291,3 +291,18 @@
   opacity: 1;
 }
 
+/* ─── Hide Stripe Developer Test Mode Floating Badge ──────────────────────── */
+iframe[name^='__privateStripeBadge'],
+iframe[src*='stripe.com'][name*='badge'],
+.StripeBadge,
+.__PrivateStripeBadge,
+[data-stripe-badge],
+div[class*='stripe-assistant'],
+div[id*='stripe-badge'] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+
