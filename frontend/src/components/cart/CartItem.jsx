@@ -38,7 +38,6 @@ export default function CartItem({ item }) {
           <button
             className="w-7 h-7 rounded-lg border border-cloud flex items-center justify-center text-warm-gray bg-white transition-all duration-200 hover:not-disabled:border-primary hover:not-disabled:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={() => updateItem({ productId: product.id, quantity: quantity + 1 })}
-            disabled={quantity >= product.stock}
             aria-label="Increase quantity"
           >
             <Plus size={14} />

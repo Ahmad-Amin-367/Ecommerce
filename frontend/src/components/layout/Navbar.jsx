@@ -282,33 +282,10 @@ function B2CNavbarContent() {
 
           {/* Actions */}
           <div className="flex items-center gap-0 sm:gap-1 shrink-0">
-            {/* Desktop Search Bar (Moved to right) */}
-            <form
-              onSubmit={handleSearch}
-              className="hidden xl:flex items-center w-[240px] mr-2"
-            >
-              <div className="relative w-full">
-                <button
-                  type="submit"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"
-                  aria-label="Submit search"
-                >
-                  <Search size={16} />
-                </button>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search gifts..."
-                  className="w-full pl-10 pr-4 py-2 rounded-full bg-background border border-cloud text-sm text-charcoal placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-glow transition-all duration-200"
-                />
-              </div>
-            </form>
-
-            {/* Mobile Search Toggle */}
+            {/* Universal Search Toggle */}
             <button
               ref={searchToggleButtonRef}
-              className="flex xl:hidden items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-warm-gray transition-colors duration-200 hover:bg-background-hover hover:text-primary cursor-pointer"
               aria-label="Search"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
@@ -392,8 +369,8 @@ function B2CNavbarContent() {
 
         {/* ─── Mobile Search Bar ─────────────────────────────────────────── */}
         {isSearchOpen && (
-          <div ref={searchContainerRef} className="xl:hidden absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
-            <form onSubmit={handleSearch} className="relative">
+          <div ref={searchContainerRef} className="absolute top-full left-0 right-0 border-b border-cloud px-4 py-3 bg-white shadow-sm animate-fade-in z-40">
+            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
               <button
                 type="submit"
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-warm-gray hover:text-primary transition-colors cursor-pointer"

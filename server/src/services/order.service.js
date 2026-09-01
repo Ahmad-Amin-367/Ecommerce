@@ -36,15 +36,10 @@ const placeOrder = async (userId, data) => {
     throw ApiError.badRequest('Your cart is empty');
   }
 
-  // Validate stock for each item
+  // Validate active status for each item
   for (const item of cart.items) {
     if (!item.product.isActive) {
       throw ApiError.badRequest(`Product "${item.product.name}" is no longer available`);
-    }
-    if (item.product.stock < item.quantity) {
-      throw ApiError.badRequest(
-        `Insufficient stock for "${item.product.name}". Available: ${item.product.stock}`
-      );
     }
   }
 
@@ -84,15 +79,7 @@ const placeOrder = async (userId, data) => {
         },
       });
 
-      // Decrement stock in parallel
-      await Promise.all(
-        cart.items.map((item) =>
-          tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { decrement: item.quantity } },
-          })
-        )
-      );
+
 
       return newOrder;
     },
@@ -186,16 +173,7 @@ const cancelOrder = async (orderId, userId) => {
     throw ApiError.badRequest('Order can only be cancelled when Pending or Confirmed');
   }
 
-  // Restore stock
-  const items = await prisma.orderItem.findMany({ where: { orderId } });
-  await prisma.$transaction(
-    items.map((item) =>
-      prisma.product.update({
-        where: { id: item.productId },
-        data: { stock: { increment: item.quantity } },
-      })
-    )
-  );
+
 
   return prisma.order.update({
     where: { id: orderId },

@@ -31,10 +31,6 @@ const createOrder = async (req, res) => {
       throw ApiError.notFound(`Product not found: ${item.productId}`);
     }
 
-    if (product.stock < item.quantity) {
-      throw ApiError.badRequest(`Insufficient stock for ${product.name}`);
-    }
-
     const itemTotal = Number(product.price) * item.quantity;
     subtotal += itemTotal;
 
@@ -94,15 +90,6 @@ const createOrder = async (req, res) => {
         }
       });
 
-      // 3. Deduct stock in parallel
-      await Promise.all(
-        orderItemsData.map((item) =>
-          tx.product.update({
-            where: { id: item.productId },
-            data: { stock: { decrement: item.quantity } }
-          })
-        )
-      );
 
       return newOrder;
     },

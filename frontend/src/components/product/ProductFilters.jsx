@@ -63,7 +63,7 @@ export default function ProductFilters({ activeCategoryName }) {
 
   const hasActiveFilters = currentMinPrice || currentMaxPrice || currentSortBy || activeCategoryName;
 
-  const FilterContent = () => (
+  const filterContentNode = (
     <div className="w-full">
       {/* Active Filters */}
       {hasActiveFilters && (
@@ -161,7 +161,7 @@ export default function ProductFilters({ activeCategoryName }) {
   return (
     <>
       <aside className="hidden lg:block sticky top-24 pr-8 border-r border-cloud h-fit max-h-[calc(100vh-120px)] overflow-y-auto">
-        <FilterContent />
+        {filterContentNode}
       </aside>
 
       <div className="lg:hidden mb-6">
@@ -175,7 +175,7 @@ export default function ProductFilters({ activeCategoryName }) {
         
         {isMobileFiltersOpen && (
           <div className="mt-4 p-4 bg-white border border-cloud rounded-xl shadow-soft animate-fade-in">
-            <FilterContent />
+            {filterContentNode}
           </div>
         )}
       </div>

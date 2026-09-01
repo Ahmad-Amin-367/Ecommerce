@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import { Search, Eye, Filter, CheckCircle, Package, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
@@ -10,6 +10,66 @@ import { useAdminOrders, useUpdateOrderStatus } from '@/hooks/useOrders';
 import ReactPaginate from 'react-paginate';
 import DateRangePickerButton from '@/components/ui/DateRangePickerButton';
 import OrderDetailsModal from '@/components/ui/OrderDetailsModal';
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case 'PROCESSING': return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'SHIPPED': return 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'DELIVERED': return 'bg-green-100 text-green-800 border-green-200';
+    case 'CANCELLED': return 'bg-red-100 text-red-800 border-red-200';
+    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
+
+const OrderRow = memo(({ order, handleStatusChange, setSelectedOrderId }) => {
+  return (
+    <tr className="hover:bg-cream/30 transition-colors">
+      <td className="px-6 py-4 font-medium text-primary">
+        #{order.orderNumber.split('-')[1] || order.orderNumber}
+      </td>
+      <td className="px-6 py-4">
+        <div className="font-medium text-charcoal">{order.guestName || order.user?.name || 'Guest User'}</div>
+        <div className="text-xs text-text-muted">{order.guestEmail || order.user?.email || 'N/A'}</div>
+      </td>
+      <td className="px-6 py-4 text-text-secondary">
+        {new Date(order.createdAt).toLocaleDateString('en-PK', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        })}
+      </td>
+      <td className="px-6 py-4 font-medium flex flex-col">
+        <span>{formatCurrency(order.totalAmount)}</span>
+        {order.paymentStatus === 'PAID' ? (
+          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded w-max mt-1">PAID</span>
+        ) : (
+          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded w-max mt-1">{order.paymentStatus}</span>
+        )}
+      </td>
+      <td className="px-6 py-4">
+        <select
+          value={order.status}
+          onChange={(e) => handleStatusChange(order.id, e.target.value)}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold border outline-none cursor-pointer appearance-none ${getStatusColor(order.status)}`}
+        >
+          <option value="PENDING">PENDING</option>
+          <option value="PROCESSING">PROCESSING</option>
+          <option value="SHIPPED">SHIPPED</option>
+          <option value="DELIVERED">DELIVERED</option>
+          <option value="CANCELLED">CANCELLED</option>
+        </select>
+      </td>
+      <td className="px-6 py-4 text-right">
+        <button
+          onClick={() => setSelectedOrderId(order.id)}
+          className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex cursor-pointer"
+          title="View Details"
+        >
+          <Eye size={18} />
+        </button>
+      </td>
+    </tr>
+  );
+});
 
 export default function AdminOrdersPage() {
   const [page, setPage] = useState(1);
@@ -54,7 +114,7 @@ export default function AdminOrdersPage() {
   const totalCount = meta.totalCount || 0;
   const totalPages = meta.totalPages || 0;
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = useCallback(async (orderId, newStatus) => {
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus });
       toast.success('Order status updated');
@@ -62,18 +122,9 @@ export default function AdminOrdersPage() {
     } catch (error) {
       toast.error('Failed to update status');
     }
-  };
+  }, [refetch]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'PROCESSING': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'SHIPPED': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'DELIVERED': return 'bg-green-100 text-green-800 border-green-200';
-      case 'CANCELLED': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
+
 
   return (
     <div className="flex-1 overflow-y-auto bg-background animate-fade-in">
@@ -234,50 +285,12 @@ export default function AdminOrdersPage() {
                   </tr>
                 ) : (
                   orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-cream/30 transition-colors">
-                      <td className="px-6 py-4 font-medium text-primary">
-                        #{order.orderNumber.split('-')[1] || order.orderNumber}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-charcoal">{order.guestName || order.user?.name || 'Guest User'}</div>
-                        <div className="text-xs text-text-muted">{order.guestEmail || order.user?.email || 'N/A'}</div>
-                      </td>
-                      <td className="px-6 py-4 text-text-secondary">
-                        {new Date(order.createdAt).toLocaleDateString('en-PK', {
-                          day: 'numeric', month: 'short', year: 'numeric'
-                        })}
-                      </td>
-                      <td className="px-6 py-4 font-medium flex flex-col">
-                        <span>{formatCurrency(order.totalAmount)}</span>
-                        {order.paymentStatus === 'PAID' ? (
-                          <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded w-max mt-1">PAID</span>
-                        ) : (
-                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded w-max mt-1">{order.paymentStatus}</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border outline-none cursor-pointer appearance-none ${getStatusColor(order.status)}`}
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="PROCESSING">PROCESSING</option>
-                          <option value="SHIPPED">SHIPPED</option>
-                          <option value="DELIVERED">DELIVERED</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => setSelectedOrderId(order.id)}
-                          className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg hover:bg-primary-glow/10 inline-flex cursor-pointer"
-                          title="View Details"
-                        >
-                          <Eye size={18} />
-                        </button>
-                      </td>
-                    </tr>
+                    <OrderRow 
+                      key={order.id} 
+                      order={order} 
+                      handleStatusChange={handleStatusChange} 
+                      setSelectedOrderId={setSelectedOrderId} 
+                    />
                   ))
                 )}
               </tbody>
