@@ -31,9 +31,10 @@ export default function HomePage() {
         {/* Mobile: Absolute image so tall text can stretch the container naturally */}
         <div className="block lg:hidden absolute inset-0 z-0">
           <Image
-            src="/hero/hero_bg_v5.png"
+            src="/hero/hero_bg.png"
             alt="Hisna Gifts Hero Background"
             fill
+            sizes="100vw"
             className="object-cover object-right"
             priority
           />
@@ -42,11 +43,11 @@ export default function HomePage() {
         </div>
 
         {/* Content Container - Absolute on desktop to fit inside the image, Relative on mobile */}
-        <div className="relative lg:absolute inset-0 z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center lg:items-start py-12 lg:py-10 xl:py-16">
+        <div className="relative lg:absolute inset-0 z-10 w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] xl:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center lg:items-start py-12 lg:py-4 xl:py-10">
           {/* Left Column - Copy */}
-          <div className="animate-fade-in z-10 flex flex-col pt-4 lg:pt-0 sm:max-w-[60%] md:max-w-[70%] lg:max-w-none">
+          <div className="animate-fade-in z-10 flex flex-col pt-4 lg:pt-2 sm:max-w-[60%] md:max-w-[70%] lg:max-w-none">
             {/* Top subtitle */}
-            <div className="flex flex-col items-start mb-3 lg:mb-4">
+            <div className="flex flex-col items-start mb-3 lg:mb-2 xl:mb-4">
               <span className="text-primary font-bold text-[10px] sm:text-xs tracking-[0.2em] uppercase ml-1">
                 PERSONAL GIFTING
               </span>
@@ -57,16 +58,16 @@ export default function HomePage() {
               </div>
             </div>
 
-            <h1 className="font-serif text-[clamp(2rem,4vw,3.75rem)] font-bold leading-[1.05] tracking-tight mb-3 lg:mb-4">
+            <h1 className="font-serif text-[clamp(2rem,4vw,3.75rem)] font-bold leading-[1.05] tracking-tight mb-3 lg:mb-2 xl:mb-4">
               <span className="block text-charcoal">Personal Gifts</span>
               <span className="block text-primary">Made Beautiful</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-warm-gray leading-snug mb-5 lg:mb-6 max-w-[90%] lg:max-w-[480px] font-sans">
+            <p className="text-sm sm:text-base text-warm-gray leading-snug mb-5 lg:mb-3 xl:mb-6 max-w-[90%] lg:max-w-[480px] font-sans">
               Celebrate life's special moments with handcrafted edible arrangements. Perfect for birthdays, anniversaries, Eid, thank-you gifts, and every little moment in between.
             </p>
 
-            <div className="flex flex-wrap gap-3 sm:gap-4 mb-6 lg:mb-8">
+            <div className="flex flex-wrap gap-3 sm:gap-4 mb-6 lg:mb-4 xl:mb-8">
               <Link
                 href="/category/all"
                 className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 bg-primary text-white rounded-full font-semibold text-sm transition-all hover:bg-primary-dark hover:shadow-glow hover:-translate-y-[2px]"
@@ -84,7 +85,7 @@ export default function HomePage() {
             </div>
 
             {/* Bottom Feature List */}
-            <div className="flex flex-wrap lg:flex-nowrap gap-x-6 gap-y-4 pt-4 lg:pt-5 border-t border-cloud/50">
+            <div className="flex flex-wrap lg:flex-nowrap gap-x-4 lg:gap-x-6 gap-y-3 pt-4 lg:pt-3 xl:pt-5 border-t border-cloud/50">
               <div className="flex items-start gap-2.5">
                 <Leaf size={18} className="text-primary shrink-0 mt-0.5" />
                 <div className="flex flex-col">

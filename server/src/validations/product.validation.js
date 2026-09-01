@@ -9,8 +9,7 @@ const create = Joi.object({
     'any.required': 'Price is required',
     'number.positive': 'Price must be a positive number',
   }),
-  comparePrice: Joi.number().positive().precision(2).optional().allow(null, ''),
-  stock: Joi.number().integer().min(0).default(0),
+  comparePrice: Joi.number().min(0).optional(),
   categoryId: Joi.string().required().messages({
     'any.required': 'Category is required',
   }),
@@ -24,8 +23,7 @@ const update = Joi.object({
   name: Joi.string().min(2).max(200).optional(),
   description: Joi.string().max(5000).optional().allow(''),
   price: Joi.number().positive().precision(2).optional(),
-  comparePrice: Joi.number().positive().precision(2).optional().allow(null, ''),
-  stock: Joi.number().integer().min(0).optional(),
+  comparePrice: Joi.number().min(0).optional(),
   categoryId: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
   isFeatured: Joi.boolean().optional(),
@@ -42,10 +40,9 @@ const query = Joi.object({
   category: Joi.string().optional(),
   minPrice: Joi.number().min(0).optional(),
   maxPrice: Joi.number().min(0).optional(),
-  maxStock: Joi.number().min(0).optional(),
   isActive: Joi.boolean().optional(),
   isFeatured: Joi.boolean().optional(),
-  sortBy: Joi.string().valid('price', 'createdAt', 'name', 'stock').default('createdAt'),
+  sortBy: Joi.string().valid('price', 'createdAt', 'name').default('createdAt'),
   sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
