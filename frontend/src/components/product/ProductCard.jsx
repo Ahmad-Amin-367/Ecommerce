@@ -26,7 +26,7 @@ const ProductCard = memo(function ProductCard({ product, priority = false }) {
   return (
     <Link
       href={`/products/${product.slug || product.id}`}
-      className="group flex flex-col bg-white border border-cloud rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-card hover:-translate-y-1"
+      className="group flex flex-col bg-white border border-cloud rounded-sm overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-sm"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-cream/40">

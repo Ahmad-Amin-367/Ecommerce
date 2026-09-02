@@ -1,6 +1,6 @@
 export default function ProductSkeleton() {
   return (
-    <div className="flex flex-col bg-white border border-cloud rounded-2xl overflow-hidden shadow-sm animate-pulse">
+    <div className="flex flex-col bg-white border border-cloud rounded-sm overflow-hidden shadow-sm animate-pulse">
       {/* Image Skeleton */}
       <div className="relative aspect-square bg-cream/60 w-full" />
 

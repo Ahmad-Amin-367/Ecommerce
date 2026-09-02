@@ -124,7 +124,7 @@ export default function HomePage() {
         {/* Right Side Polaroid Images - Absolutely positioned on the entire section for perfect Y-axis centering */}
         <div className="hidden sm:flex absolute right-4 lg:right-8 xl:right-12 top-1/2 -translate-y-1/2 flex-col gap-4 z-20 pointer-events-auto">
           {/* Top Image - Chocolate Hearts */}
-          <div className="relative w-[140px] lg:w-[160px] aspect-square rounded-2xl overflow-hidden shadow-lifted border-4 lg:border-[6px] border-white animate-float" style={{ animationDelay: '2s' }}>
+          <div className="relative w-[140px] lg:w-[160px] aspect-square rounded-sm overflow-hidden shadow-md border-4 lg:border-8 border-white animate-float" style={{ animationDelay: '2s' }}>
             <Image
               src="/products/prod-3.jpg"
               alt="Chocolate covered strawberries and hearts"
@@ -135,7 +135,7 @@ export default function HomePage() {
           </div>
 
           {/* Bottom Image - Fruit Platter */}
-          <div className="relative w-[140px] lg:w-[160px] aspect-square rounded-2xl overflow-hidden shadow-lifted border-4 lg:border-[6px] border-white animate-float" style={{ animationDelay: '3.5s' }}>
+          <div className="relative w-[140px] lg:w-[160px] aspect-square rounded-sm overflow-hidden shadow-md border-4 lg:border-8 border-white animate-float" style={{ animationDelay: '3.5s' }}>
             <Image
               src="/products/prod-6.jpg"
               alt="Beautiful fruit platter"
