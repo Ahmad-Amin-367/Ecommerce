@@ -2,6 +2,7 @@ require('dotenv').config();
 const app = require('./src/app');
 const prisma = require('./src/config/db');
 const logger = require('./src/config/logger');
+const { initSocket } = require('./src/config/socket');
 
 const PORT = process.env.PORT || 5000;
 
@@ -13,7 +14,7 @@ const startServer = async () => {
     console.log('✅ Database connected successfully');
     logger.info('✅ Database connected successfully');
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
       console.log(`📡 API base URL: http://localhost:${PORT}/api/v1`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -21,6 +22,9 @@ const startServer = async () => {
       logger.info(`📡 API base URL: http://localhost:${PORT}/api/v1`);
       logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+
+    // Initialize WebSockets
+    initSocket(server);
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
     logger.error('❌ Failed to start server:', error);

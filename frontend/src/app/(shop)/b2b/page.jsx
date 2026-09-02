@@ -109,7 +109,7 @@ export default function B2BPage() {
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#4e7350] block">
               Weddings, Events & Corporate
             </span>
-            
+
             <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] text-[#325247] tracking-tight">
               Elevate Every <br className="hidden sm:inline" /> Celebration
             </h1>
@@ -156,7 +156,7 @@ export default function B2BPage() {
           {/* Fade Mask: Desktop left-fade & Mobile top-fade */}
           <div className="hidden lg:block absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none" />
           <div className="lg:hidden absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white to-transparent z-20 pointer-events-none" />
-          
+
           <Image
             src="/products/prod-2.jpg"
             alt="Hisna Gifts Corporate Fruit Display & Event Catering"
@@ -190,7 +190,7 @@ export default function B2BPage() {
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#325247]">
               Our Event & Corporate Services
             </h2>
-            
+
             {/* Heart Separator */}
             <div className="flex items-center justify-center gap-2 mt-3 mb-6">
               <div className="h-[1px] w-12 bg-[#325247]/20" />
@@ -336,7 +336,7 @@ export default function B2BPage() {
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#325247]">
               Our Simple Process
             </h2>
-            
+
             {/* Heart Separator */}
             <div className="flex items-center justify-center gap-2 mt-3 mb-6">
               <div className="h-[1px] w-12 bg-[#325247]/20" />
