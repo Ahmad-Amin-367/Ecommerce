@@ -85,60 +85,66 @@ export default function CartDrawer({ isOpen, onClose }) {
                 </div>
               ) : (
                 <ul role="list" className="-my-6 divide-y divide-cloud">
-                  {items.map((item) => (
-                    <li key={item.product.id} className="flex py-6">
-                      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-cloud bg-cream">
-                        <Image
-                          src={item.product.images?.[0] || 'https://via.placeholder.com/150'}
-                          alt={item.product.name}
-                          width={96}
-                          height={96}
-                          className="h-full w-full object-cover object-center"
-                        />
-                      </div>
+                  {items.map((item) => {
+                    const productId = item.product?.id || item.productId || item.id;
+                    const isMaxStock = item.product?.stock !== undefined && item.quantity >= item.product.stock;
 
-                      <div className="ml-4 flex flex-1 flex-col">
-                        <div>
-                          <div className="flex justify-between text-base font-medium text-charcoal">
-                            <h3 className="line-clamp-2 pr-4 leading-snug">
-                              <Link href={`/products/${item.product.slug || item.product.id}`} onClick={onClose}>
-                                {item.product.name}
-                              </Link>
-                            </h3>
-                            <p className="ml-4 whitespace-nowrap">{formatCurrency(item.product.price)}</p>
+                    return (
+                      <li key={productId} className="flex py-6">
+                        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-cloud bg-cream">
+                          <Image
+                            src={item.product?.images?.[0] || 'https://via.placeholder.com/150'}
+                            alt={item.product?.name || 'Product'}
+                            width={96}
+                            height={96}
+                            className="h-full w-full object-cover object-center"
+                          />
+                        </div>
+
+                        <div className="ml-4 flex flex-1 flex-col">
+                          <div>
+                            <div className="flex justify-between text-base font-medium text-charcoal">
+                              <h3 className="line-clamp-2 pr-4 leading-snug">
+                                <Link href={`/products/${item.product?.slug || productId}`} onClick={onClose}>
+                                  {item.product?.name || 'Product'}
+                                </Link>
+                              </h3>
+                              <p className="ml-4 whitespace-nowrap">{formatCurrency(item.product?.price || 0)}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-1 items-end justify-between text-sm mt-4">
+                            <div className="flex items-center border border-cloud rounded-lg">
+                              <button 
+                                onClick={() => updateItem({ productId, quantity: item.quantity - 1 })}
+                                disabled={item.quantity <= 1 || isLoading}
+                                className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                              >
+                                <Minus size={14} />
+                              </button>
+                              <span className="w-8 text-center font-medium text-charcoal">{item.quantity}</span>
+                              <button 
+                                onClick={() => updateItem({ productId, quantity: item.quantity + 1 })}
+                                disabled={isLoading || isMaxStock}
+                                className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                                title={isMaxStock ? 'Maximum available stock reached' : ''}
+                              >
+                                <Plus size={14} />
+                              </button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => removeItem(productId)}
+                              className="font-medium text-error hover:text-error/80 flex items-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={14} />
+                              Remove
+                            </button>
                           </div>
                         </div>
-                        <div className="flex flex-1 items-end justify-between text-sm mt-4">
-                          <div className="flex items-center border border-cloud rounded-lg">
-                            <button 
-                              onClick={() => updateItem({ productId: item.product.id, quantity: item.quantity - 1 })}
-                              disabled={item.quantity <= 1 || isLoading}
-                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="w-8 text-center font-medium text-charcoal">{item.quantity}</span>
-                            <button 
-                              onClick={() => updateItem({ productId: item.product.id, quantity: item.quantity + 1 })}
-                              disabled={isLoading}
-                              className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.product.id)}
-                            className="font-medium text-error hover:text-error/80 flex items-center gap-1 transition-colors cursor-pointer"
-                          >
-                            <Trash2 size={14} />
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

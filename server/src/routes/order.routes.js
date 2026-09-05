@@ -9,8 +9,8 @@ router.post('/', optionalAuth, orderController.createOrder);
 // Private route for customers to get their own orders
 router.get('/my-orders', protect, orderController.getMyOrders);
 
-// Route to get single order details by ID
-router.get('/:id', protect, orderController.getOrderById);
+// Route to get single order details by ID (guests & users)
+router.get('/:id', optionalAuth, orderController.getOrderById);
 
 // Admin routes
 router.get('/', protect, restrictTo('ADMIN'), orderController.getOrders);

@@ -198,9 +198,11 @@ const getOrderById = async (req, res) => {
     throw ApiError.notFound('Order not found');
   }
 
-  // Authorize: customer must own order or be admin
-  if (req.user.role !== 'ADMIN' && order.userId !== req.user.id) {
-    throw ApiError.forbidden('Access denied to this order');
+  // Authorize: if order belongs to a registered user, ensure requester owns it or is admin
+  if (order.userId) {
+    if (!req.user || (req.user.role !== 'ADMIN' && order.userId !== req.user.id)) {
+      throw ApiError.forbidden('Access denied to this order');
+    }
   }
 
   sendSuccess(res, 200, 'Order details retrieved', order);

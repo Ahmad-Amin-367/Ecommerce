@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -7,26 +7,20 @@ import useCart from '@/hooks/useCart';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
-import orderService from '@/services/orderService';
 import Button from '@/components/ui/Button';
-import StripeContainer from '@/components/checkout/StripeContainer';
-import StripeCardForm from '@/components/checkout/StripeCardForm';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { ChevronLeft, CreditCard, Banknote, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, CreditCard, Banknote, ShieldCheck, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
   const { user } = useAuthStore();
-  const stripeRef = useRef(null);
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('STRIPE'); // 'STRIPE' | 'CASH_ON_DELIVERY'
-  const [clientSecret, setClientSecret] = useState('');
-  const [isInitializingPayment, setIsInitializingPayment] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -57,34 +51,6 @@ export default function CheckoutPage() {
   const shippingFee = subtotal >= 500 ? 0 : 200; // Free shipping over $500 CAD, else flat $200
   const total = subtotal + shippingFee;
 
-  // Initialize or fetch Stripe PaymentIntent clientSecret
-  const initPaymentIntent = useCallback(async () => {
-    if (items.length === 0 || paymentMethod !== 'STRIPE') return;
-
-    try {
-      setIsInitializingPayment(true);
-      const res = await orderService.createPaymentIntent({
-        items: items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-        })),
-        email: formData.email || user?.email,
-      });
-
-      if (res.data?.data?.clientSecret) {
-        setClientSecret(res.data.data.clientSecret);
-      }
-    } catch (err) {
-      console.error('Failed to initialize Stripe PaymentIntent:', err);
-    } finally {
-      setIsInitializingPayment(false);
-    }
-  }, [items, paymentMethod, formData.email, user?.email]);
-
-  useEffect(() => {
-    initPaymentIntent();
-  }, [initPaymentIntent]);
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -93,11 +59,6 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (items.length === 0) {
       toast.error('Your cart is empty');
-      return;
-    }
-
-    if (paymentMethod === 'STRIPE' && !stripeRef.current) {
-      toast.error('Payment gateway is initializing. Please wait a moment.');
       return;
     }
 
@@ -133,26 +94,8 @@ export default function CheckoutPage() {
         toast.success('Order placed successfully!');
         router.push(`/checkout/confirmation?orderId=${createdOrder.id}`);
       } else if (paymentMethod === 'STRIPE') {
-        // 3. Confirm Stripe Payment in-page via Stripe Elements
-        try {
-          const paymentResult = await stripeRef.current.confirm(createdOrder.id);
-
-          if (paymentResult?.success && paymentResult?.paymentIntent?.id) {
-            // Confirm on backend database
-            await orderService.confirmPayment({
-              orderId: createdOrder.id,
-              paymentIntentId: paymentResult.paymentIntent.id,
-            });
-
-            clearCart();
-            toast.success('Payment confirmed! Your order has been placed.');
-            router.push(`/checkout/confirmation?orderId=${createdOrder.id}`);
-          }
-        } catch (cardErr) {
-          setIsSubmitting(false);
-          toast.error(cardErr.message || 'Payment processing failed. Please check your card.');
-          return;
-        }
+        // 3. For Card (Stripe), redirect to the dedicated payment page (cart stays intact until payment succeeds)
+        router.push(`/checkout/payment?orderId=${createdOrder.id}`);
       }
     } catch (error) {
       toast.error(
@@ -189,7 +132,7 @@ export default function CheckoutPage() {
           </button>
           <div className="flex items-center gap-1.5 text-sm text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full font-medium border border-emerald-200">
             <ShieldCheck size={16} />
-            Secure 256-bit SSL Checkout
+            Secure Encrypted Checkout
           </div>
         </div>
 
@@ -300,7 +243,7 @@ export default function CheckoutPage() {
 
               {/* Payment Method Selection */}
               <h2 className="font-serif text-2xl font-bold text-charcoal mb-4">Payment Method</h2>
-              <div className="grid grid-cols-1 gap-4 mb-6">
+              <div className="grid grid-cols-1 gap-4 mb-8">
                 {/* Stripe Card Payment Option */}
                 <div
                   onClick={() => setPaymentMethod('STRIPE')}
@@ -379,24 +322,20 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Embedded Stripe Card Form (Shown when Card is selected) */}
-              {paymentMethod === 'STRIPE' && (
-                <div className="mb-8">
-                  <StripeContainer clientSecret={clientSecret}>
-                    <StripeCardForm ref={stripeRef} />
-                  </StripeContainer>
-                </div>
-              )}
-
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full h-14 text-lg font-semibold shadow-md cursor-pointer"
-                isLoading={isSubmitting || isInitializingPayment}
+                className="w-full h-14 text-lg font-semibold shadow-md cursor-pointer flex items-center justify-center gap-2"
+                isLoading={isSubmitting}
               >
-                {paymentMethod === 'STRIPE'
-                  ? `Place Order & Pay (${formatCurrency(total)})`
-                  : `Place Order (COD - ${formatCurrency(total)})`}
+                {paymentMethod === 'STRIPE' ? (
+                  <>
+                    <span>Continue to Payment ({formatCurrency(total)})</span>
+                    <ArrowRight size={18} />
+                  </>
+                ) : (
+                  `Place Order (COD - ${formatCurrency(total)})`
+                )}
               </Button>
             </form>
           </div>
