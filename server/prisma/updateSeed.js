@@ -8,7 +8,7 @@ const newProducts = `const productsData = [
       slug: 'luxury-strawberry-tower',
       description: 'A stunning tower of fresh strawberries dipped in premium Belgian chocolate, decorated with edible flowers and gold flakes. Perfect for anniversaries or special events.',
       price: 150,
-      stock: 10,
+
       categoryId: categories['anniversary'],
       isFeatured: true,
       tags: ['edible arrangement', 'strawberry', 'chocolate', 'luxury'],
@@ -19,7 +19,7 @@ const newProducts = `const productsData = [
       slug: 'golden-heart-chocolate-box',
       description: 'A heart-shaped box filled with golden-wrapped artisan chocolates.',
       price: 45,
-      stock: 15,
+
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['chocolate', 'heart', 'anniversary'],
@@ -30,7 +30,7 @@ const newProducts = `const productsData = [
       slug: 'rose-berry-elegance',
       description: 'An elegant mix of fresh red roses and chocolate-dipped strawberries in a sleek black box.',
       price: 120,
-      stock: 12,
+
       categoryId: categories['anniversary'],
       isFeatured: true,
       tags: ['roses', 'strawberries', 'anniversary'],
@@ -41,7 +41,7 @@ const newProducts = `const productsData = [
       slug: 'eternal-love-bouquet',
       description: 'A grand bouquet of 50 premium red roses.',
       price: 200,
-      stock: 5,
+
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['roses', 'bouquet', 'anniversary'],
@@ -52,7 +52,7 @@ const newProducts = `const productsData = [
       slug: 'anniversary-sweet-platter',
       description: 'A platter of various sweet treats perfect for sharing on a special day.',
       price: 85,
-      stock: 20,
+
       categoryId: categories['anniversary'],
       isFeatured: false,
       tags: ['sweets', 'platter', 'anniversary'],
@@ -65,7 +65,7 @@ const newProducts = `const productsData = [
       slug: 'custom-alphabet-floral-box',
       description: 'Beautiful fresh roses arranged in the shape of a letter of your choice, presented in our signature acrylic box.',
       price: 85,
-      stock: 20,
+
       categoryId: categories['custom-gifts'],
       isFeatured: true,
       tags: ['flowers', 'roses', 'custom'],
@@ -76,7 +76,7 @@ const newProducts = `const productsData = [
       slug: 'personalized-engraved-mug',
       description: 'A high-quality ceramic mug with personalized engraving.',
       price: 25,
-      stock: 50,
+
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['mug', 'custom'],
@@ -87,7 +87,7 @@ const newProducts = `const productsData = [
       slug: 'custom-chocolate-message',
       description: 'Say it with chocolate! A box of chocolates spelling out a custom message.',
       price: 55,
-      stock: 30,
+
       categoryId: categories['custom-gifts'],
       isFeatured: true,
       tags: ['chocolate', 'custom', 'message'],
@@ -98,7 +98,7 @@ const newProducts = `const productsData = [
       slug: 'design-your-own-fruit-basket',
       description: 'Select your favorite fruits and chocolate dips to create the perfect custom basket.',
       price: 110,
-      stock: 15,
+
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['fruit', 'basket', 'custom'],
@@ -109,7 +109,7 @@ const newProducts = `const productsData = [
       slug: 'bespoke-gift-hamper',
       description: 'Work with our team to create a completely custom hamper from our premium selection.',
       price: 150,
-      stock: 10,
+
       categoryId: categories['custom-gifts'],
       isFeatured: false,
       tags: ['hamper', 'custom', 'bespoke'],
@@ -123,7 +123,7 @@ const newProducts = `const productsData = [
       description: 'A delightful basket featuring imported chocolates, a customized mug, a scented candle, and a handwritten birthday card.',
       price: 60,
       comparePrice: 75,
-      stock: 15,
+
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['hamper', 'birthday', 'chocolates'],
@@ -134,7 +134,7 @@ const newProducts = `const productsData = [
       slug: 'birthday-balloon-berry-combo',
       description: 'A festive helium balloon paired with a box of colorful chocolate-dipped strawberries.',
       price: 45,
-      stock: 25,
+
       categoryId: categories['birthday-gifts'],
       isFeatured: true,
       tags: ['birthday', 'balloon', 'berries'],
@@ -145,7 +145,7 @@ const newProducts = `const productsData = [
       slug: 'ultimate-birthday-cake-box',
       description: 'A decadent mini birthday cake surrounded by fresh berries and macarons.',
       price: 90,
-      stock: 8,
+
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['birthday', 'cake', 'macarons'],
@@ -156,7 +156,7 @@ const newProducts = `const productsData = [
       slug: 'surprise-party-platter',
       description: 'A large platter of mixed fruits, chocolates, and cookies designed for a birthday party.',
       price: 130,
-      stock: 12,
+
       categoryId: categories['birthday-gifts'],
       isFeatured: true,
       tags: ['birthday', 'party', 'platter'],
@@ -167,7 +167,7 @@ const newProducts = `const productsData = [
       slug: 'birthday-bliss-box',
       description: 'A curated box of self-care items and sweet treats for a relaxing birthday.',
       price: 75,
-      stock: 20,
+
       categoryId: categories['birthday-gifts'],
       isFeatured: false,
       tags: ['birthday', 'self-care', 'box'],
@@ -180,7 +180,7 @@ const newProducts = `const productsData = [
       slug: 'premium-eid-date-nut-platter',
       description: 'A luxurious wooden platter filled with premium stuffed Ajwa dates, roasted nuts, and Turkish delights.',
       price: 120,
-      stock: 50,
+
       categoryId: categories['eid-special'],
       isFeatured: true,
       tags: ['eid', 'dates', 'nuts', 'platter'],
@@ -191,7 +191,7 @@ const newProducts = `const productsData = [
       slug: 'eid-crescent-floral-arrangement',
       description: 'A beautiful crescent moon-shaped arrangement of white and gold flowers.',
       price: 85,
-      stock: 15,
+
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'floral', 'crescent'],
@@ -202,7 +202,7 @@ const newProducts = `const productsData = [
       slug: 'family-eid-treat-box',
       description: 'A large box of assorted chocolates, dates, and sweets perfect for family gatherings.',
       price: 95,
-      stock: 30,
+
       categoryId: categories['eid-special'],
       isFeatured: true,
       tags: ['eid', 'family', 'treats'],
@@ -213,7 +213,7 @@ const newProducts = `const productsData = [
       slug: 'luxury-eid-gift-set',
       description: 'A premium gift set including artisanal perfumes, stuffed dates, and gold-dusted chocolates.',
       price: 250,
-      stock: 5,
+
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'luxury', 'gift set'],
@@ -224,7 +224,7 @@ const newProducts = `const productsData = [
       slug: 'sweet-eid-greetings-basket',
       description: 'A welcoming basket filled with traditional Eid sweets and fresh fruit.',
       price: 65,
-      stock: 40,
+
       categoryId: categories['eid-special'],
       isFeatured: false,
       tags: ['eid', 'basket', 'sweets'],
@@ -237,7 +237,7 @@ const newProducts = `const productsData = [
       slug: 'corporate-executive-box',
       description: 'A sleek black gift box containing a premium leather wallet, a customized pen, and artisan chocolates. Ideal for client appreciation.',
       price: 95,
-      stock: 100,
+
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'leather', 'executive'],
@@ -248,7 +248,7 @@ const newProducts = `const productsData = [
       slug: 'client-appreciation-fruit-basket',
       description: 'A professional and elegant fruit basket to show appreciation to your top clients.',
       price: 110,
-      stock: 50,
+
       categoryId: categories['corporate'],
       isFeatured: true,
       tags: ['corporate', 'client', 'fruit basket'],
@@ -259,7 +259,7 @@ const newProducts = `const productsData = [
       slug: 'team-celebration-platter',
       description: 'A massive platter of assorted treats perfect for office parties and team celebrations.',
       price: 180,
-      stock: 20,
+
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'team', 'platter'],
@@ -270,7 +270,7 @@ const newProducts = `const productsData = [
       slug: 'branded-chocolate-box',
       description: 'A box of premium chocolates featuring your company logo on the packaging.',
       price: 45,
-      stock: 200,
+
       categoryId: categories['corporate'],
       isFeatured: true,
       tags: ['corporate', 'branded', 'chocolate'],
@@ -281,7 +281,7 @@ const newProducts = `const productsData = [
       slug: 'welcome-onboard-kit',
       description: 'A thoughtful kit for new employees, including a mug, notebook, and gourmet snacks.',
       price: 55,
-      stock: 150,
+
       categoryId: categories['corporate'],
       isFeatured: false,
       tags: ['corporate', 'onboarding', 'kit'],
@@ -294,7 +294,7 @@ const newProducts = `const productsData = [
       slug: 'gourmet-fruit-chocolate-bouquet',
       description: 'Our signature edible arrangement featuring fresh pineapples shaped like daisies, chocolate-dipped apples, and fresh grapes.',
       price: 78,
-      stock: 25,
+
       categoryId: categories['thank-you'],
       isFeatured: true,
       tags: ['edible arrangement', 'fruits', 'thank you'],
@@ -305,7 +305,7 @@ const newProducts = `const productsData = [
       slug: 'simple-thanks-fruit-box',
       description: 'A simple yet elegant box of fresh seasonal fruits to say a quick thank you.',
       price: 35,
-      stock: 40,
+
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'fruit', 'box'],
@@ -316,7 +316,7 @@ const newProducts = `const productsData = [
       slug: 'gratitude-chocolate-assortment',
       description: 'A beautiful assortment of artisan chocolates with a "Thank You" card.',
       price: 50,
-      stock: 30,
+
       categoryId: categories['thank-you'],
       isFeatured: true,
       tags: ['thank you', 'chocolate'],
@@ -327,7 +327,7 @@ const newProducts = `const productsData = [
       slug: 'appreciation-floral-mini',
       description: 'A small, bright floral arrangement perfect for a desk or side table.',
       price: 45,
-      stock: 25,
+
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'floral', 'mini'],
@@ -338,7 +338,7 @@ const newProducts = `const productsData = [
       slug: 'mega-thanks-hamper',
       description: 'A massive hamper filled with fruits, chocolates, and wine to show immense gratitude.',
       price: 160,
-      stock: 10,
+
       categoryId: categories['thank-you'],
       isFeatured: false,
       tags: ['thank you', 'hamper', 'mega'],

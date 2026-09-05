@@ -1,5 +1,6 @@
 const testimonialService = require('../services/testimonial.service');
 const { sendSuccess } = require('../utils/apiResponse');
+const { getIO } = require('../config/socket');
 
 const getTestimonials = async (req, res, next) => {
   try {
@@ -22,6 +23,7 @@ const getTestimonialById = async (req, res, next) => {
 const createTestimonial = async (req, res, next) => {
   try {
     const testimonial = await testimonialService.createTestimonial(req.body);
+    try { getIO().emit('invalidate_testimonials'); } catch(e) {}
     sendSuccess(res, 201, 'Testimonial created successfully', testimonial);
   } catch (error) {
     next(error);
@@ -31,6 +33,7 @@ const createTestimonial = async (req, res, next) => {
 const updateTestimonial = async (req, res, next) => {
   try {
     const testimonial = await testimonialService.updateTestimonial(req.params.id, req.body);
+    try { getIO().emit('invalidate_testimonials'); } catch(e) {}
     sendSuccess(res, 200, 'Testimonial updated successfully', testimonial);
   } catch (error) {
     next(error);
@@ -40,6 +43,7 @@ const updateTestimonial = async (req, res, next) => {
 const deleteTestimonial = async (req, res, next) => {
   try {
     await testimonialService.deleteTestimonial(req.params.id);
+    try { getIO().emit('invalidate_testimonials'); } catch(e) {}
     sendSuccess(res, 200, 'Testimonial deleted successfully');
   } catch (error) {
     next(error);

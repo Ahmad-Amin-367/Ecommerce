@@ -62,7 +62,7 @@ export default function CategorySlider() {
         <ChevronRight size={20} strokeWidth={2.5} />
       </button>
 
-      <div 
+      <div
         ref={scrollRef}
         onScroll={checkScroll}
         className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-6 pt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] -mx-6 px-6 lg:mx-0 lg:px-0 scroll-smooth"

@@ -18,7 +18,6 @@ const productSchema = Yup.object().shape({
   description: Yup.string(),
   price: Yup.number().min(0, 'Price must be positive').required('Price is required'),
   comparePrice: Yup.number().transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value)).min(0, 'Compare price must be positive').nullable(),
-  stock: Yup.number().integer('Stock must be an integer').min(0, 'Stock must be 0 or more').required('Stock is required'),
   categoryId: Yup.string().required('Category is required'),
   isActive: Yup.boolean().default(true),
   isFeatured: Yup.boolean().default(false),
@@ -55,7 +54,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
       description: '',
       price: 0,
       comparePrice: '',
-      stock: 0,
       categoryId: '',
       isActive: true,
       isFeatured: false,
@@ -136,7 +134,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
           description: product.description || '',
           price: Number(product.price),
           comparePrice: product.comparePrice ? Number(product.comparePrice) : '',
-          stock: product.stock,
           categoryId: product.categoryId,
           isActive: product.isActive,
           isFeatured: product.isFeatured,
@@ -152,7 +149,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
           description: '',
           price: 0,
           comparePrice: '',
-          stock: 0,
           categoryId: '',
           isActive: true,
           isFeatured: false,
@@ -271,17 +267,6 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <Input 
-                label="Stock Quantity" 
-                type="number" 
-                name="stock"
-                value={formik.values.stock}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.stock && formik.errors.stock ? formik.errors.stock : undefined}
-              />
-            </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-warm-gray">Category</label>

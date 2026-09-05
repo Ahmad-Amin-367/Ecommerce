@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import authService from '@/services/authService';
+import { SocketProvider } from '@/components/providers/SocketProvider';
 
 function AuthInitializer({ children }) {
   const { setAuth, setAuthChecked, logout } = useAuthStore();
@@ -55,9 +56,11 @@ export function Providers({ children }) {
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
-        <AuthInitializer>
-          {children}
-        </AuthInitializer>
+        <SocketProvider>
+          <AuthInitializer>
+            {children}
+          </AuthInitializer>
+        </SocketProvider>
         <Toaster
           position="top-right"
           toastOptions={{

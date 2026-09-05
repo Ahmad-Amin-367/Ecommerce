@@ -85,7 +85,6 @@ export default function AdminDashboardPage() {
     const deliveredOrdersCount = orders.filter((o) => o.status === 'DELIVERED').length;
 
     const totalProductsCount = products.length;
-    const lowStockProductsCount = products.filter((p) => Number(p.stock || 0) < 5).length;
 
     return {
       totalRevenue,
@@ -93,7 +92,6 @@ export default function AdminDashboardPage() {
       pendingOrdersCount,
       deliveredOrdersCount,
       totalProductsCount,
-      lowStockProductsCount,
     };
   }, [orders, products]);
 
@@ -238,15 +236,9 @@ export default function AdminDashboardPage() {
             {stats.totalProductsCount}
           </p>
           <div className="flex items-center gap-2 mt-3 text-xs text-text-secondary font-medium">
-            {stats.lowStockProductsCount > 0 ? (
-              <span className="text-rose-600 font-semibold flex items-center gap-1">
-                <AlertCircle size={13} /> {stats.lowStockProductsCount} Low Stock
-              </span>
-            ) : (
-              <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                <CheckCircle2 size={13} /> All Stock Healthy
-              </span>
-            )}
+            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+              <CheckCircle2 size={13} /> Active Catalog
+            </span>
           </div>
         </div>
       </div>

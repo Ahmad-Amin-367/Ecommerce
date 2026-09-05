@@ -13,16 +13,14 @@ import { useAuthStore } from '@/store/authStore';
 const useCart = () => {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const {
-    items: storeItems,
-    subtotal: storeSubtotal,
-    itemCount,
-    setCart,
-    addGuestItem,
-    updateGuestItem,
-    removeGuestItem,
-    clearCart: clearCartStore,
-  } = useCartStore();
+  const storeItems = useCartStore((s) => s.items);
+  const storeSubtotal = useCartStore((s) => s.subtotal);
+  const itemCount = useCartStore((s) => s.itemCount);
+  const setCart = useCartStore((s) => s.setCart);
+  const addGuestItem = useCartStore((s) => s.addGuestItem);
+  const updateGuestItem = useCartStore((s) => s.updateGuestItem);
+  const removeGuestItem = useCartStore((s) => s.removeGuestItem);
+  const clearCartStore = useCartStore((s) => s.clearCart);
 
   // Debounce timers & baseline snapshots for rapid +/- clicks
   const debounceTimers = useRef({});

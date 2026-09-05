@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import ReactPaginate from 'react-paginate';
@@ -10,6 +10,51 @@ import Badge from '@/components/ui/Badge';
 import ProductModal from '@/components/admin/ProductModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { formatCurrency } from '@/utils/formatCurrency';
+
+const ProductRow = memo(({ product, handleEdit, handleDeleteClick }) => {
+  return (
+    <tr className="hover:bg-background-hover transition-colors">
+      <td className="px-6 py-4">
+        <div className="flex flex-col">
+          <span className="font-medium text-charcoal">{product.name}</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 font-medium text-charcoal">
+        {formatCurrency(product.price)}
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex gap-2">
+          {product.isActive ? (
+            <Badge variant="success">Active</Badge>
+          ) : (
+            <Badge variant="default">Draft</Badge>
+          )}
+          {product.isFeatured && (
+            <Badge variant="primary">Featured</Badge>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={() => handleEdit(product)}
+            className="p-2 text-text-muted hover:text-primary hover:bg-primary-glow rounded-lg transition-colors cursor-pointer"
+            title="Edit"
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            onClick={() => handleDeleteClick(product)}
+            className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors cursor-pointer"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+});
 
 export default function AdminProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,7 +67,6 @@ export default function AdminProductsPage() {
   const [category, setCategory] = useState('');
   const [isFeatured, setIsFeatured] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [maxStock, setMaxStock] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -37,7 +81,7 @@ export default function AdminProductsPage() {
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, category, isFeatured, maxPrice, maxStock]);
+  }, [debouncedSearch, category, isFeatured, maxPrice]);
 
   // Fetch Categories for Filter Dropdown
   const { data: categoriesData } = useCategories();
@@ -51,7 +95,6 @@ export default function AdminProductsPage() {
     ...(category && { categoryId: category }),
     ...(isFeatured !== '' && { isFeatured }),
     ...(maxPrice !== '' && { maxPrice }),
-    ...(maxStock !== '' && { maxStock }),
   });
   const products = productsData?.data || [];
   const totalPages = productsData?.meta?.totalPages || 1;
@@ -60,19 +103,19 @@ export default function AdminProductsPage() {
 
   const deleteMutation = useDeleteProduct();
 
-  const handleEdit = (product) => {
+  const handleEdit = useCallback((product) => {
     setEditingProduct(product);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleAddNew = () => {
+  const handleAddNew = useCallback(() => {
     setEditingProduct(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (product) => {
+  const handleDeleteClick = useCallback((product) => {
     setProductToDelete(product);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (productToDelete) {
@@ -132,16 +175,16 @@ export default function AdminProductsPage() {
 
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`w-full sm:w-auto px-4 py-2 flex items-center justify-center gap-2 border rounded-lg text-sm transition-colors cursor-pointer ${showAdvancedFilters || maxPrice || maxStock
+              className={`w-full sm:w-auto px-4 py-2 flex items-center justify-center gap-2 border rounded-lg text-sm transition-colors cursor-pointer ${showAdvancedFilters || maxPrice
                 ? 'border-primary bg-primary-glow text-primary'
                 : 'border-cloud bg-white text-charcoal hover:bg-gray-50'
                 }`}
             >
               <Filter size={16} />
               Filters
-              {(maxPrice || maxStock) && (
+              {maxPrice && (
                 <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">
-                  {(maxPrice ? 1 : 0) + (maxStock ? 1 : 0)}
+                  1
                 </span>
               )}
             </button>
@@ -174,26 +217,10 @@ export default function AdminProductsPage() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-charcoal">Max Stock:</span>
-                  <select
-                    value={maxStock}
-                    onChange={(e) => setMaxStock(e.target.value)}
-                    className="w-full sm:w-auto px-3 py-1.5 border border-cloud rounded-lg text-sm bg-white focus:outline-none focus:border-primary text-charcoal"
-                  >
-                    <option value="">Any Stock</option>
-                    <option value="20">Less than 20</option>
-                    <option value="50">Less than 50</option>
-                    <option value="100">Less than 100</option>
-                    <option value="200">Less than 200</option>
-                  </select>
-                </div>
-
-                {(maxPrice || maxStock) && (
+                {maxPrice && (
                   <button
                     onClick={() => {
                       setMaxPrice('');
-                      setMaxStock('');
                     }}
                     className="text-sm text-primary hover:text-primary-dark font-medium px-2 cursor-pointer"
                   >
@@ -211,7 +238,6 @@ export default function AdminProductsPage() {
               <tr>
                 <th className="px-6 py-4">Product</th>
                 <th className="px-6 py-4">Price</th>
-                <th className="px-6 py-4">Stock</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -219,66 +245,26 @@ export default function AdminProductsPage() {
             <tbody className="divide-y divide-cloud">
               {isLoading ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-warm-gray">
+                  <td colSpan="4" className="px-6 py-8 text-center text-warm-gray">
                     Loading products...
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center text-warm-gray">
+                  <td colSpan="4" className="px-6 py-8 text-center text-warm-gray">
                     No products found. Create one to get started!
                   </td>
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product.id} className="hover:bg-background-hover transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-charcoal">{product.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-charcoal">
-                      {formatCurrency(product.price)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {product.stock > 0 ? (
-                        <span className="text-charcoal">{product.stock} in stock</span>
-                      ) : (
-                        <span className="text-error font-medium">Out of stock</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {product.isActive ? (
-                          <Badge variant="success">Active</Badge>
-                        ) : (
-                          <Badge variant="default">Draft</Badge>
-                        )}
-                        {product.isFeatured && (
-                          <Badge variant="primary">Featured</Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="p-2 text-text-muted hover:text-primary hover:bg-primary-glow rounded-lg transition-colors cursor-pointer"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(product)}
-                          className="p-2 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors cursor-pointer"
-                          title="Delete"
-                          disabled={deleteMutation.isPending && productToDelete?.id === product.id}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <ProductRow
+                    key={product.id}
+                    product={product}
+                    handleEdit={handleEdit}
+                    handleDeleteClick={handleDeleteClick}
+                    isDeleting={deleteMutation.isPending}
+                    productToDeleteId={productToDelete?.id}
+                  />
                 ))
               )}
             </tbody>

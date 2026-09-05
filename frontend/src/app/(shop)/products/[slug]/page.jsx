@@ -46,7 +46,7 @@ function ProductDetailsInner({ slug }) {
   const images = product.images?.length > 0 ? product.images : ['https://via.placeholder.com/800x800?text=No+Image'];
 
   const increaseQuantity = () => {
-    if (quantity < product.stock) setQuantity(q => q + 1);
+    setQuantity(q => q + 1);
   };
 
   const decreaseQuantity = () => {
@@ -134,11 +134,6 @@ function ProductDetailsInner({ slug }) {
             <div className="border-t border-border pt-8 flex flex-col gap-6">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-charcoal">Quantity</span>
-                {product.stock > 0 ? (
-                  <span className="text-sm text-success bg-success/10 px-3 py-1 rounded-full">In Stock ({product.stock})</span>
-                ) : (
-                  <span className="text-sm text-error bg-error/10 px-3 py-1 rounded-full">Out of Stock</span>
-                )}
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
@@ -155,7 +150,6 @@ function ProductDetailsInner({ slug }) {
                     <span className="w-12 text-center font-medium text-charcoal">{quantity}</span>
                     <button
                       onClick={increaseQuantity}
-                      disabled={quantity >= product.stock}
                       className="w-10 h-full flex items-center justify-center text-text-secondary hover:text-charcoal hover:bg-cloud rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
                     >
                       <Plus size={16} />
@@ -168,11 +162,11 @@ function ProductDetailsInner({ slug }) {
                   variant="primary"
                   className="w-full sm:flex-1 h-12 text-lg"
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || isAdding}
+                  disabled={isAdding}
                   isLoading={isAdding}
                 >
                   <ShoppingCart size={20} className="mr-2" />
-                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  Add to Cart
                 </Button>
               </div>
             </div>
@@ -220,7 +214,6 @@ function ProductDetailsInner({ slug }) {
               <span className="w-8 text-center text-sm font-medium text-charcoal">{quantity}</span>
               <button
                 onClick={increaseQuantity}
-                disabled={quantity >= product.stock}
                 className="w-8 h-full flex items-center justify-center text-text-secondary hover:text-charcoal rounded-lg transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
               >
                 <Plus size={14} />
@@ -232,11 +225,11 @@ function ProductDetailsInner({ slug }) {
               size="md"
               className="flex-1 sm:flex-none"
               onClick={handleAddToCart}
-              disabled={product.stock === 0 || isAdding}
+              disabled={isAdding}
               isLoading={isAdding}
             >
               <ShoppingCart size={16} className="mr-1.5" />
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              Add to Cart
             </Button>
           </div>
         </div>

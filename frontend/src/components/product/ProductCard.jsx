@@ -1,4 +1,5 @@
 'use client';
+import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Star, StarHalf } from 'lucide-react';
@@ -7,7 +8,7 @@ import useCart from '@/hooks/useCart';
 import Badge from '@/components/ui/Badge';
 import { useAnimationStore } from '@/store/animationStore';
 
-export default function ProductCard({ product, priority = false }) {
+const ProductCard = memo(function ProductCard({ product, priority = false }) {
   const { addToCart, isAdding } = useCart();
   const discount = getDiscountPercent(product.price, product.comparePrice);
 
@@ -25,7 +26,7 @@ export default function ProductCard({ product, priority = false }) {
   return (
     <Link
       href={`/products/${product.slug || product.id}`}
-      className="group flex flex-col bg-white border border-cloud rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-card hover:-translate-y-1"
+      className="group flex flex-col bg-white border border-cloud rounded-sm overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-sm"
     >
       {/* Image */}
       <div className="relative aspect-[4/3] overflow-hidden bg-cream/40">
@@ -51,9 +52,7 @@ export default function ProductCard({ product, priority = false }) {
           </div>
         )}
         <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-          {product.stock === 0 && (
-            <Badge variant="default">Sold Out</Badge>
-          )}
+
           {(product.isBestseller || product._count?.reviews > 5) && (
             <Badge variant="bestseller">⭐ Bestseller</Badge>
           )}
@@ -63,11 +62,11 @@ export default function ProductCard({ product, priority = false }) {
         <button
           className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-1.5 p-2.5 bg-primary text-white text-xs font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed cursor-pointer"
           onClick={handleAddToCart}
-          disabled={isAdding || product.stock === 0}
+          disabled={isAdding}
           aria-label={`Add ${product.name} to cart`}
         >
           <ShoppingCart size={16} />
-          {product.stock === 0 ? 'Sold Out' : 'Add to Cart'}
+          Add to Cart
         </button>
       </div>
 
@@ -112,4 +111,6 @@ export default function ProductCard({ product, priority = false }) {
       </div>
     </Link>
   );
-}
+});
+
+export default ProductCard;

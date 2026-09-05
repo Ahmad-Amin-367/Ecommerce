@@ -65,31 +65,16 @@ const useCartStore = create(
 
       // Cart Item Add (Optimistic / Local)
       addGuestItem: (product, quantity = 1) => {
-        const targetId = product.id || product.productId;
-        const currentItems = cloneCartItems(get().items);
-        const existingIndex = currentItems.findIndex((i) => getItemProductId(i) === targetId);
-        const maxStock = product.stock !== undefined ? product.stock : 999;
-
+        const currentItems = get().items;
+        const existingIndex = currentItems.findIndex((i) => i.product.id === product.id);
+        
         let newItems;
         if (existingIndex > -1) {
           newItems = [...currentItems];
           const existingItem = newItems[existingIndex];
-          const newQty = Math.min(existingItem.quantity + quantity, maxStock);
-          newItems[existingIndex] = {
-            ...existingItem,
-            product: existingItem.product || product,
-            quantity: newQty,
-          };
+          newItems[existingIndex] = { ...existingItem, quantity: existingItem.quantity + quantity };
         } else {
-          const newQty = Math.min(quantity, maxStock);
-          newItems = [
-            ...currentItems,
-            {
-              product: { ...product },
-              productId: targetId,
-              quantity: newQty,
-            },
-          ];
+          newItems = [...currentItems, { product, quantity }];
         }
 
         const { itemCount, subtotal } = computeTotals(newItems);
@@ -103,15 +88,9 @@ const useCartStore = create(
           return;
         }
 
-        const currentItems = cloneCartItems(get().items);
-        const newItems = currentItems.map((item) => {
-          if (getItemProductId(item) === productId) {
-            const maxStock = item.product?.stock !== undefined ? item.product.stock : 999;
-            return {
-              ...item,
-              product: item.product ? { ...item.product } : null,
-              quantity: Math.min(quantity, maxStock),
-            };
+        const newItems = get().items.map((item) => {
+          if (item.product.id === productId) {
+            return { ...item, quantity };
           }
           return item;
         });

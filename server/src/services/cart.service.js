@@ -17,7 +17,6 @@ const getCart = async (userId) => {
               slug: true,
               price: true,
               comparePrice: true,
-              stock: true,
               images: true,
               isActive: true,
             },
@@ -51,9 +50,6 @@ const addToCart = async (userId, productId, quantity = 1) => {
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) throw ApiError.notFound('Product not found');
   if (!product.isActive) throw ApiError.badRequest('This product is no longer available');
-  if (product.stock < quantity) {
-    throw ApiError.badRequest(`Only ${product.stock} units available in stock`);
-  }
 
   // Ensure cart exists
   let cart = await prisma.cart.findUnique({ where: { userId } });
@@ -65,10 +61,6 @@ const addToCart = async (userId, productId, quantity = 1) => {
   });
 
   const newQuantity = existingItem ? existingItem.quantity + quantity : quantity;
-
-  if (product.stock < newQuantity) {
-    throw ApiError.badRequest(`Only ${product.stock} units available in stock`);
-  }
 
   await prisma.cartItem.upsert({
     where: { cartId_productId: { cartId: cart.id, productId } },
@@ -91,10 +83,6 @@ const updateCartItem = async (userId, productId, quantity) => {
     include: { product: true },
   });
   if (!cartItem) throw ApiError.notFound('Item not found in cart');
-
-  if (cartItem.product.stock < quantity) {
-    throw ApiError.badRequest(`Only ${cartItem.product.stock} units available`);
-  }
 
   await prisma.cartItem.update({
     where: { cartId_productId: { cartId: cart.id, productId } },
@@ -135,8 +123,8 @@ const clearCart = async (userId) => {
 
 /**
  * Merge guest cart items (from localStorage) into user DB cart
- * - If product exists in DB cart: add quantities together (capped at stock)
- * - If product is new: add item with guest quantity (capped at stock)
+ * - If product exists in DB cart: add quantities together
+ * - If product is new: add item with guest quantity
  */
 const syncCart = async (userId, guestItems = []) => {
   if (!Array.isArray(guestItems) || guestItems.length === 0) {
@@ -152,14 +140,14 @@ const syncCart = async (userId, guestItems = []) => {
     if (!item.productId || !item.quantity || item.quantity <= 0) continue;
 
     const product = await prisma.product.findUnique({ where: { id: item.productId } });
-    if (!product || !product.isActive || product.stock <= 0) continue;
+    if (!product || !product.isActive) continue;
 
     const existingItem = await prisma.cartItem.findUnique({
       where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
     });
 
     const targetQuantity = existingItem ? existingItem.quantity + item.quantity : item.quantity;
-    const finalQuantity = Math.min(targetQuantity, product.stock);
+    const finalQuantity = targetQuantity;
 
     if (finalQuantity > 0) {
       await prisma.cartItem.upsert({

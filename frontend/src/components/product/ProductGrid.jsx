@@ -6,7 +6,7 @@ export default function ProductGrid({ products, isLoading, emptyMessage = 'No pr
     return (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="skeleton h-[360px] rounded-2xl" />
+          <div key={i} className="skeleton h-[360px] rounded-sm" />
         ))}
       </div>
     );
