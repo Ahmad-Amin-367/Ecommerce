@@ -3,15 +3,17 @@ const ApiError = require('../utils/apiError');
 const { sendSuccess } = require('../utils/apiResponse');
 const orderService = require('../services/order.service');
 
-// Generate unique order number (e.g. ORD-168123456)
+// Generate unique order number (e.g. ORD-TIMESTAMP36-RAND4)
 const generateOrderNumber = () => {
-  return `ORD-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 100)}`;
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `ORD-${timestamp}-${random}`;
 };
 
 /**
  * @desc    Create new order
  * @route   POST /api/v1/orders
- * @access  Public (Supports Guests)
+ * @access  Private (Authenticated User)
  */
 const createOrder = async (req, res) => {
   const { items, shippingAddress, paymentMethod, notes, guestInfo } = req.body;
@@ -42,7 +44,7 @@ const createOrder = async (req, res) => {
     });
   }
 
-  const shippingFee = 200; // Flat rate for now
+  const shippingFee = subtotal >= 500 ? 0 : 99; // Free shipping over $500 CAD, else flat $99
   const totalAmount = subtotal + shippingFee;
 
   // Create Order in transaction to ensure stock is updated safely
@@ -162,7 +164,7 @@ const getMyOrders = async (req, res) => {
 
 /**
  * @desc    Get order by ID
- * @route   GET /api/v1/orders/:id
+ * @route   GET /api/v1/orders/detail/:id (or /orders/:id)
  * @access  Private (User who owns it or Admin)
  */
 const getOrderById = async (req, res) => {

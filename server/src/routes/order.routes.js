@@ -4,17 +4,21 @@ const orderController = require('../controllers/order.controller');
 const { protect, optionalAuth } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
 
-router.post('/', optionalAuth, orderController.createOrder);
+// Customer route: Require authentication to place an order
+router.post('/', protect, orderController.createOrder);
 
 // Private route for customers to get their own orders
 router.get('/my-orders', protect, orderController.getMyOrders);
 
-// Route to get single order details by ID (guests & users)
+// Named route to get single order details by ID
+router.get('/detail/:id', optionalAuth, orderController.getOrderById);
+
+// Fallback alias for backwards compatibility
 router.get('/:id', optionalAuth, orderController.getOrderById);
 
 // Admin routes
-router.get('/', protect, restrictTo('ADMIN'), orderController.getOrders);
-router.get('/:id', protect, restrictTo('ADMIN'), orderController.getOrderById);
-router.patch('/:id/status', protect, restrictTo('ADMIN'), orderController.updateOrderStatus);
+router.get('/admin', protect, restrictTo('ADMIN'), orderController.getOrders);
+router.patch('/admin/:id/status', protect, restrictTo('ADMIN'), orderController.updateOrderStatus);
 
 module.exports = router;
+

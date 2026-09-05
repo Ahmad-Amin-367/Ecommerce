@@ -87,7 +87,6 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <ul role="list" className="-my-6 divide-y divide-cloud">
                   {items.map((item) => {
                     const productId = item.product?.id || item.productId || item.id;
-                    const isMaxStock = item.product?.stock !== undefined && item.quantity >= item.product.stock;
 
                     return (
                       <li key={productId} className="flex py-6">
@@ -124,9 +123,8 @@ export default function CartDrawer({ isOpen, onClose }) {
                               <span className="w-8 text-center font-medium text-charcoal">{item.quantity}</span>
                               <button 
                                 onClick={() => updateItem({ productId, quantity: item.quantity + 1 })}
-                                disabled={isLoading || isMaxStock}
+                                disabled={isLoading}
                                 className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                                title={isMaxStock ? 'Maximum available stock reached' : ''}
                               >
                                 <Plus size={14} />
                               </button>

@@ -18,21 +18,17 @@ const calculateCartTotal = async (items) => {
   for (const item of items) {
     const product = await prisma.product.findUnique({
       where: { id: item.productId },
-      select: { id: true, name: true, price: true, isActive: true, stock: true },
+      select: { id: true, name: true, price: true, isActive: true },
     });
 
     if (!product || !product.isActive) {
       throw ApiError.badRequest(`Product "${item.productId}" is not available`);
     }
 
-    if (product.stock < item.quantity) {
-      throw ApiError.badRequest(`Insufficient stock for "${product.name}"`);
-    }
-
     subtotal += Number(product.price) * item.quantity;
   }
 
-  const shippingFee = subtotal >= 500 ? 0 : 200; // Flat $200 CAD or free over $500
+  const shippingFee = subtotal >= 500 ? 0 : 99; // Flat $99 CAD or free over $500
   const totalAmount = subtotal + shippingFee;
 
   return { subtotal, shippingFee, totalAmount };
@@ -158,7 +154,6 @@ const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
       status: 'CONFIRMED',
       paymentMethod: 'STRIPE',
       stripePaymentIntentId: paymentIntent.id,
-      stripeClientSecret: paymentIntent.client_secret,
     },
     include: {
       items: true,

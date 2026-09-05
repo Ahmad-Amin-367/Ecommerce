@@ -184,6 +184,7 @@ function PaymentContent() {
                   variant="primary"
                   className="w-full h-14 text-lg font-semibold shadow-md cursor-pointer flex items-center justify-center gap-2"
                   isLoading={isProcessing}
+                  disabled={isProcessing || !clientSecret}
                 >
                   <Lock size={18} />
                   <span>Pay Now ({formatCurrency(order.totalAmount)})</span>

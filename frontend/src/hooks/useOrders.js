@@ -51,20 +51,6 @@ export const usePlaceOrder = () => {
   });
 };
 
-/**
- * useCancelOrder — customer cancel
- */
-export const useCancelOrder = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id) => orderService.cancelOrder(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['my-orders'] });
-      toast.success('Order cancelled');
-    },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed to cancel order'),
-  });
-};
 
 /**
  * useAdminOrders — admin order list with filters

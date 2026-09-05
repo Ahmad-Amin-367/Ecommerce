@@ -40,7 +40,8 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
-// ─── Rate limiting ────────────────────────────────────────────────────────────
+// ─── Rate limiting (exempt Stripe webhook from rate limiter) ──────────────────
+app.use('/api/v1/payments/stripe-webhook', (req, res, next) => next());
 app.use('/api', generalLimiter);
 
 // ─── API Routes ───────────────────────────────────────────────────────────────

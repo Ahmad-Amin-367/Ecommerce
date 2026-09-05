@@ -8,6 +8,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
 import Button from '@/components/ui/Button';
+import Spinner from '@/components/ui/Spinner';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { ChevronLeft, CreditCard, Banknote, ShieldCheck, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -15,7 +16,7 @@ import toast from 'react-hot-toast';
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isAuthChecked } = useAuthStore();
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
@@ -48,7 +49,13 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  const shippingFee = subtotal >= 500 ? 0 : 200; // Free shipping over $500 CAD, else flat $200
+  useEffect(() => {
+    if (isAuthChecked && !isAuthenticated) {
+      router.push('/login?redirect=/checkout');
+    }
+  }, [isAuthChecked, isAuthenticated, router]);
+
+  const shippingFee = subtotal >= 500 ? 0 : 99; // Free shipping over $500 CAD, else flat $99
   const total = subtotal + shippingFee;
 
   const handleChange = (e) => {
@@ -106,6 +113,15 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!isAuthChecked || !isAuthenticated) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <Spinner size="lg" />
+        <p className="text-text-secondary font-medium">Verifying login status...</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

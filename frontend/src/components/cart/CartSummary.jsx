@@ -36,7 +36,7 @@ export default function CartSummary({ subtotal = 0, shippingFee = 0 }) {
         <Button fullWidth size="lg">Proceed to Checkout</Button>
       </Link>
       <Link href="/category/all" className="block mt-2">
-        <Button variant="outline" fullWidth disabled={isLoading}>
+        <Button variant="outline" fullWidth>
           Continue Shopping
         </Button>
       </Link>
