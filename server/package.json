@@ -1,28 +1,27 @@
 {
   "name": "ecommerce-server",
   "version": "1.0.0",
-  "description": "Professional E-Commerce REST API - Node.js + Express + PostgreSQL + Prisma",
+  "description": "Professional E-Commerce REST API - Node.js + Express + PostgreSQL + Sequelize MVC",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "build": "npx prisma@5.22.0 generate",
     "start": "node server.js",
-    "prisma:generate": "npx prisma@5.22.0 generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "prisma:reset": "prisma migrate reset"
+    "migrate": "npx sequelize-cli db:migrate --config src/config/sequelize-cli-config.cjs",
+    "migrate:status": "npx sequelize-cli db:migrate:status --config src/config/sequelize-cli-config.cjs",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo --config src/config/sequelize-cli-config.cjs",
+    "seed:delivery": "npx sequelize-cli db:seed:all --config src/config/sequelize-cli-config.cjs"
   },
   "keywords": [
     "ecommerce",
     "api",
     "express",
-    "prisma",
-    "postgresql"
+    "sequelize",
+    "postgresql",
+    "mvc"
   ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "~5.22.0",
     "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
@@ -40,15 +39,15 @@
     "morgan": "^1.10.0",
     "multer": "^2.2.0",
     "nodemailer": "^9.0.3",
-    "prisma": "~5.22.0",
+    "pg": "^8.13.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5",
     "socket.io": "^4.8.3",
     "stripe": "^22.6.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.js"
+    "nodemon": "^3.1.7",
+    "sequelize-cli": "^6.6.3"
   }
 }

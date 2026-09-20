@@ -12,20 +12,18 @@ const errorHandler = (err, req, res, next) => {
   let message = err.message || 'Internal Server Error';
   let errors = err.errors || [];
 
-  // ─── Handle Prisma known errors ──────────────────────────────────────────────
-  if (err.code === 'P2002') {
-    // Unique constraint violation
-    const fields = err.meta?.target?.join(', ') || 'field';
+  // ─── Handle Sequelize errors ──────────────────────────────────────────────
+  if (err.name === 'SequelizeUniqueConstraintError') {
     statusCode = 409;
-    message = `A record with this ${fields} already exists`;
-  } else if (err.code === 'P2025') {
-    // Record not found
-    statusCode = 404;
-    message = 'Record not found';
-  } else if (err.code === 'P2003') {
-    // Foreign key constraint failed
+    message = err.errors?.[0]?.message || 'A record with this value already exists';
+    errors = err.errors?.map(e => ({ field: e.path, message: e.message })) || [];
+  } else if (err.name === 'SequelizeValidationError') {
     statusCode = 400;
-    message = 'Related record does not exist';
+    message = err.errors?.[0]?.message || 'Validation error';
+    errors = err.errors?.map(e => ({ field: e.path, message: e.message })) || [];
+  } else if (err.name === 'SequelizeForeignKeyConstraintError') {
+    statusCode = 400;
+    message = 'Related record does not exist or is constrained';
   }
 
   // ─── Handle JWT errors ────────────────────────────────────────────────────

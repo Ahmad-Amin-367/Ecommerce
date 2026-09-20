@@ -1,4 +1,5 @@
-const prisma = require('../config/db');
+const { Op } = require('sequelize');
+const { B2BQuote } = require('../models');
 const ApiError = require('../utils/apiError');
 const { sendB2BQuoteNotification } = require('./email.service');
 
@@ -17,24 +18,22 @@ const generateQuoteNumber = () => {
 const createQuote = async (data) => {
   const quoteNumber = generateQuoteNumber();
 
-  const quote = await prisma.b2BQuote.create({
-    data: {
-      quoteNumber,
-      companyName: data.companyName,
-      contactName: data.contactName,
-      email: data.email,
-      phone: data.phone,
-      eventDate: data.eventDate ? new Date(data.eventDate) : null,
-      eventType: data.eventType || 'Corporate Event',
-      guestCount: data.guestCount || '25-50',
-      budgetRange: data.budgetRange || null,
-      serviceType: data.serviceType || 'Corporate Gifting',
-      notes: data.notes || null,
-    },
+  const quote = await B2BQuote.create({
+    quoteNumber,
+    companyName: data.companyName,
+    contactName: data.contactName,
+    email: data.email,
+    phone: data.phone,
+    eventDate: data.eventDate ? new Date(data.eventDate) : null,
+    eventType: data.eventType || 'Corporate Event',
+    guestCount: data.guestCount || '25-50',
+    budgetRange: data.budgetRange || null,
+    serviceType: data.serviceType || 'Corporate Gifting',
+    notes: data.notes || null,
   });
 
   // Trigger non-blocking email notification
-  sendB2BQuoteNotification(quote).catch(() => {});
+  sendB2BQuoteNotification(quote.toJSON ? quote.toJSON() : quote).catch(() => {});
 
   return quote;
 };
@@ -53,23 +52,20 @@ const getQuotes = async (query = {}) => {
   }
 
   if (search) {
-    where.OR = [
-      { companyName: { contains: search, mode: 'insensitive' } },
-      { contactName: { contains: search, mode: 'insensitive' } },
-      { email: { contains: search, mode: 'insensitive' } },
-      { quoteNumber: { contains: search, mode: 'insensitive' } },
+    where[Op.or] = [
+      { companyName: { [Op.iLike]: `%${search}%` } },
+      { contactName: { [Op.iLike]: `%${search}%` } },
+      { email: { [Op.iLike]: `%${search}%` } },
+      { quoteNumber: { [Op.iLike]: `%${search}%` } },
     ];
   }
 
-  const [quotes, total] = await Promise.all([
-    prisma.b2BQuote.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: Number(limit),
-    }),
-    prisma.b2BQuote.count({ where }),
-  ]);
+  const { rows: quotes, count: total } = await B2BQuote.findAndCountAll({
+    where,
+    order: [['createdAt', 'DESC']],
+    offset: skip,
+    limit: Number(limit),
+  });
 
   return {
     quotes,
@@ -86,9 +82,7 @@ const getQuotes = async (query = {}) => {
  * Get single B2B quote by ID
  */
 const getQuoteById = async (id) => {
-  const quote = await prisma.b2BQuote.findUnique({
-    where: { id },
-  });
+  const quote = await B2BQuote.findByPk(id);
 
   if (!quote) {
     throw ApiError.notFound('B2B Quote not found');
@@ -101,25 +95,23 @@ const getQuoteById = async (id) => {
  * Update quote status or admin details (Admin only)
  */
 const updateQuote = async (id, data) => {
-  await getQuoteById(id);
+  const quote = await getQuoteById(id);
 
   const updateData = {};
   if (data.status) updateData.status = data.status;
   if (data.adminNotes !== undefined) updateData.adminNotes = data.adminNotes;
   if (data.estimatedAmount !== undefined) updateData.estimatedAmount = data.estimatedAmount;
 
-  return await prisma.b2BQuote.update({
-    where: { id },
-    data: updateData,
-  });
+  return quote.update(updateData);
 };
 
 /**
  * Delete B2B quote (Admin only)
  */
 const deleteQuote = async (id) => {
-  await getQuoteById(id);
-  await prisma.b2BQuote.delete({ where: { id } });
+  const quote = await getQuoteById(id);
+  await quote.destroy();
+  return { success: true };
 };
 
 module.exports = {

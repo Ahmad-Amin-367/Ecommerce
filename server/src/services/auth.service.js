@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/db');
+const { Op } = require('sequelize');
+const { User, PendingUser } = require('../models');
 const ApiError = require('../utils/apiError');
 const {
   generateAccessToken,
@@ -23,7 +24,7 @@ const register = async (data) => {
   const { name, email, password } = data;
 
   // Check if email already exists in active users
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await User.findOne({ where: { email } });
   if (existing) {
     throw ApiError.conflict('An account with this email already exists');
   }
@@ -33,28 +34,29 @@ const register = async (data) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-  // Clean up any expired pending users in the database automatically (Lazy Cleanup)
-  await prisma.pendingUser.deleteMany({
-    where: { expiresAt: { lt: new Date() } },
+  // Clean up any expired pending users in the database automatically
+  await PendingUser.destroy({
+    where: { expiresAt: { [Op.lt]: new Date() } },
   });
 
-  // Store in pending users
-  await prisma.pendingUser.upsert({
-    where: { email },
-    update: {
+  // Store in pending users (upsert)
+  const existingPending = await PendingUser.findOne({ where: { email } });
+  if (existingPending) {
+    await existingPending.update({
       name,
       password: hashedPassword,
       otp,
       expiresAt,
-    },
-    create: {
+    });
+  } else {
+    await PendingUser.create({
       email,
       name,
       password: hashedPassword,
       otp,
       expiresAt,
-    },
-  });
+    });
+  }
 
   // Send Email
   await sendOtpEmail(email, name, otp);
@@ -68,26 +70,24 @@ const register = async (data) => {
 const verifyOtp = async (data, res) => {
   const { email, otp } = data;
 
-  const pendingUser = await prisma.pendingUser.findUnique({ where: { email } });
+  const pendingUser = await PendingUser.findOne({ where: { email } });
   if (!pendingUser) {
     throw ApiError.badRequest('Invalid or expired OTP');
   }
 
-  if (pendingUser.otp !== otp || pendingUser.expiresAt < new Date()) {
+  if (pendingUser.otp !== otp || new Date(pendingUser.expiresAt) < new Date()) {
     throw ApiError.badRequest('Invalid or expired OTP');
   }
 
   // Create real user
-  const user = await prisma.user.create({
-    data: {
-      name: pendingUser.name,
-      email: pendingUser.email,
-      password: pendingUser.password,
-    },
+  const user = await User.create({
+    name: pendingUser.name,
+    email: pendingUser.email,
+    password: pendingUser.password,
   });
 
   // Cleanup pending user
-  await prisma.pendingUser.delete({ where: { email } });
+  await pendingUser.destroy();
 
   // Generate tokens
   const accessToken = generateAccessToken({ id: user.id, role: user.role });
@@ -96,7 +96,7 @@ const verifyOtp = async (data, res) => {
   setRefreshTokenCookie(res, refreshToken, user.role);
   setAccessTokenCookie(res, accessToken);
 
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user.toJSON();
   return {
     user: userWithoutPassword,
     accessToken,
@@ -110,7 +110,7 @@ const verifyOtp = async (data, res) => {
 const resendOtp = async (data) => {
   const { email } = data;
 
-  const pendingUser = await prisma.pendingUser.findUnique({ where: { email } });
+  const pendingUser = await PendingUser.findOne({ where: { email } });
   if (!pendingUser) {
     throw ApiError.badRequest('No pending registration found for this email');
   }
@@ -118,22 +118,19 @@ const resendOtp = async (data) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  await prisma.pendingUser.update({
-    where: { email },
-    data: { otp, expiresAt },
-  });
+  await pendingUser.update({ otp, expiresAt });
 
   await sendOtpEmail(email, pendingUser.name, otp);
   return { message: 'New OTP sent to email' };
 };
 
 /**
- * Login a user — returns user data + tokens (in JSON response and cookies)
+ * Login a user — returns user data + tokens
  */
 const login = async (data, res) => {
   const { email, password } = data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await User.findOne({ where: { email } });
   if (!user) {
     throw ApiError.unauthorized('Invalid email or password');
   }
@@ -158,7 +155,7 @@ const login = async (data, res) => {
   setRefreshTokenCookie(res, refreshToken, user.role);
   setAccessTokenCookie(res, accessToken);
 
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user.toJSON();
   return {
     user: userWithoutPassword,
     accessToken,
@@ -167,7 +164,7 @@ const login = async (data, res) => {
 };
 
 /**
- * Refresh access token using refresh token from body, header, or cookie
+ * Refresh access token using refresh token
  */
 const refreshToken = async (req, res) => {
   const token = req.body?.refreshToken || req.headers['x-refresh-token'] || req.cookies?.refreshToken;
@@ -182,9 +179,8 @@ const refreshToken = async (req, res) => {
     throw ApiError.unauthorized('Invalid or expired refresh token');
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: decoded.id },
-    select: { id: true, role: true, isActive: true },
+  const user = await User.findByPk(decoded.id, {
+    attributes: ['id', 'role', 'isActive'],
   });
 
   if (!user || !user.isActive) {
@@ -216,7 +212,7 @@ const logout = (res) => {
 const changePassword = async (userId, data) => {
   const { currentPassword, newPassword } = data;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await User.findByPk(userId);
   if (!user) {
     throw ApiError.notFound('User not found');
   }
@@ -224,7 +220,6 @@ const changePassword = async (userId, data) => {
     throw ApiError.forbidden('Your account has been deactivated.');
   }
 
-  // Google users might not have a password
   if (!user.password) {
     throw ApiError.badRequest('Cannot change password for an account created with Google.');
   }
@@ -235,10 +230,7 @@ const changePassword = async (userId, data) => {
   }
 
   const hashedNew = await bcrypt.hash(newPassword, 12);
-  await prisma.user.update({
-    where: { id: userId },
-    data: { password: hashedNew },
-  });
+  await user.update({ password: hashedNew });
 };
 
 /**
@@ -247,7 +239,7 @@ const changePassword = async (userId, data) => {
 const forgotPassword = async (data) => {
   const { email } = data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await User.findOne({ where: { email } });
   if (!user) {
     throw ApiError.notFound('No account found with this email');
   }
@@ -261,12 +253,9 @@ const forgotPassword = async (data) => {
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-  await prisma.user.update({
-    where: { email },
-    data: {
-      resetPasswordOtp: otp,
-      resetPasswordExpires: expiresAt,
-    },
+  await user.update({
+    resetPasswordOtp: otp,
+    resetPasswordExpires: expiresAt,
   });
 
   await sendPasswordResetEmail(email, user.name, otp);
@@ -279,7 +268,7 @@ const forgotPassword = async (data) => {
 const resetPassword = async (data) => {
   const { email, otp, newPassword } = data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await User.findOne({ where: { email } });
   if (!user) {
     throw ApiError.notFound('User not found');
   }
@@ -291,20 +280,17 @@ const resetPassword = async (data) => {
     !user.resetPasswordOtp ||
     user.resetPasswordOtp !== otp ||
     !user.resetPasswordExpires ||
-    user.resetPasswordExpires < new Date()
+    new Date(user.resetPasswordExpires) < new Date()
   ) {
     throw ApiError.badRequest('Invalid or expired OTP');
   }
 
   const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
-  await prisma.user.update({
-    where: { email },
-    data: {
-      password: hashedNewPassword,
-      resetPasswordOtp: null,
-      resetPasswordExpires: null,
-    },
+  await user.update({
+    password: hashedNewPassword,
+    resetPasswordOtp: null,
+    resetPasswordExpires: null,
   });
 
   return { message: 'Password has been reset successfully' };
@@ -337,29 +323,21 @@ const googleLogin = async (data, res) => {
     throw ApiError.badRequest('Google account must have an email address');
   }
 
-  let user = await prisma.user.findUnique({ where: { email } });
+  let user = await User.findOne({ where: { email } });
 
   if (user) {
-    // If user exists but deactivated
     if (!user.isActive) {
       throw ApiError.forbidden('Your account has been deactivated. Please contact support.');
     }
-    // Update existing user with googleId if they didn't have it
     if (!user.googleId) {
-      user = await prisma.user.update({
-        where: { email },
-        data: { googleId }, // Intentionally not overwriting authProvider so we know they were originally LOCAL
-      });
+      user = await user.update({ googleId });
     }
   } else {
-    // Create new user
-    user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        googleId,
-        authProvider: 'GOOGLE',
-      },
+    user = await User.create({
+      email,
+      name,
+      googleId,
+      authProvider: 'GOOGLE',
     });
   }
 
@@ -369,7 +347,7 @@ const googleLogin = async (data, res) => {
   setRefreshTokenCookie(res, refreshToken, user.role);
   setAccessTokenCookie(res, accessToken);
 
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _, ...userWithoutPassword } = user.toJSON();
   return {
     user: userWithoutPassword,
     accessToken,
@@ -377,4 +355,15 @@ const googleLogin = async (data, res) => {
   };
 };
 
-module.exports = { register, verifyOtp, resendOtp, login, refreshToken, logout, changePassword, forgotPassword, resetPassword, googleLogin };
+module.exports = {
+  register,
+  verifyOtp,
+  resendOtp,
+  login,
+  refreshToken,
+  logout,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+  googleLogin,
+};

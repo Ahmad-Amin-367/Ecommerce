@@ -1,4 +1,4 @@
-const prisma = require('../config/db');
+const { Order, OrderItem, Product, Address, User } = require('../models');
 const ApiError = require('../utils/apiError');
 const logger = require('../config/logger');
 const stripeService = require('./stripe.service');
@@ -6,9 +6,6 @@ const { sendOrderConfirmationEmail } = require('./email.service');
 
 /**
  * Calculate authoritative order total from products in database
- *
- * @param {Array<{productId: string, quantity: number}>} items
- * @returns {Promise<{subtotal: number, shippingFee: number, totalAmount: number}>}
  */
 const calculateCartTotal = async (items, deliveryInfo = {}) => {
   if (!items || items.length === 0) {
@@ -17,9 +14,8 @@ const calculateCartTotal = async (items, deliveryInfo = {}) => {
 
   let subtotal = 0;
   for (const item of items) {
-    const product = await prisma.product.findUnique({
-      where: { id: item.productId },
-      select: { id: true, name: true, price: true, isActive: true },
+    const product = await Product.findByPk(item.productId, {
+      attributes: ['id', 'name', 'price', 'isActive'],
     });
 
     if (!product || !product.isActive) {
@@ -48,14 +44,7 @@ const calculateCartTotal = async (items, deliveryInfo = {}) => {
 };
 
 /**
- * Create a Stripe PaymentIntent for the customer's cart (Card only)
- *
- * @param {Object} params
- * @param {Array} params.items - Cart items [{productId, quantity}]
- * @param {string|null} params.userId - Authenticated user ID (optional)
- * @param {string} [params.email] - Customer email (optional)
- * @param {string} [params.orderId] - Optional existing order ID
- * @returns {Promise<{clientSecret: string, paymentIntentId: string, amount: number}>}
+ * Create a Stripe PaymentIntent for the customer's cart
  */
 const createPaymentIntent = async ({ items, userId, email, orderId }) => {
   let totalAmount = 0;
@@ -64,7 +53,7 @@ const createPaymentIntent = async ({ items, userId, email, orderId }) => {
   };
 
   if (orderId) {
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    const order = await Order.findByPk(orderId);
     if (!order) throw ApiError.notFound('Order not found');
     totalAmount = Number(order.totalAmount);
     metadata.orderId = order.id;
@@ -102,11 +91,6 @@ const createPaymentIntent = async ({ items, userId, email, orderId }) => {
 
 /**
  * Confirm a completed payment for an order and mark it PAID
- *
- * @param {Object} params
- * @param {string} params.orderId - Database Order ID
- * @param {string} params.paymentIntentId - Stripe PaymentIntent ID (pi_...)
- * @param {string|null} params.userId - Authenticated user ID
  */
 const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
   if (!orderId) {
@@ -117,16 +101,23 @@ const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
     throw ApiError.badRequest('PaymentIntent ID is required');
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { items: true, address: true },
+  const order = await Order.findByPk(orderId, {
+    include: [
+      {
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'images'] }],
+      },
+      { model: Address, as: 'address' },
+      { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
+    ],
   });
 
   if (!order) {
     throw ApiError.notFound('Order not found');
   }
 
-  // 1. Authorize user (if order belongs to an authenticated user)
+  // 1. Authorize user
   if (order.userId && userId && order.userId !== userId) {
     throw ApiError.forbidden('Unauthorized access to this order');
   }
@@ -160,23 +151,23 @@ const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
   }
 
   // 5. Update Order in database to PAID & CONFIRMED
-  const updatedOrder = await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      paymentStatus: 'PAID',
-      status: 'CONFIRMED',
-      paymentMethod: 'STRIPE',
-      stripePaymentIntentId: paymentIntent.id,
-    },
-    include: {
-      items: {
-        include: {
-          product: { select: { id: true, name: true, images: true } }
-        }
+  await order.update({
+    paymentStatus: 'PAID',
+    status: 'CONFIRMED',
+    paymentMethod: 'STRIPE',
+    stripePaymentIntentId: paymentIntent.id,
+  });
+
+  const updatedOrder = await Order.findByPk(orderId, {
+    include: [
+      {
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'images'] }],
       },
-      address: true,
-      user: { select: { id: true, name: true, email: true } },
-    },
+      { model: Address, as: 'address' },
+      { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
+    ],
   });
 
   logger.info(`🎉 Order ${order.orderNumber} successfully confirmed & marked PAID via Stripe (${paymentIntent.id})`);
@@ -195,9 +186,6 @@ const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
 
 /**
  * Handle Stripe webhook events asynchronously
- *
- * @param {Buffer|string} rawBody - Raw body from request
- * @param {string} signature - Stripe signature header
  */
 const handleStripeWebhook = async (rawBody, signature) => {
   const event = stripeService.constructWebhookEvent(rawBody, signature);
@@ -208,10 +196,9 @@ const handleStripeWebhook = async (rawBody, signature) => {
       const paymentIntent = event.data.object;
       const orderId = paymentIntent.metadata?.orderId;
 
-      // Find order by metadata orderId or by matching stripePaymentIntentId
       const order = orderId
-        ? await prisma.order.findUnique({ where: { id: orderId } })
-        : await prisma.order.findFirst({ where: { stripePaymentIntentId: paymentIntent.id } });
+        ? await Order.findByPk(orderId)
+        : await Order.findOne({ where: { stripePaymentIntentId: paymentIntent.id } });
 
       if (order) {
         if (order.paymentStatus === 'PAID') {
@@ -219,23 +206,23 @@ const handleStripeWebhook = async (rawBody, signature) => {
           return { received: true };
         }
 
-        const updatedOrder = await prisma.order.update({
-          where: { id: order.id },
-          data: {
-            paymentStatus: 'PAID',
-            status: 'CONFIRMED',
-            paymentMethod: 'STRIPE',
-            stripePaymentIntentId: paymentIntent.id,
-          },
-          include: {
-            items: {
-              include: {
-                product: { select: { id: true, name: true, images: true } }
-              }
+        await order.update({
+          paymentStatus: 'PAID',
+          status: 'CONFIRMED',
+          paymentMethod: 'STRIPE',
+          stripePaymentIntentId: paymentIntent.id,
+        });
+
+        const updatedOrder = await Order.findByPk(order.id, {
+          include: [
+            {
+              model: OrderItem,
+              as: 'items',
+              include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'images'] }],
             },
-            address: true,
-            user: { select: { id: true, name: true, email: true } },
-          },
+            { model: Address, as: 'address' },
+            { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
+          ],
         });
 
         logger.info(`🎉 Order ${order.orderNumber} marked PAID via webhook (PaymentIntent: ${paymentIntent.id})`);
@@ -254,14 +241,11 @@ const handleStripeWebhook = async (rawBody, signature) => {
       const orderId = paymentIntent.metadata?.orderId;
 
       const order = orderId
-        ? await prisma.order.findUnique({ where: { id: orderId } })
-        : await prisma.order.findFirst({ where: { stripePaymentIntentId: paymentIntent.id } });
+        ? await Order.findByPk(orderId)
+        : await Order.findOne({ where: { stripePaymentIntentId: paymentIntent.id } });
 
       if (order && order.paymentStatus !== 'PAID') {
-        await prisma.order.update({
-          where: { id: order.id },
-          data: { paymentStatus: 'FAILED' },
-        });
+        await order.update({ paymentStatus: 'FAILED' });
         logger.warn(`❌ Order ${order.orderNumber} marked FAILED via webhook: ${paymentIntent.last_payment_error?.message}`);
       }
       break;

@@ -1,4 +1,4 @@
-const prisma = require('../config/db');
+const { DeliveryZone, DeliverySetting, Product } = require('../models');
 const ApiError = require('../utils/apiError');
 
 /**
@@ -16,18 +16,16 @@ const formatPostalCodeFSA = (postalCode) => {
  */
 const calculateDeliveryFee = async ({ postalCode, fulfillmentType = 'DELIVERY', items = [] }) => {
   // 1. Fetch current settings
-  let settings = await prisma.deliverySetting.findFirst();
+  let settings = await DeliverySetting.findOne();
   if (!settings) {
-    settings = await prisma.deliverySetting.create({
-      data: {
-        pickupEnabled: true,
-        pickupLocationName: 'Milton, ON',
-        pickupAddress: 'Milton, Ontario (Exact address provided upon order confirmation)',
-        unservicedAreaMessage:
-          'Delivery may be available to your area. Please contact Hisna Gifts for delivery availability and pricing.',
-        eventSetupMessage:
-          'Delivery and setup fees are based on event location and setup requirements. Please contact us for a quote.',
-      },
+    settings = await DeliverySetting.create({
+      pickupEnabled: true,
+      pickupLocationName: 'Milton, ON',
+      pickupAddress: 'Milton, Ontario (Exact address provided upon order confirmation)',
+      unservicedAreaMessage:
+        'Delivery may be available to your area. Please contact Hisna Gifts for delivery availability and pricing.',
+      eventSetupMessage:
+        'Delivery and setup fees are based on event location and setup requirements. Please contact us for a quote.',
     });
   }
 
@@ -38,12 +36,12 @@ const calculateDeliveryFee = async ({ postalCode, fulfillmentType = 'DELIVERY', 
       .filter(Boolean);
 
     if (productIds.length > 0) {
-      const eventProducts = await prisma.product.findMany({
+      const eventProducts = await Product.findAll({
         where: {
-          id: { in: productIds },
+          id: productIds,
           isEventSetup: true,
         },
-        select: { id: true, name: true, isEventSetup: true },
+        attributes: ['id', 'name', 'isEventSetup'],
       });
 
       if (eventProducts.length > 0) {
@@ -88,12 +86,13 @@ const calculateDeliveryFee = async ({ postalCode, fulfillmentType = 'DELIVERY', 
   }
 
   // Find matching active zone
-  const activeZones = await prisma.deliveryZone.findMany({
+  const activeZones = await DeliveryZone.findAll({
     where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
+    order: [['sortOrder', 'ASC']],
   });
 
   const matchedZone = activeZones.find((zone) =>
+    Array.isArray(zone.postalCodes) &&
     zone.postalCodes.some((code) => code.trim().toUpperCase() === fsa)
   );
 
@@ -125,8 +124,8 @@ const calculateDeliveryFee = async ({ postalCode, fulfillmentType = 'DELIVERY', 
  * Admin: Get all delivery zones
  */
 const getAllZones = async () => {
-  return prisma.deliveryZone.findMany({
-    orderBy: { sortOrder: 'asc' },
+  return DeliveryZone.findAll({
+    order: [['sortOrder', 'ASC']],
   });
 };
 
@@ -134,9 +133,9 @@ const getAllZones = async () => {
  * Public: Get active delivery zones (for customers to browse supported areas)
  */
 const getActiveZones = async () => {
-  return prisma.deliveryZone.findMany({
+  return DeliveryZone.findAll({
     where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
+    order: [['sortOrder', 'ASC']],
   });
 };
 
@@ -157,15 +156,13 @@ const createZone = async (data) => {
         .filter((code) => code.length === 3)
     : [];
 
-  return prisma.deliveryZone.create({
-    data: {
-      name,
-      description,
-      fee: Number(fee),
-      postalCodes: Array.from(new Set(formattedCodes)),
-      isActive: Boolean(isActive),
-      sortOrder: Number(sortOrder) || 0,
-    },
+  return DeliveryZone.create({
+    name,
+    description,
+    fee: Number(fee),
+    postalCodes: Array.from(new Set(formattedCodes)),
+    isActive: Boolean(isActive),
+    sortOrder: Number(sortOrder) || 0,
   });
 };
 
@@ -173,8 +170,8 @@ const createZone = async (data) => {
  * Admin: Update a delivery zone
  */
 const updateZone = async (id, data) => {
-  const existing = await prisma.deliveryZone.findUnique({ where: { id } });
-  if (!existing) {
+  const zone = await DeliveryZone.findByPk(id);
+  if (!zone) {
     throw ApiError.notFound('Delivery zone not found');
   }
 
@@ -194,40 +191,36 @@ const updateZone = async (id, data) => {
     updateData.postalCodes = Array.from(new Set(formattedCodes));
   }
 
-  return prisma.deliveryZone.update({
-    where: { id },
-    data: updateData,
-  });
+  return zone.update(updateData);
 };
 
 /**
  * Admin: Delete a delivery zone
  */
 const deleteZone = async (id) => {
-  const existing = await prisma.deliveryZone.findUnique({ where: { id } });
-  if (!existing) {
+  const zone = await DeliveryZone.findByPk(id);
+  if (!zone) {
     throw ApiError.notFound('Delivery zone not found');
   }
 
-  return prisma.deliveryZone.delete({ where: { id } });
+  await zone.destroy();
+  return { message: 'Delivery zone deleted successfully' };
 };
 
 /**
  * Get delivery settings (singleton)
  */
 const getDeliverySettings = async () => {
-  let settings = await prisma.deliverySetting.findFirst();
+  let settings = await DeliverySetting.findOne();
   if (!settings) {
-    settings = await prisma.deliverySetting.create({
-      data: {
-        pickupEnabled: true,
-        pickupLocationName: 'Milton, ON',
-        pickupAddress: 'Milton, Ontario (Exact address provided upon order confirmation)',
-        unservicedAreaMessage:
-          'Delivery may be available to your area. Please contact Hisna Gifts for delivery availability and pricing.',
-        eventSetupMessage:
-          'Delivery and setup fees are based on event location and setup requirements. Please contact us for a quote.',
-      },
+    settings = await DeliverySetting.create({
+      pickupEnabled: true,
+      pickupLocationName: 'Milton, ON',
+      pickupAddress: 'Milton, Ontario (Exact address provided upon order confirmation)',
+      unservicedAreaMessage:
+        'Delivery may be available to your area. Please contact Hisna Gifts for delivery availability and pricing.',
+      eventSetupMessage:
+        'Delivery and setup fees are based on event location and setup requirements. Please contact us for a quote.',
     });
   }
   return settings;
@@ -246,10 +239,7 @@ const updateDeliverySettings = async (data) => {
   if (data.unservicedAreaMessage !== undefined) updateData.unservicedAreaMessage = data.unservicedAreaMessage;
   if (data.eventSetupMessage !== undefined) updateData.eventSetupMessage = data.eventSetupMessage;
 
-  return prisma.deliverySetting.update({
-    where: { id: settings.id },
-    data: updateData,
-  });
+  return settings.update(updateData);
 };
 
 module.exports = {

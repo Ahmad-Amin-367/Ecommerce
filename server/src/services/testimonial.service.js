@@ -1,4 +1,4 @@
-const prisma = require('../config/db');
+const { Testimonial } = require('../models');
 const ApiError = require('../utils/apiError');
 
 /**
@@ -7,15 +7,15 @@ const ApiError = require('../utils/apiError');
  */
 const getTestimonials = async (query = {}) => {
   const where = {};
-  
+
   // If not admin query, only return active testimonials
   if (!query.admin) {
     where.isActive = true;
   }
 
-  const testimonials = await prisma.testimonial.findMany({
+  const testimonials = await Testimonial.findAll({
     where,
-    orderBy: { createdAt: 'desc' },
+    order: [['createdAt', 'DESC']],
   });
 
   return testimonials;
@@ -25,9 +25,7 @@ const getTestimonials = async (query = {}) => {
  * Get single testimonial by ID
  */
 const getTestimonialById = async (id) => {
-  const testimonial = await prisma.testimonial.findUnique({
-    where: { id },
-  });
+  const testimonial = await Testimonial.findByPk(id);
 
   if (!testimonial) {
     throw ApiError.notFound('Testimonial not found');
@@ -40,14 +38,12 @@ const getTestimonialById = async (id) => {
  * Create testimonial (Admin)
  */
 const createTestimonial = async (data) => {
-  return await prisma.testimonial.create({
-    data: {
-      name: data.name,
-      location: data.location || 'Pakistan',
-      rating: Number(data.rating) || 5,
-      text: data.text,
-      isActive: data.isActive !== undefined ? Boolean(data.isActive) : true,
-    },
+  return await Testimonial.create({
+    name: data.name,
+    location: data.location || 'Canada',
+    rating: Number(data.rating) || 5,
+    text: data.text,
+    isActive: data.isActive !== undefined ? Boolean(data.isActive) : true,
   });
 };
 
@@ -55,26 +51,25 @@ const createTestimonial = async (data) => {
  * Update testimonial (Admin)
  */
 const updateTestimonial = async (id, data) => {
-  await getTestimonialById(id);
+  const testimonial = await getTestimonialById(id);
 
-  return await prisma.testimonial.update({
-    where: { id },
-    data: {
-      ...(data.name && { name: data.name }),
-      ...(data.location && { location: data.location }),
-      ...(data.rating !== undefined && { rating: Number(data.rating) }),
-      ...(data.text && { text: data.text }),
-      ...(data.isActive !== undefined && { isActive: Boolean(data.isActive) }),
-    },
+  await testimonial.update({
+    ...(data.name && { name: data.name }),
+    ...(data.location && { location: data.location }),
+    ...(data.rating !== undefined && { rating: Number(data.rating) }),
+    ...(data.text && { text: data.text }),
+    ...(data.isActive !== undefined && { isActive: Boolean(data.isActive) }),
   });
+
+  return testimonial;
 };
 
 /**
  * Delete testimonial (Admin)
  */
 const deleteTestimonial = async (id) => {
-  await getTestimonialById(id);
-  await prisma.testimonial.delete({ where: { id } });
+  const testimonial = await getTestimonialById(id);
+  await testimonial.destroy();
 };
 
 module.exports = {

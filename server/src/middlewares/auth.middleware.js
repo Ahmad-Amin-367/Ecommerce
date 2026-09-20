@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/apiError');
-const prisma = require('../config/db');
+const { User } = require('../models');
 
 /**
  * Protect routes — verifies the access token from the httpOnly cookie.
@@ -8,7 +8,6 @@ const prisma = require('../config/db');
  */
 const protect = async (req, res, next) => {
   try {
-    // Support token from cookie (primary) or Authorization header (fallback)
     let token = req.cookies?.accessToken;
 
     if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
@@ -21,15 +20,8 @@ const protect = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-      },
+    const user = await User.findByPk(decoded.id, {
+      attributes: ['id', 'name', 'email', 'role', 'isActive'],
     });
 
     if (!user) {
@@ -40,7 +32,7 @@ const protect = async (req, res, next) => {
       throw ApiError.forbidden('Your account has been deactivated');
     }
 
-    req.user = user;
+    req.user = user.toJSON ? user.toJSON() : user;
     next();
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
@@ -67,26 +59,30 @@ const optionalAuth = async (req, res, next) => {
 
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-        },
+      const user = await User.findByPk(decoded.id, {
+        attributes: ['id', 'name', 'email', 'role', 'isActive'],
       });
 
       if (user && user.isActive) {
-        req.user = user;
+        req.user = user.toJSON ? user.toJSON() : user;
       }
     }
-  } catch (err) {
+  } catch (_) {
     // Ignore error for optional auth (allow guest)
   }
   next();
 };
 
-module.exports = { protect, optionalAuth };
+/**
+ * Restrict to specific roles
+ */
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(ApiError.forbidden('You do not have permission to perform this action'));
+    }
+    next();
+  };
+};
 
+module.exports = { protect, optionalAuth, authorize };

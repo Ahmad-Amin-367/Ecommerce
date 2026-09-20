@@ -1,4 +1,5 @@
-const prisma = require('../config/db');
+const { Op } = require('sequelize');
+const { User, Address, Order } = require('../models');
 const ApiError = require('../utils/apiError');
 const { paginate } = require('../utils/pagination');
 
@@ -6,58 +7,47 @@ const { paginate } = require('../utils/pagination');
  * Get current user profile
  */
 const getProfile = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      addresses: true,
-    },
+  const user = await User.findByPk(userId, {
+    attributes: ['id', 'name', 'email', 'phone', 'role', 'isActive', 'createdAt'],
+    include: [{ model: Address, as: 'addresses' }],
   });
 
   if (!user) throw ApiError.notFound('User not found');
-  return user;
+  return user.toJSON();
 };
 
 /**
  * Update current user profile
  */
 const updateProfile = async (userId, data) => {
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      updatedAt: true,
-    },
-  });
-  return user;
+  const user = await User.findByPk(userId);
+  if (!user) throw ApiError.notFound('User not found');
+
+  const allowedUpdates = {};
+  if (data.name !== undefined) allowedUpdates.name = data.name;
+  if (data.phone !== undefined) allowedUpdates.phone = data.phone;
+
+  await user.update(allowedUpdates);
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    updatedAt: user.updatedAt,
+  };
 };
 
 /**
  * Add a new address for a user
  */
 const addAddress = async (userId, data) => {
-  // If this is set as default, unset all other defaults first
   if (data.isDefault) {
-    await prisma.address.updateMany({
-      where: { userId },
-      data: { isDefault: false },
-    });
+    await Address.update({ isDefault: false }, { where: { userId } });
   }
 
-  const address = await prisma.address.create({
-    data: { ...data, userId },
-  });
+  const address = await Address.create({ ...data, userId });
   return address;
 };
 
@@ -65,31 +55,28 @@ const addAddress = async (userId, data) => {
  * Update an existing address
  */
 const updateAddress = async (userId, addressId, data) => {
-  const address = await prisma.address.findFirst({
+  const address = await Address.findOne({
     where: { id: addressId, userId },
   });
   if (!address) throw ApiError.notFound('Address not found');
 
   if (data.isDefault) {
-    await prisma.address.updateMany({
-      where: { userId },
-      data: { isDefault: false },
-    });
+    await Address.update({ isDefault: false }, { where: { userId } });
   }
 
-  return prisma.address.update({ where: { id: addressId }, data });
+  return address.update(data);
 };
 
 /**
  * Delete an address
  */
 const deleteAddress = async (userId, addressId) => {
-  const address = await prisma.address.findFirst({
+  const address = await Address.findOne({
     where: { id: addressId, userId },
   });
   if (!address) throw ApiError.notFound('Address not found');
 
-  await prisma.address.delete({ where: { id: addressId } });
+  await address.destroy();
 };
 
 // ─── Admin only ───────────────────────────────────────────────────────────────
@@ -102,59 +89,69 @@ const getAllUsers = async (query) => {
 
   const where = {};
   if (search) {
-    where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { email: { contains: search, mode: 'insensitive' } },
+    where[Op.or] = [
+      { name: { [Op.iLike]: `%${search}%` } },
+      { email: { [Op.iLike]: `%${search}%` } },
     ];
   }
-  // Exclude ADMIN users by default
   where.role = role || 'CUSTOMER';
-  
+
   if (isActive !== undefined && isActive !== '') {
     where.isActive = isActive === 'true' || isActive === true;
   }
 
-
-  const totalCount = await prisma.user.count({ where });
+  const totalCount = await User.count({ where });
   const { skip, take, meta } = paginate({ page, limit }, totalCount);
 
-  const users = await prisma.user.findMany({
+  const users = await User.findAll({
     where,
-    skip,
-    take,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      _count: { select: { orders: true } },
-    },
+    offset: skip,
+    limit: take,
+    order: [['createdAt', 'DESC']],
+    attributes: ['id', 'name', 'email', 'phone', 'role', 'isActive', 'createdAt'],
+    include: [{ model: Order, as: 'orders', attributes: ['id'] }],
   });
 
-  return { users, meta };
+  const formattedUsers = users.map((u) => {
+    const json = u.toJSON();
+    const orderCount = json.orders?.length || 0;
+    delete json.orders;
+    return {
+      ...json,
+      _count: { orders: orderCount },
+    };
+  });
+
+  return { users: formattedUsers, meta };
 };
 
 /**
  * Admin: Update user role or status
  */
 const adminUpdateUser = async (userId, data) => {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await User.findByPk(userId);
   if (!user) throw ApiError.notFound('User not found');
 
   if (user.role === 'ADMIN') {
     throw ApiError.forbidden('Admin accounts cannot be deactivated or modified');
   }
 
-  return prisma.user.update({
-    where: { id: userId },
-    data,
-    select: { id: true, name: true, email: true, role: true, isActive: true },
-  });
+  await user.update(data);
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isActive: user.isActive,
+  };
 };
 
-
-module.exports = { getProfile, updateProfile, addAddress, updateAddress, deleteAddress, getAllUsers, adminUpdateUser };
+module.exports = {
+  getProfile,
+  updateProfile,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  getAllUsers,
+  adminUpdateUser,
+};

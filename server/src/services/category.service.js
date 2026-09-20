@@ -1,4 +1,4 @@
-const prisma = require('../config/db');
+const { Category, Product } = require('../models');
 const ApiError = require('../utils/apiError');
 
 const generateSlug = (name) =>
@@ -9,23 +9,61 @@ const generateSlug = (name) =>
  */
 const getCategories = async (tree = false) => {
   if (tree) {
-    return prisma.category.findMany({
+    const categories = await Category.findAll({
       where: { parentId: null, isActive: true },
-      include: {
-        children: {
+      include: [
+        {
+          model: Category,
+          as: 'children',
           where: { isActive: true },
-          include: { _count: { select: { products: true } } },
+          required: false,
+          include: [{ model: Product, as: 'products', attributes: ['id'] }],
         },
-        _count: { select: { products: true } },
-      },
-      orderBy: { name: 'asc' },
+        {
+          model: Product,
+          as: 'products',
+          attributes: ['id'],
+        },
+      ],
+      order: [['name', 'ASC']],
+    });
+
+    return categories.map((c) => {
+      const json = c.toJSON();
+      const productCount = json.products?.length || 0;
+      delete json.products;
+
+      const children = (json.children || []).map((ch) => {
+        const chCount = ch.products?.length || 0;
+        delete ch.products;
+        return {
+          ...ch,
+          _count: { products: chCount },
+        };
+      });
+
+      return {
+        ...json,
+        children,
+        _count: { products: productCount },
+      };
     });
   }
 
-  return prisma.category.findMany({
+  const categories = await Category.findAll({
     where: { isActive: true },
-    include: { _count: { select: { products: true } } },
-    orderBy: { name: 'asc' },
+    include: [{ model: Product, as: 'products', attributes: ['id'] }],
+    order: [['name', 'ASC']],
+  });
+
+  return categories.map((c) => {
+    const json = c.toJSON();
+    const count = json.products?.length || 0;
+    delete json.products;
+    return {
+      ...json,
+      _count: { products: count },
+    };
   });
 };
 
@@ -33,20 +71,40 @@ const getCategories = async (tree = false) => {
  * Get single category by ID or slug
  */
 const getCategory = async (identifier) => {
-  const isId = /^[a-zA-Z0-9]{25}$/.test(identifier);
-  const where = isId ? { id: identifier } : { slug: identifier };
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  const where = isUUID ? { id: identifier } : { slug: identifier };
 
-  const category = await prisma.category.findUnique({
+  const category = await Category.findOne({
     where,
-    include: {
-      children: { where: { isActive: true } },
-      parent: true,
-      _count: { select: { products: true } },
-    },
+    include: [
+      {
+        model: Category,
+        as: 'children',
+        where: { isActive: true },
+        required: false,
+      },
+      {
+        model: Category,
+        as: 'parent',
+      },
+      {
+        model: Product,
+        as: 'products',
+        attributes: ['id'],
+      },
+    ],
   });
 
   if (!category) throw ApiError.notFound('Category not found');
-  return category;
+
+  const json = category.toJSON();
+  const productCount = json.products?.length || 0;
+  delete json.products;
+
+  return {
+    ...json,
+    _count: { products: productCount },
+  };
 };
 
 /**
@@ -54,44 +112,51 @@ const getCategory = async (identifier) => {
  */
 const createCategory = async (data) => {
   const slug = data.slug || generateSlug(data.name);
-  const existing = await prisma.category.findUnique({ where: { slug } });
+  const existing = await Category.findOne({ where: { slug } });
   if (existing) throw ApiError.conflict('A category with this slug already exists');
 
   if (data.parentId) {
-    const parent = await prisma.category.findUnique({ where: { id: data.parentId } });
+    const parent = await Category.findByPk(data.parentId);
     if (!parent) throw ApiError.notFound('Parent category not found');
   }
 
-  return prisma.category.create({ data: { ...data, slug } });
+  return Category.create({ ...data, slug });
 };
 
 /**
  * Update category (Admin)
  */
 const updateCategory = async (id, data) => {
-  const category = await prisma.category.findUnique({ where: { id } });
+  const category = await Category.findByPk(id);
   if (!category) throw ApiError.notFound('Category not found');
 
-  return prisma.category.update({ where: { id }, data });
+  return category.update(data);
 };
 
 /**
  * Delete category (Admin)
  */
 const deleteCategory = async (id) => {
-  const category = await prisma.category.findUnique({
-    where: { id },
-    include: { _count: { select: { products: true, children: true } } },
+  const category = await Category.findByPk(id, {
+    include: [
+      { model: Product, as: 'products', attributes: ['id'] },
+      { model: Category, as: 'children', attributes: ['id'] },
+    ],
   });
+
   if (!category) throw ApiError.notFound('Category not found');
-  if (category._count.products > 0) {
+
+  const productCount = category.products?.length || 0;
+  const childrenCount = category.children?.length || 0;
+
+  if (productCount > 0) {
     throw ApiError.conflict('Cannot delete category with existing products');
   }
-  if (category._count.children > 0) {
+  if (childrenCount > 0) {
     throw ApiError.conflict('Cannot delete category with existing subcategories');
   }
 
-  await prisma.category.delete({ where: { id } });
+  await category.destroy();
 };
 
 module.exports = { getCategories, getCategory, createCategory, updateCategory, deleteCategory };

@@ -1,4 +1,4 @@
-const prisma = require('../config/db');
+const { Order, OrderItem, Product, Address, User, sequelize } = require('../models');
 const ApiError = require('../utils/apiError');
 const { sendSuccess } = require('../utils/apiResponse');
 const orderService = require('../services/order.service');
@@ -16,7 +16,7 @@ const generateOrderNumber = () => {
 /**
  * @desc    Create new order
  * @route   POST /api/v1/orders
- * @access  Private (Authenticated User)
+ * @access  Private (Authenticated User or Guest)
  */
 const createOrder = async (req, res) => {
   const { items, shippingAddress, paymentMethod, notes, guestInfo, fulfillmentType = 'DELIVERY' } = req.body;
@@ -30,7 +30,7 @@ const createOrder = async (req, res) => {
   const orderItemsData = [];
 
   for (const item of items) {
-    const product = await prisma.product.findUnique({ where: { id: item.productId } });
+    const product = await Product.findByPk(item.productId);
 
     if (!product) {
       throw ApiError.notFound(`Product not found: ${item.productId}`);
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
       productId: product.id,
       quantity: item.quantity,
       unitPrice: product.price,
-      totalPrice: itemTotal
+      totalPrice: itemTotal,
     });
   }
 
@@ -72,80 +72,79 @@ const createOrder = async (req, res) => {
   const shippingFee = Number(deliveryCalc.fee) || 0;
   const totalAmount = subtotal + shippingFee;
 
-  // Create Order in transaction to ensure stock is updated safely
-  const order = await prisma.$transaction(
-    async (tx) => {
-      // 1. Create the address if provided (or store as guest)
-      let addressId = null;
-      const userId = req.user ? req.user.id : null;
+  // Create Order in Sequelize transaction
+  const order = await sequelize.transaction(async (t) => {
+    let addressId = null;
+    const userId = req.user ? req.user.id : null;
 
-      if (shippingAddress && fulfillmentType === 'DELIVERY') {
-        const address = await tx.address.create({
-          data: {
-            userId: userId,
-            street: shippingAddress.address,
-            city: shippingAddress.city,
-            state: shippingAddress.state || 'Ontario',
-            country: shippingAddress.country || 'Canada',
-            postalCode: shippingAddress.postalCode || '',
-          }
-        });
-        addressId = address.id;
-      }
-
-      // 2. Create the order
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber: generateOrderNumber(),
+    if (shippingAddress && fulfillmentType === 'DELIVERY') {
+      const address = await Address.create(
+        {
           userId: userId,
-          addressId: addressId,
-          guestName: guestInfo?.name,
-          guestEmail: guestInfo?.email,
-          guestPhone: guestInfo?.phone,
-          paymentMethod: paymentMethod || 'CASH_ON_DELIVERY',
-          subtotal,
-          shippingFee,
-          totalAmount,
-          fulfillmentType: deliveryCalc.fulfillmentType || fulfillmentType,
-          deliveryZone: deliveryCalc.zoneName || (fulfillmentType === 'PICKUP' ? 'Store Pickup' : null),
-          notes,
-          items: {
-            create: orderItemsData
-          }
+          street: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state || 'Ontario',
+          country: shippingAddress.country || 'Canada',
+          postalCode: shippingAddress.postalCode || '',
         },
-        include: {
-          items: {
-            include: {
-              product: { select: { id: true, name: true, images: true } }
-            }
-          },
-          address: true,
-          user: { select: { id: true, name: true, email: true } },
-        }
-      });
-
-      return newOrder;
-    },
-    {
-      maxWait: 10000, // 10 seconds max wait for connection pool
-      timeout: 20000, // 20 seconds execution timeout for serverless DB round-trips
+        { transaction: t }
+      );
+      addressId = address.id;
     }
-  );
+
+    const newOrder = await Order.create(
+      {
+        orderNumber: generateOrderNumber(),
+        userId: userId,
+        addressId: addressId,
+        guestName: guestInfo?.name,
+        guestEmail: guestInfo?.email,
+        guestPhone: guestInfo?.phone,
+        paymentMethod: paymentMethod || 'CASH_ON_DELIVERY',
+        subtotal,
+        shippingFee,
+        totalAmount,
+        fulfillmentType: deliveryCalc.fulfillmentType || fulfillmentType,
+        deliveryZone: deliveryCalc.zoneName || (fulfillmentType === 'PICKUP' ? 'Store Pickup' : null),
+        notes,
+        items: orderItemsData,
+      },
+      {
+        include: [{ model: OrderItem, as: 'items' }],
+        transaction: t,
+      }
+    );
+
+    return newOrder;
+  });
 
   // Clear user DB cart after successful order creation
   const orderUserId = req.user ? req.user.id : null;
   if (orderUserId) {
-    await cartService.clearCart(orderUserId).catch(() => { });
+    await cartService.clearCart(orderUserId).catch(() => {});
   }
+
+  // Fetch full order with details
+  const fullOrder = await Order.findByPk(order.id, {
+    include: [
+      {
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'images'] }],
+      },
+      { model: Address, as: 'address' },
+      { model: User, as: 'user', attributes: ['id', 'name', 'email'] },
+    ],
+  });
 
   // Send Order Confirmation Email immediately for COD / non-Stripe orders
   if (order.paymentMethod !== 'STRIPE') {
-    sendOrderConfirmationEmail(order).catch((err) =>
+    sendOrderConfirmationEmail(fullOrder).catch((err) =>
       console.error(`Failed to send order confirmation email: ${err.message}`)
     );
   }
 
-  sendSuccess(res, 201, 'Order placed successfully', order);
+  sendSuccess(res, 201, 'Order placed successfully', fullOrder);
 };
 
 /**
@@ -171,17 +170,14 @@ const updateOrderStatus = async (req, res) => {
     throw ApiError.badRequest('Order status is required');
   }
 
-  const order = await prisma.order.findUnique({ where: { id } });
+  const order = await Order.findByPk(id);
   if (!order) {
     throw ApiError.notFound('Order not found');
   }
 
-  const updatedOrder = await prisma.order.update({
-    where: { id },
-    data: {
-      status,
-      deliveredAt: status === 'DELIVERED' ? new Date() : order.deliveredAt
-    }
+  const updatedOrder = await order.update({
+    status,
+    deliveredAt: status === 'DELIVERED' ? new Date() : order.deliveredAt,
   });
 
   sendSuccess(res, 200, 'Order status updated', updatedOrder);
@@ -193,15 +189,17 @@ const updateOrderStatus = async (req, res) => {
  * @access  Private (Customer)
  */
 const getMyOrders = async (req, res) => {
-  const orders = await prisma.order.findMany({
+  const orders = await Order.findAll({
     where: { userId: req.user.id },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      address: true,
-      items: {
-        include: { product: true }
-      }
-    }
+    order: [['createdAt', 'DESC']],
+    include: [
+      { model: Address, as: 'address' },
+      {
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product' }],
+      },
+    ],
   });
 
   sendSuccess(res, 200, 'My orders retrieved successfully', orders);
@@ -215,17 +213,20 @@ const getMyOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   const { id } = req.params;
 
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true }
+  const order = await Order.findByPk(id, {
+    include: [
+      {
+        model: User,
+        as: 'user',
+        attributes: ['id', 'name', 'email'],
       },
-      address: true,
-      items: {
-        include: { product: true }
-      }
-    }
+      { model: Address, as: 'address' },
+      {
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product' }],
+      },
+    ],
   });
 
   if (!order) {
@@ -247,5 +248,5 @@ module.exports = {
   getOrders,
   getOrderById,
   updateOrderStatus,
-  getMyOrders
+  getMyOrders,
 };

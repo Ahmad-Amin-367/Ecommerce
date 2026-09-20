@@ -1,6 +1,6 @@
 require('dotenv').config();
 const app = require('./src/app');
-const prisma = require('./src/config/db');
+const { connectDB, sequelize } = require('./src/config/db');
 const logger = require('./src/config/logger');
 const { initSocket } = require('./src/config/socket');
 
@@ -8,11 +8,9 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Test database connection
     console.log('⏳ Connecting to database...');
-    await prisma.$connect();
-    console.log('✅ Database connected successfully');
-    logger.info('✅ Database connected successfully');
+    await connectDB();
+    logger.info('✅ Database connected successfully via Sequelize');
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
@@ -28,7 +26,9 @@ const startServer = async () => {
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
     logger.error('❌ Failed to start server:', error);
-    await prisma.$disconnect();
+    try {
+      await sequelize.close();
+    } catch (_) {}
     process.exit(1);
   }
 };
@@ -36,7 +36,9 @@ const startServer = async () => {
 // ─── Graceful shutdown ────────────────────────────────────────────────────────
 const gracefulShutdown = async (signal) => {
   logger.info(`\n${signal} received. Shutting down gracefully...`);
-  await prisma.$disconnect();
+  try {
+    await sequelize.close();
+  } catch (_) {}
   logger.info('Database disconnected. Server closed.');
   process.exit(0);
 };

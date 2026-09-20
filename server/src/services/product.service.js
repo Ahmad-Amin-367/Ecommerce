@@ -1,4 +1,5 @@
-const prisma = require('../config/db');
+const { Op } = require('sequelize');
+const { Product, Category, Review, User } = require('../models');
 const ApiError = require('../utils/apiError');
 const { paginate } = require('../utils/pagination');
 
@@ -22,7 +23,7 @@ const ensureUniqueSlug = async (slug, excludeId = null) => {
   let counter = 1;
 
   while (true) {
-    const existing = await prisma.product.findUnique({ where: { slug: candidate } });
+    const existing = await Product.findOne({ where: { slug: candidate } });
     if (!existing || existing.id === excludeId) break;
     candidate = `${slug}-${counter++}`;
   }
@@ -38,113 +39,153 @@ const getProducts = async (query) => {
 
   const where = {};
   if (search) {
-    where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+    where[Op.or] = [
+      { name: { [Op.iLike]: `%${search}%` } },
     ];
   }
   if (exactName) {
-    where.name = { equals: exactName, mode: 'insensitive' };
+    where.name = { [Op.iLike]: exactName };
   }
   if (categoryId) where.categoryId = categoryId;
-  if (category) {
-    where.category = { slug: category };
-  }
   if (isActive !== undefined) where.isActive = isActive === 'true' || isActive === true;
   if (isFeatured !== undefined) where.isFeatured = isFeatured === 'true' || isFeatured === true;
 
   if (minPrice !== undefined || maxPrice !== undefined) {
     where.price = {};
-    if (minPrice !== undefined && minPrice !== '') where.price.gte = Number(minPrice);
-    if (maxPrice !== undefined && maxPrice !== '') where.price.lte = Number(maxPrice);
-    if (Object.keys(where.price).length === 0) delete where.price;
+    if (minPrice !== undefined && minPrice !== '') where.price[Op.gte] = Number(minPrice);
+    if (maxPrice !== undefined && maxPrice !== '') where.price[Op.lte] = Number(maxPrice);
+    if (Object.getOwnPropertySymbols(where.price).length === 0) delete where.price;
   }
 
+  const categoryInclude = {
+    model: Category,
+    as: 'category',
+    attributes: ['id', 'name', 'slug'],
+  };
 
+  if (category) {
+    categoryInclude.where = { slug: category };
+  }
 
-  const totalCount = await prisma.product.count({ where });
-  const { skip, take, meta } = paginate({ page, limit }, totalCount);
-
-  const orderBy = sortBy ? { [sortBy]: sortOrder || 'asc' } : { createdAt: 'desc' };
-
-  const products = await prisma.product.findMany({
+  const totalCount = await Product.count({
     where,
-    skip,
-    take,
-    orderBy,
-    include: {
-      category: { select: { id: true, name: true, slug: true } },
-      _count: { select: { reviews: true } },
-    },
+    include: category ? [categoryInclude] : [],
   });
 
-  return { products, meta };
+  const { skip, take, meta } = paginate({ page, limit }, totalCount);
+
+  const orderField = sortBy || 'createdAt';
+  const orderDirection = (sortOrder || 'desc').toUpperCase();
+
+  const products = await Product.findAll({
+    where,
+    offset: skip,
+    limit: take,
+    order: [[orderField, orderDirection]],
+    include: [
+      categoryInclude,
+      {
+        model: Review,
+        as: 'reviews',
+        attributes: ['id'],
+      },
+    ],
+  });
+
+  const formattedProducts = products.map((p) => {
+    const json = p.toJSON();
+    const reviewCount = json.reviews?.length || 0;
+    delete json.reviews;
+    return {
+      ...json,
+      _count: { reviews: reviewCount },
+    };
+  });
+
+  return { products: formattedProducts, meta };
 };
 
 /**
  * Get a single product by ID or slug
  */
 const getProduct = async (identifier) => {
-  const where = identifier.match(/^[a-z0-9-]+$/) && !identifier.match(/^[a-f0-9]{24}$/)
-    ? { slug: identifier }
-    : { id: identifier };
+  // Check if identifier is UUID
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  const where = isUUID ? { id: identifier } : { slug: identifier };
 
-  const product = await prisma.product.findUnique({
+  const product = await Product.findOne({
     where,
-    include: {
-      category: { select: { id: true, name: true, slug: true } },
-      reviews: {
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-        include: { user: { select: { id: true, name: true } } },
+    include: [
+      {
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name', 'slug'],
       },
-      _count: { select: { reviews: true } },
-    },
+      {
+        model: Review,
+        as: 'reviews',
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+        limit: 10,
+      },
+    ],
   });
 
   if (!product) throw ApiError.notFound('Product not found');
-  return product;
+
+  const json = product.toJSON();
+  const reviewCount = json.reviews?.length || 0;
+
+  return {
+    ...json,
+    _count: { reviews: reviewCount },
+  };
 };
 
 /**
  * Create a new product (Admin)
  */
 const createProduct = async (data) => {
-  const category = await prisma.category.findUnique({ where: { id: data.categoryId } });
+  const category = await Category.findByPk(data.categoryId);
   if (!category) throw ApiError.notFound('Category not found');
 
   const tempSlug = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-  const product = await prisma.product.create({
-    data: { ...data, slug: tempSlug },
-    include: { category: { select: { id: true, name: true } } },
+  const product = await Product.create({
+    ...data,
+    slug: tempSlug,
   });
 
   let finalSlug = `${generateSlug(data.name)}-${product.id.slice(-6)}`;
   finalSlug = await ensureUniqueSlug(finalSlug);
 
-  const updatedProduct = await prisma.product.update({
-    where: { id: product.id },
-    data: { slug: finalSlug },
-    include: { category: { select: { id: true, name: true } } },
-  });
+  await product.update({ slug: finalSlug });
 
-  return updatedProduct;
+  return Product.findByPk(product.id, {
+    include: [{ model: Category, as: 'category', attributes: ['id', 'name'] }],
+  });
 };
 
 /**
  * Update a product (Admin)
  */
 const updateProduct = async (productId, data) => {
-  const product = await prisma.product.findUnique({ where: { id: productId } });
+  const product = await Product.findByPk(productId);
   if (!product) throw ApiError.notFound('Product not found');
 
-  // We do not allow slug updates to prevent breaking existing links
-  if (data.slug) delete data.slug;
+  const updateData = { ...data };
+  if (updateData.slug) delete updateData.slug;
 
-  return prisma.product.update({
-    where: { id: productId },
-    data,
-    include: { category: { select: { id: true, name: true } } },
+  await product.update(updateData);
+
+  return Product.findByPk(productId, {
+    include: [{ model: Category, as: 'category', attributes: ['id', 'name'] }],
   });
 };
 
@@ -152,10 +193,16 @@ const updateProduct = async (productId, data) => {
  * Delete a product (Admin)
  */
 const deleteProduct = async (productId) => {
-  const product = await prisma.product.findUnique({ where: { id: productId } });
+  const product = await Product.findByPk(productId);
   if (!product) throw ApiError.notFound('Product not found');
 
-  await prisma.product.delete({ where: { id: productId } });
+  await product.destroy();
 };
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct };
+module.exports = {
+  getProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+};
