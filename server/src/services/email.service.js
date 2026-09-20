@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const winston = require('winston');
 
 // Setup Winston logger
@@ -13,83 +13,39 @@ const logger = winston.createLogger({
   ]
 });
 
-// Brevo HTTPS REST API (Port 443 - Never blocked by Render or cloud firewalls)
-const sendViaBrevoApi = async (to, name, subject, htmlContent) => {
-  const apiKey = process.env.BREVO_API_KEY || process.env.BREVO_SMTP_PASS;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL;
+// SendGrid Mail Sender
+const sendMail = async ({ to, name, subject, html }) => {
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const senderEmail = process.env.SENDGRID_FROM_EMAIL || 'info@hisnagifts.com';
 
   if (!apiKey) {
-    throw new Error('Neither BREVO_API_KEY nor BREVO_SMTP_PASS is configured');
-  }
-  if (!senderEmail) {
-    throw new Error('BREVO_SENDER_EMAIL is not configured');
+    logger.error('Cannot send email: SENDGRID_API_KEY is not configured');
+    throw new Error('SENDGRID_API_KEY is not configured in environment variables');
   }
 
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': apiKey,
-      'content-type': 'application/json',
+  sgMail.setApiKey(apiKey);
+
+  const msg = {
+    to: name ? { email: to, name } : to,
+    from: {
+      email: senderEmail,
+      name: 'Hisna Gifts',
     },
-    body: JSON.stringify({
-      sender: { name: 'Hisna Gifts', email: senderEmail },
-      to: [{ email: to, name: name || to }],
-      subject: subject,
-      htmlContent: htmlContent,
-    }),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || data.code || `Brevo API HTTP ${response.status}`);
-  }
-
-  return data;
-};
-
-// Nodemailer SMTP Transporter (Fallback)
-const smtpPort = Number(process.env.BREVO_SMTP_PORT) || 587;
-const isSecure = smtpPort === 465;
-
-const transporter = nodemailer.createTransport({
-  host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
-  port: smtpPort,
-  secure: isSecure,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,
-    pass: process.env.BREVO_SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 5000,
-  socketTimeout: 10000,
-});
-
-const sendMail = async ({ to, name, subject, html }) => {
-  const apiKey = process.env.BREVO_API_KEY || process.env.BREVO_SMTP_PASS;
-
-  // 1. Try Brevo HTTPS REST API (Uses port 443 - bypasses Render SMTP port blocks)
-  if (apiKey) {
-    try {
-      const result = await sendViaBrevoApi(to, name, subject, html);
-      logger.info(`Email sent via Brevo HTTPS API: ${result.messageId || 'success'}`);
-      return true;
-    } catch (apiError) {
-      logger.warn(`Brevo HTTPS API failed (${apiError.message}). Trying SMTP fallback...`);
-    }
-  }
-
-  // 2. Fallback to Nodemailer SMTP
-  const mailOptions = {
-    from: `"Hisna Gifts" <${process.env.BREVO_SENDER_EMAIL}>`,
-    to,
     subject,
     html,
   };
-  const info = await transporter.sendMail(mailOptions);
-  logger.info(`Email sent via SMTP: ${info.messageId}`);
-  return true;
+
+  try {
+    const [response] = await sgMail.send(msg);
+    logger.info(`Email sent successfully via SendGrid to ${to}. Status: ${response.statusCode}`);
+    return response;
+  } catch (error) {
+    const errorMessage = error.response?.body?.errors
+      ? JSON.stringify(error.response.body.errors)
+      : error.message;
+    logger.error(`SendGrid email sending failed to ${to}: ${errorMessage}`);
+    throw new Error(`SendGrid email failed: ${errorMessage}`);
+  }
 };
 
 const sendOtpEmail = async (to, name, otp) => {
@@ -196,6 +152,7 @@ const sendB2BQuoteNotification = async (quoteData) => {
 };
 
 module.exports = {
+  sendMail,
   sendOtpEmail,
   sendPasswordResetEmail,
   sendB2BQuoteNotification,

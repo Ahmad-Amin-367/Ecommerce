@@ -146,7 +146,7 @@ const syncCart = async (userId, guestItems = []) => {
       where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
     });
 
-    const targetQuantity = existingItem ? existingItem.quantity + item.quantity : item.quantity;
+    const targetQuantity = existingItem ? Math.max(existingItem.quantity, item.quantity) : item.quantity;
     const finalQuantity = targetQuantity;
 
     if (finalQuantity > 0) {
