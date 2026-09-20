@@ -2,6 +2,7 @@ const prisma = require('../config/db');
 const ApiError = require('../utils/apiError');
 const logger = require('../config/logger');
 const stripeService = require('./stripe.service');
+const { sendOrderConfirmationEmail } = require('./email.service');
 
 /**
  * Calculate authoritative order total from products in database
@@ -156,12 +157,22 @@ const confirmOrderPayment = async ({ orderId, paymentIntentId, userId }) => {
       stripePaymentIntentId: paymentIntent.id,
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          product: { select: { id: true, name: true, images: true } }
+        }
+      },
       address: true,
+      user: { select: { id: true, name: true, email: true } },
     },
   });
 
   logger.info(`🎉 Order ${order.orderNumber} successfully confirmed & marked PAID via Stripe (${paymentIntent.id})`);
+
+  // Send Order Confirmation Email asynchronously
+  sendOrderConfirmationEmail(updatedOrder).catch((err) =>
+    logger.error(`Failed to send order confirmation email: ${err.message}`)
+  );
 
   return {
     success: true,
@@ -196,7 +207,7 @@ const handleStripeWebhook = async (rawBody, signature) => {
           return { received: true };
         }
 
-        await prisma.order.update({
+        const updatedOrder = await prisma.order.update({
           where: { id: order.id },
           data: {
             paymentStatus: 'PAID',
@@ -204,9 +215,22 @@ const handleStripeWebhook = async (rawBody, signature) => {
             paymentMethod: 'STRIPE',
             stripePaymentIntentId: paymentIntent.id,
           },
+          include: {
+            items: {
+              include: {
+                product: { select: { id: true, name: true, images: true } }
+              }
+            },
+            address: true,
+            user: { select: { id: true, name: true, email: true } },
+          },
         });
 
         logger.info(`🎉 Order ${order.orderNumber} marked PAID via webhook (PaymentIntent: ${paymentIntent.id})`);
+
+        sendOrderConfirmationEmail(updatedOrder).catch((err) =>
+          logger.error(`Failed to send webhook order confirmation email: ${err.message}`)
+        );
       } else {
         logger.warn(`⚠️ No order found matching PaymentIntent ${paymentIntent.id} in webhook handler.`);
       }

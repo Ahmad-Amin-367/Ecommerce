@@ -151,10 +151,142 @@ const sendB2BQuoteNotification = async (quoteData) => {
   }
 };
 
+const sendOrderConfirmationEmail = async (order) => {
+  try {
+    const customerEmail = order.user?.email || order.guestEmail;
+    const customerName = order.user?.name || order.guestName || 'Valued Customer';
+
+    if (!customerEmail) {
+      logger.warn(`Cannot send order confirmation email for ${order.orderNumber}: No recipient email found.`);
+      return;
+    }
+
+    const itemsHtml = (order.items || [])
+      .map((item) => {
+        const productName = item.product?.name || 'Gift Item';
+        const qty = item.quantity;
+        const price = Number(item.unitPrice || 0).toFixed(2);
+        const total = Number(item.totalPrice || (Number(item.unitPrice || 0) * qty)).toFixed(2);
+        return `
+          <tr>
+            <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; color: #2d3748;">
+              <strong>${productName}</strong>
+            </td>
+            <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; text-align: center; color: #4a5568;">${qty}</td>
+            <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; text-align: right; color: #4a5568;">$${price}</td>
+            <td style="padding: 12px 10px; border-bottom: 1px solid #edf2f7; text-align: right; font-weight: bold; color: #2d3748;">$${total}</td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    const addressHtml = order.address
+      ? `
+        <p style="margin: 3px 0; color: #4a5568;">${order.address.street}</p>
+        <p style="margin: 3px 0; color: #4a5568;">${order.address.city}, ${order.address.state || ''} ${order.address.postalCode}</p>
+        <p style="margin: 3px 0; color: #4a5568;">${order.address.country || 'Canada'}</p>
+      `
+      : '<p style="margin: 3px 0; color: #718096;">Provided at checkout</p>';
+
+    const paymentText =
+      order.paymentMethod === 'STRIPE'
+        ? 'Credit / Debit Card (Stripe)'
+        : 'Cash on Delivery (COD)';
+
+    const shippingText =
+      Number(order.shippingFee) === 0 ? 'FREE' : `$${Number(order.shippingFee).toFixed(2)} CAD`;
+
+    const html = `
+      <div style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #2d3748;">
+        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #004D40;">
+          <h1 style="color: #004D40; margin: 0; font-size: 26px; letter-spacing: 1.5px; font-weight: 800;">HISNA GIFTS</h1>
+          <p style="color: #718096; font-size: 14px; margin-top: 6px;">Luxury Gifts & Premium Celebrations</p>
+        </div>
+
+        <div style="padding: 24px 0 16px 0;">
+          <h2 style="color: #004D40; font-size: 20px; margin-top: 0; margin-bottom: 8px;">Order Confirmed: #${order.orderNumber}</h2>
+          <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Hi <strong>${customerName}</strong>,</p>
+          <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0;">Thank you for shopping with Hisna Gifts. We have received your order and our team is already preparing it with the utmost care.</p>
+        </div>
+
+        <div style="background-color: #f7fafc; border-radius: 8px; padding: 18px; margin-bottom: 22px; border: 1px solid #edf2f7;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <thead>
+              <tr style="border-bottom: 2px solid #cbd5e0; color: #4a5568; text-align: left;">
+                <th style="padding: 8px 10px;">Item</th>
+                <th style="padding: 8px 10px; text-align: center;">Qty</th>
+                <th style="padding: 8px 10px; text-align: right;">Price</th>
+                <th style="padding: 8px 10px; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+            <table style="width: 100%; font-size: 14px; line-height: 1.8;">
+              <tr>
+                <td style="color: #718096;">Subtotal:</td>
+                <td style="text-align: right; font-weight: 600; color: #2d3748;">$${Number(order.subtotal).toFixed(2)} CAD</td>
+              </tr>
+              <tr>
+                <td style="color: #718096;">Shipping:</td>
+                <td style="text-align: right; font-weight: 600; color: #2d3748;">${shippingText}</td>
+              </tr>
+              <tr style="font-size: 16px; border-top: 2px solid #004D40;">
+                <td style="padding-top: 8px; font-weight: bold; color: #004D40;">Total Amount:</td>
+                <td style="padding-top: 8px; text-align: right; font-weight: bold; color: #004D40;">$${Number(order.totalAmount).toFixed(2)} CAD</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <tr>
+            <td style="width: 50%; vertical-align: top; padding-right: 8px;">
+              <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; min-height: 110px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Shipping Address</h3>
+                ${addressHtml}
+              </div>
+            </td>
+            <td style="width: 50%; vertical-align: top; padding-left: 8px;">
+              <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; min-height: 110px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Payment Details</h3>
+                <p style="margin: 3px 0; color: #4a5568;"><strong>Method:</strong> ${paymentText}</p>
+                <p style="margin: 3px 0; color: #4a5568;"><strong>Status:</strong> ${order.paymentStatus || 'PENDING'}</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <p style="color: #718096; font-size: 13px; line-height: 1.6; text-align: center; margin: 0 0 16px 0;">
+          Need assistance or want to customize your order? Reply directly to this email or reach us at <a href="mailto:info@hisnagifts.com" style="color: #004D40; text-decoration: underline;">info@hisnagifts.com</a>.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">&copy; ${new Date().getFullYear()} Hisna Gifts. All rights reserved.</p>
+      </div>
+    `;
+
+    await sendMail({
+      to: customerEmail,
+      name: customerName,
+      subject: `Order Confirmation #${order.orderNumber} - Hisna Gifts`,
+      html,
+    });
+
+    logger.info(`Order confirmation email sent for #${order.orderNumber} to ${customerEmail}`);
+  } catch (error) {
+    logger.error(`Error sending order confirmation email for ${order?.orderNumber}: ${error.message}`);
+  }
+};
+
 module.exports = {
   sendMail,
   sendOtpEmail,
   sendPasswordResetEmail,
   sendB2BQuoteNotification,
+  sendOrderConfirmationEmail,
 };
 

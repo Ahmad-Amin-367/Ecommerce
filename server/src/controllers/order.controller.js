@@ -2,6 +2,8 @@ const prisma = require('../config/db');
 const ApiError = require('../utils/apiError');
 const { sendSuccess } = require('../utils/apiResponse');
 const orderService = require('../services/order.service');
+const cartService = require('../services/cart.service');
+const { sendOrderConfirmationEmail } = require('../services/email.service');
 
 // Generate unique order number (e.g. ORD-TIMESTAMP36-RAND4)
 const generateOrderNumber = () => {
@@ -87,11 +89,15 @@ const createOrder = async (req, res) => {
           }
         },
         include: {
-          items: true,
-          address: true
+          items: {
+            include: {
+              product: { select: { id: true, name: true, images: true } }
+            }
+          },
+          address: true,
+          user: { select: { id: true, name: true, email: true } },
         }
       });
-
 
       return newOrder;
     },
@@ -100,6 +106,20 @@ const createOrder = async (req, res) => {
       timeout: 20000, // 20 seconds execution timeout for serverless DB round-trips
     }
   );
+
+  // Clear user DB cart after successful order creation
+  const orderUserId = req.user ? req.user.id : null;
+  if (orderUserId) {
+    await cartService.clearCart(orderUserId).catch(() => {});
+  }
+
+  // Send Order Confirmation Email immediately for COD / non-Stripe orders
+  if (order.paymentMethod !== 'STRIPE') {
+    sendOrderConfirmationEmail(order).catch((err) =>
+      console.error(`Failed to send order confirmation email: ${err.message}`)
+    );
+  }
+
   sendSuccess(res, 201, 'Order placed successfully', order);
 };
 
