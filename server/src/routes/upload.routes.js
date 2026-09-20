@@ -3,48 +3,47 @@ const router = express.Router();
 const upload = require('../middlewares/upload.middleware');
 const { protect } = require('../middlewares/auth.middleware');
 const { restrictTo } = require('../middlewares/role.middleware');
-const cloudinary = require('../config/cloudinary');
+const storageService = require('../services/storage.service');
 const { sendSuccess } = require('../utils/apiResponse');
 const ApiError = require('../utils/apiError');
 
 /**
- * Upload single image to Cloudinary
+ * Upload & optimize single image to Cloudflare R2
  * POST /api/v1/upload
  */
 router.post('/', protect, restrictTo('ADMIN'), upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {
-      throw ApiError.badRequest('Please upload a file');
+      throw ApiError.badRequest('Please upload an image file');
     }
 
-    // Stream the file from memory to Cloudinary
-    const streamUpload = (req) => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'hisna_gifts/products' },
-          (error, result) => {
-            if (result) {
-              resolve(result);
-            } else {
-              reject(error);
-            }
-          }
-        );
-        const { Readable } = require('stream');
-        const readable = new Readable();
-        readable._read = () => {};
-        readable.push(req.file.buffer);
-        readable.push(null);
-        readable.pipe(stream);
-      });
-    };
-
-    const result = await streamUpload(req);
+    const folder = req.query.folder || 'products';
+    const result = await storageService.optimizeAndUpload(req.file.buffer, folder);
 
     sendSuccess(res, 200, 'Image uploaded successfully', {
-      url: result.secure_url,
-      public_id: result.public_id,
+      url: result.url,
+      key: result.key,
+      public_id: result.key, // Backward compatibility alias
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Delete image from Cloudflare R2
+ * DELETE /api/v1/upload
+ */
+router.delete('/', protect, restrictTo('ADMIN'), async (req, res, next) => {
+  try {
+    const { key, url } = req.body;
+    if (!key && !url) {
+      throw ApiError.badRequest('Please provide the image key or url to delete');
+    }
+
+    await storageService.deleteFromR2(key || url);
+
+    sendSuccess(res, 200, 'Image deleted successfully');
   } catch (error) {
     next(error);
   }

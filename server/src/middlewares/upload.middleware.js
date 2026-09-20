@@ -1,7 +1,7 @@
 const multer = require('multer');
 const ApiError = require('../utils/apiError');
 
-// Store in memory, we'll stream it directly to Cloudinary
+// Store in memory, we'll optimize with Sharp and upload directly to Cloudflare R2
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -16,7 +16,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 15 * 1024 * 1024, // 15MB limit (Sharp optimizes this down to ~200KB WebP)
   },
   fileFilter: fileFilter,
 });

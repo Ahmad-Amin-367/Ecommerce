@@ -40,7 +40,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.name === 'MulterError') {
     statusCode = 400;
     if (err.code === 'LIMIT_FILE_SIZE') {
-      message = 'File is too large. Maximum size is 5MB.';
+      message = 'File is too large. Maximum size is 15MB.';
     } else {
       message = `Image upload error: ${err.message}`;
     }
