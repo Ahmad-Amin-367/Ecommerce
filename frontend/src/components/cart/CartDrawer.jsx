@@ -1,5 +1,5 @@
 'use client';
-import { X, ShoppingBag, Minus, Plus, Trash2 } from 'lucide-react';
+import { X, ShoppingBag, Minus, Plus, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -13,7 +13,15 @@ import { useEffect } from 'react';
 export default function CartDrawer({ isOpen, onClose }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const { cart, updateItem, removeItem, isLoading } = useCart();
+  const {
+    cart,
+    updateItem,
+    removeItem,
+    isLoading,
+    isItemUpdating,
+    isItemRemoving,
+    isItemBusy,
+  } = useCart();
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
@@ -105,9 +113,19 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <ul role="list" className="-my-6 divide-y divide-cloud">
                   {items.map((item) => {
                     const productId = item.product?.id || item.productId || item.id;
+                    const isBusy = isItemBusy(productId) || isLoading;
+                    const isDecreasing = isItemUpdating(productId, 'decrease');
+                    const isIncreasing = isItemUpdating(productId, 'increase');
+                    const isRemoving = isItemRemoving(productId);
 
                     return (
-                      <li key={productId} className="flex py-6">
+                      <li
+                        key={productId}
+                        className={clsx(
+                          "flex py-6 transition-opacity duration-200",
+                          isRemoving && "opacity-50 pointer-events-none"
+                        )}
+                      >
                         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-cloud bg-cream">
                           <Image
                             src={item.product?.images?.[0] || 'https://via.placeholder.com/150'}
@@ -132,29 +150,52 @@ export default function CartDrawer({ isOpen, onClose }) {
                           <div className="flex flex-1 items-end justify-between text-sm mt-4">
                             <div className="flex items-center border border-cloud rounded-lg">
                               <button 
+                                type="button"
                                 onClick={() => updateItem({ productId, quantity: item.quantity - 1 })}
-                                disabled={item.quantity <= 1 || isLoading}
-                                className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                                disabled={item.quantity <= 1 || isBusy}
+                                className="p-1.5 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-l-lg disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center min-w-[28px] min-h-[28px]"
+                                aria-label="Decrease quantity"
                               >
-                                <Minus size={14} />
+                                {isDecreasing ? (
+                                  <Loader2 size={13} className="animate-spin text-primary" />
+                                ) : (
+                                  <Minus size={14} />
+                                )}
                               </button>
                               <span className="w-8 text-center font-medium text-charcoal">{item.quantity}</span>
                               <button 
+                                type="button"
                                 onClick={() => updateItem({ productId, quantity: item.quantity + 1 })}
-                                disabled={isLoading}
-                                className="p-1 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                                disabled={isBusy}
+                                className="p-1.5 text-text-muted hover:text-charcoal hover:bg-cloud transition-colors rounded-r-lg disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed flex items-center justify-center min-w-[28px] min-h-[28px]"
+                                aria-label="Increase quantity"
                               >
-                                <Plus size={14} />
+                                {isIncreasing ? (
+                                  <Loader2 size={13} className="animate-spin text-primary" />
+                                ) : (
+                                  <Plus size={14} />
+                                )}
                               </button>
                             </div>
 
                             <button
                               type="button"
                               onClick={() => removeItem(productId)}
-                              className="font-medium text-error hover:text-error/80 flex items-center gap-1 transition-colors cursor-pointer"
+                              disabled={isBusy}
+                              className="font-medium text-xs text-error hover:text-error/80 flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed py-1 px-2 rounded hover:bg-red-50/50"
+                              aria-label="Remove item"
                             >
-                              <Trash2 size={14} />
-                              Remove
+                              {isRemoving ? (
+                                <>
+                                  <Loader2 size={13} className="animate-spin" />
+                                  <span>Removing...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 size={14} />
+                                  <span>Remove</span>
+                                </>
+                              )}
                             </button>
                           </div>
                         </div>

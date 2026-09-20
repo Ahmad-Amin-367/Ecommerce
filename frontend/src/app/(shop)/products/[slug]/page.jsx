@@ -6,13 +6,14 @@ import { useState, useRef, useEffect } from 'react';
 import { useProduct } from '@/hooks/useProducts';
 import useCart from '@/hooks/useCart';
 import { useAnimationStore } from '@/store/animationStore';
-import { ChevronRight, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { ChevronRight, Minus, Plus, ShoppingCart } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { formatCurrency } from '@/utils/formatCurrency';
 
 function ProductDetailsInner({ slug }) {
   const { data: product, isLoading, isError } = useProduct(slug);
-  const { addToCart, isAdding } = useCart();
+  const { addToCart, addingProductId } = useCart();
+  const isThisItemAdding = product ? addingProductId === product.id : false;
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
@@ -54,6 +55,7 @@ function ProductDetailsInner({ slug }) {
   };
 
   const handleAddToCart = (e) => {
+    if (isThisItemAdding) return;
     const rect = e.currentTarget.getBoundingClientRect();
     useAnimationStore.getState().addFlyingItem(product, rect);
     addToCart({ productId: product.id, quantity, product });
@@ -107,14 +109,6 @@ function ProductDetailsInner({ slug }) {
                 {product.name}
               </h1>
 
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex text-primary">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={18} fill="currentColor" />
-                  ))}
-                </div>
-                <span className="text-sm text-text-secondary">({product._count?.reviews || 0} Reviews)</span>
-              </div>
 
               <div className="flex items-end gap-3">
                 <span className="font-serif text-3xl font-bold text-primary">{formatCurrency(product.price)}</span>
@@ -163,8 +157,8 @@ function ProductDetailsInner({ slug }) {
                   rounded="none"
                   className="w-full sm:flex-1 h-12 text-base font-bold uppercase tracking-wider rounded-none shadow-sm"
                   onClick={handleAddToCart}
-                  disabled={isAdding}
-                  isLoading={isAdding}
+                  disabled={isThisItemAdding}
+                  isLoading={isThisItemAdding}
                 >
                   <ShoppingCart size={18} className="mr-2" />
                   Add to Cart
@@ -228,8 +222,8 @@ function ProductDetailsInner({ slug }) {
               rounded="none"
               className="flex-1 sm:flex-none rounded-none uppercase tracking-wider font-bold h-10 px-6 text-sm"
               onClick={handleAddToCart}
-              disabled={isAdding}
-              isLoading={isAdding}
+              disabled={isThisItemAdding}
+              isLoading={isThisItemAdding}
             >
               <ShoppingCart size={16} className="mr-1.5" />
               Add to Cart

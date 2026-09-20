@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useCartStore, cloneCartItems, getItemProductId } from '@/store/cartStore';
@@ -7,8 +7,8 @@ import cartService from '@/services/cartService';
 import { useAuthStore } from '@/store/authStore';
 
 /**
- * useCart hook — Production-grade cart with standard TanStack Query
- * onMutate optimistic updates, debounced quantity changes, and instant rollbacks.
+ * useCart hook — Production-grade cart with immediate, anti-spam single-flight
+ * mutations, button disable states, granular loaders, and server truth sync.
  */
 const useCart = () => {
   const queryClient = useQueryClient();
@@ -22,9 +22,13 @@ const useCart = () => {
   const removeGuestItem = useCartStore((s) => s.removeGuestItem);
   const clearCartStore = useCartStore((s) => s.clearCart);
 
-  // Debounce timers & baseline snapshots for rapid +/- clicks
-  const debounceTimers = useRef({});
-  const baselineSnapshots = useRef({});
+  // In-flight transient states from global cartStore
+  const updatingItem = useCartStore((s) => s.updatingItem);
+  const removingItemId = useCartStore((s) => s.removingItemId);
+  const addingProductId = useCartStore((s) => s.addingProductId);
+  const setUpdatingItem = useCartStore((s) => s.setUpdatingItem);
+  const setRemovingItemId = useCartStore((s) => s.setRemovingItemId);
+  const setAddingProductId = useCartStore((s) => s.setAddingProductId);
 
   // 1. Initial cart query for authenticated users (cached for 5 min)
   const { data: cartData, isLoading } = useQuery({
@@ -61,17 +65,14 @@ const useCart = () => {
     };
   }, []);
 
-  // ─── 1. Optimistic Add to Cart ──────────────────────────────────────────────
+  // ─── 1. Single-Flight Add to Cart ───────────────────────────────────────────
   const addToCartMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartService.addToCart(productId, quantity),
-    onMutate: async ({ product, quantity, snapshot }) => {
-      // Cancel outgoing queries so they don't overwrite optimistic update
+    onMutate: async ({ productId, product, quantity }) => {
+      setAddingProductId(productId);
       await queryClient.cancelQueries({ queryKey: ['cart'] });
+      const previousCart = getCartSnapshot();
 
-      // Save deep snapshot into React Query context
-      const previousCart = snapshot || getCartSnapshot();
-
-      // Optimistically update store immediately
       if (product) {
         addGuestItem(product, quantity);
       }
@@ -81,7 +82,6 @@ const useCart = () => {
     onError: (err, variables, context) => {
       console.error('Add to cart failed:', err?.response?.data?.message || err.message);
 
-      // ↺ Revert state to previous snapshot immediately
       if (context?.previousCart) {
         syncCartState(context.previousCart);
       }
@@ -92,6 +92,10 @@ const useCart = () => {
       if (res.data?.data) {
         syncCartState(res.data.data);
       }
+      toast.success('Added to cart', { position: 'top-right' });
+    },
+    onSettled: () => {
+      setAddingProductId(null);
     },
   });
 
@@ -102,80 +106,91 @@ const useCart = () => {
       return;
     }
 
-    const snapshot = getCartSnapshot();
+    // Guard: Prevent spam clicking if this product is already in flight
+    if (addingProductId === targetId) return;
 
     if (isAuthenticated) {
-      // Triggers onMutate -> instant UI update -> background POST -> rollback on error
-      addToCartMutation.mutate({ productId: targetId, quantity, product, snapshot });
-      toast.success('Added to cart', { position: 'top-right' });
+      addToCartMutation.mutate({ productId: targetId, quantity, product });
     } else {
+      setAddingProductId(targetId);
       if (product) {
         addGuestItem(product, quantity);
         toast.success('Added to cart', { position: 'top-right' });
       }
+      setTimeout(() => {
+        setAddingProductId(null);
+      }, 250);
     }
   };
 
-  // ─── 2. Optimistic & Debounced Quantity Update (+ / -) ─────────────────────
+  // ─── 2. Single-Flight Quantity Update (+ / -) ──────────────────────────────
   const updateItemMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartService.updateCartItem(productId, quantity),
-    onMutate: async ({ snapshot }) => {
+    onMutate: async ({ productId, action, snapshot }) => {
+      setUpdatingItem({ id: productId, action });
       await queryClient.cancelQueries({ queryKey: ['cart'] });
       return { previousCart: snapshot };
     },
     onError: (err, { productId }, context) => {
       console.error('Update quantity failed:', err?.response?.data?.message || err.message);
 
-      // ↺ Revert state to baseline snapshot before rapid clicks began
-      const snapshotToRestore = context?.previousCart || baselineSnapshots.current[productId];
-      if (snapshotToRestore) {
-        syncCartState(snapshotToRestore);
+      if (context?.previousCart) {
+        syncCartState(context.previousCart);
       }
-      delete baselineSnapshots.current[productId];
 
       toast.error(err.response?.data?.message || 'Failed to update quantity. Reverted.');
     },
-    onSuccess: (res, { productId }) => {
-      delete baselineSnapshots.current[productId];
+    onSuccess: (res) => {
       if (res.data?.data) {
         syncCartState(res.data.data);
       }
     },
+    onSettled: () => {
+      setUpdatingItem(null);
+    },
   });
 
   const updateItem = ({ productId, quantity }) => {
+    if (!productId) return;
+
+    // Guard: Prevent rapid spam clicking while an update or removal is in progress
+    if (updatingItem?.id === productId || removingItemId === productId) {
+      return;
+    }
+
     if (quantity <= 0) {
       removeItem(productId);
       return;
     }
 
-    // Capture baseline snapshot before the first +/- click
-    if (!baselineSnapshots.current[productId]) {
-      baselineSnapshots.current[productId] = getCartSnapshot();
-    }
+    const currentItem = storeItems.find((i) => getItemProductId(i) === productId);
+    const currentQty = Number(currentItem?.quantity) || 1;
+    const action = quantity > currentQty ? 'increase' : 'decrease';
 
-    // ⚡ 0ms UI Update on screen immediately
-    updateGuestItem(productId, quantity);
+    const snapshot = getCartSnapshot();
 
     if (isAuthenticated) {
-      if (debounceTimers.current[productId]) {
-        clearTimeout(debounceTimers.current[productId]);
-      }
-
-      const snapshot = baselineSnapshots.current[productId];
-
-      debounceTimers.current[productId] = setTimeout(() => {
-        updateItemMutation.mutate({ productId, quantity, snapshot });
-      }, 400);
+      // Optimistically update store quantity
+      updateGuestItem(productId, quantity);
+      // Immediately dispatch mutation to database (buttons are disabled while in flight)
+      updateItemMutation.mutate({ productId, quantity, action, snapshot });
+    } else {
+      setUpdatingItem({ id: productId, action });
+      updateGuestItem(productId, quantity);
+      setTimeout(() => {
+        setUpdatingItem(null);
+      }, 200);
     }
   };
 
-  // ─── 3. Optimistic Remove Item ──────────────────────────────────────────────
+  // ─── 3. Single-Flight Remove Item ───────────────────────────────────────────
   const removeItemMutation = useMutation({
     mutationFn: (productId) => cartService.removeFromCart(productId),
-    onMutate: async ({ snapshot }) => {
+    onMutate: async (productId) => {
+      setRemovingItemId(productId);
       await queryClient.cancelQueries({ queryKey: ['cart'] });
-      return { previousCart: snapshot };
+      const previousCart = getCartSnapshot();
+      return { previousCart };
     },
     onError: (err, productId, context) => {
       console.error('Remove item failed:', err?.response?.data?.message || err.message);
@@ -186,32 +201,40 @@ const useCart = () => {
 
       toast.error(err.response?.data?.message || 'Failed to remove item. Reverted.');
     },
-    onSuccess: (res) => {
+    onSuccess: (res, productId) => {
       if (res.data?.data) {
         syncCartState(res.data.data);
+      } else {
+        removeGuestItem(productId);
       }
+      toast.success('Item removed');
+    },
+    onSettled: () => {
+      setRemovingItemId(null);
     },
   });
 
   const removeItem = (productId) => {
-    const snapshot = getCartSnapshot();
+    if (!productId) return;
 
-    // ⚡ 0ms UI Update
-    removeGuestItem(productId);
-    toast.success('Item removed');
+    // Guard: Prevent duplicate removal calls
+    if (removingItemId === productId || updatingItem?.id === productId) {
+      return;
+    }
 
     if (isAuthenticated) {
-      if (debounceTimers.current[productId]) {
-        clearTimeout(debounceTimers.current[productId]);
-        delete debounceTimers.current[productId];
-      }
-      delete baselineSnapshots.current[productId];
-
-      removeItemMutation.mutate(productId, { snapshot });
+      removeItemMutation.mutate(productId);
+    } else {
+      setRemovingItemId(productId);
+      removeGuestItem(productId);
+      toast.success('Item removed');
+      setTimeout(() => {
+        setRemovingItemId(null);
+      }, 200);
     }
   };
 
-  // ─── 4. Optimistic Clear Cart ───────────────────────────────────────────────
+  // ─── 4. Clear Cart ──────────────────────────────────────────────────────────
   const clearCartMutation = useMutation({
     mutationFn: () => cartService.clearCart(),
     onMutate: async () => {
@@ -253,7 +276,15 @@ const useCart = () => {
     updateItem,
     removeItem,
     clearCart,
-    isAdding: addToCartMutation.isPending,
+    isAdding: !!addingProductId,
+    addingProductId,
+    updatingItem,
+    removingItemId,
+    isItemUpdating: (productId, action) =>
+      updatingItem?.id === productId && (!action || updatingItem?.action === action),
+    isItemRemoving: (productId) => removingItemId === productId,
+    isItemBusy: (productId) =>
+      updatingItem?.id === productId || removingItemId === productId || addingProductId === productId,
   };
 };
 

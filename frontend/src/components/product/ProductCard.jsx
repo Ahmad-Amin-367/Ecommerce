@@ -2,22 +2,20 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, Star, StarHalf } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import { formatCurrency, getDiscountPercent } from '@/utils/formatCurrency';
 import useCart from '@/hooks/useCart';
 import Badge from '@/components/ui/Badge';
 import { useAnimationStore } from '@/store/animationStore';
 
 const ProductCard = memo(function ProductCard({ product, priority = false }) {
-  const { addToCart, isAdding } = useCart();
+  const { addToCart, addingProductId } = useCart();
+  const isThisItemAdding = addingProductId === product.id;
   const discount = getDiscountPercent(product.price, product.comparePrice);
-
-  // Dynamic rating and review count
-  const rating = Number(product.averageRating || product.rating || 0);
-  const reviewCount = product._count?.reviews || 0;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
+    if (isThisItemAdding) return;
     const rect = e.currentTarget.getBoundingClientRect();
     useAnimationStore.getState().addFlyingItem(product, rect);
     addToCart({ productId: product.id, quantity: 1, product });
@@ -60,13 +58,23 @@ const ProductCard = memo(function ProductCard({ product, priority = false }) {
 
         {/* Add to cart overlay */}
         <button
+          type="button"
           className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-1.5 p-2.5 bg-primary text-white text-xs font-semibold font-sans translate-y-full transition-all duration-300 group-hover:translate-y-0 hover:bg-primary-dark disabled:bg-cloud disabled:text-warm-gray disabled:cursor-not-allowed cursor-pointer"
           onClick={handleAddToCart}
-          disabled={isAdding}
+          disabled={isThisItemAdding}
           aria-label={`Add ${product.name} to cart`}
         >
-          <ShoppingCart size={16} />
-          Add to Cart
+          {isThisItemAdding ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              <span>Adding...</span>
+            </>
+          ) : (
+            <>
+              <ShoppingCart size={16} />
+              <span>Add to Cart</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -81,31 +89,13 @@ const ProductCard = memo(function ProductCard({ product, priority = false }) {
           {product.name}
         </h3>
 
-        <div className="flex flex-wrap items-end sm:items-center justify-between gap-x-2 gap-y-1.5 mt-auto">
-          {/* Rating */}
-          <div className="flex items-center gap-1.5">
-            <div className="flex text-[#F5A623] gap-[1px]">
-              {[1, 2, 3, 4, 5].map((index) => {
-                if (rating >= index) {
-                  return <Star key={index} size={14} fill="currentColor" strokeWidth={0} />;
-                } else if (rating >= index - 0.5) {
-                  return <StarHalf key={index} size={14} fill="currentColor" strokeWidth={0} />;
-                } else {
-                  return <Star key={index} size={14} strokeWidth={1.5} className="text-[#F5A623]/30" />;
-                }
-              })}
-            </div>
-            <span className="text-[12px] sm:text-[13px] font-medium text-warm-gray">
-              ({reviewCount})
-            </span>
-          </div>
-
+        <div className="flex items-baseline justify-between gap-x-2 mt-auto pt-1">
           {/* Price */}
-          <div className="flex flex-col items-start sm:items-end leading-none">
-            {product.comparePrice && product.comparePrice > product.price && (
-              <span className="text-[11px] text-text-muted line-through mb-0.5">{formatCurrency(product.comparePrice)}</span>
-            )}
+          <div className="flex items-baseline gap-2 leading-none">
             <span className="text-[14px] sm:text-[15px] font-bold text-charcoal">{formatCurrency(product.price)}</span>
+            {product.comparePrice && product.comparePrice > product.price && (
+              <span className="text-[11px] text-text-muted line-through">{formatCurrency(product.comparePrice)}</span>
+            )}
           </div>
         </div>
       </div>

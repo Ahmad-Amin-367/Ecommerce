@@ -51,6 +51,15 @@ const useCartStore = create(
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
 
+      // In-flight transient mutation states (NOT persisted to localStorage)
+      updatingItem: null, // { id: productId, action: 'increase' | 'decrease' } | null
+      removingItemId: null, // productId | null
+      addingProductId: null, // productId | null
+
+      setUpdatingItem: (item) => set({ updatingItem: item }),
+      setRemovingItemId: (id) => set({ removingItemId: id }),
+      setAddingProductId: (id) => set({ addingProductId: id }),
+
       // Replace entire cart (from server response or rollback)
       setCart: (cart) => {
         const rawItems = cart?.items || [];
