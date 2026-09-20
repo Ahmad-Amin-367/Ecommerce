@@ -128,6 +128,7 @@ model Product {
   categoryId  String
   isActive    Boolean @default(true)
   isFeatured  Boolean @default(false)
+  isEventSetup Boolean @default(false)
   images      String[] // Array of image URLs (filled later)
   tags        String[]
 
@@ -188,6 +189,8 @@ model Order {
   stripePaymentIntentId String?       @unique
   notes                 String?
   deliveredAt     DateTime?
+  fulfillmentType String        @default("DELIVERY") // DELIVERY or PICKUP
+  deliveryZone    String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -277,4 +280,30 @@ model B2BQuote {
   @@map("b2b_quotes")
 }
 
+// ─── Delivery Zones & Settings ────────────────────────────────────────────────
 
+model DeliveryZone {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Milton", "Oakville & Burlington", "Mississauga (West)"
+  description String?  // Optional helper text
+  fee         Decimal  @db.Decimal(10, 2) // e.g. 0.00, 15.00, 20.00, 25.00
+  postalCodes String[] // e.g. ["L9T", "L9E"]
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("delivery_zones")
+}
+
+model DeliverySetting {
+  id                    String   @id @default(cuid())
+  pickupEnabled         Boolean  @default(true)
+  pickupLocationName    String   @default("Milton, ON")
+  pickupAddress         String   @default("Milton, Ontario (Exact address provided upon order confirmation)")
+  unservicedAreaMessage String   @default("Delivery may be available to your area. Please contact Hisna Gifts for delivery availability and pricing.")
+  eventSetupMessage     String   @default("Delivery and setup fees are based on event location and setup requirements. Please contact us for a quote.")
+  updatedAt             DateTime @updatedAt
+
+  @@map("delivery_settings")
+}

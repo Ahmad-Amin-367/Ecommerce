@@ -21,6 +21,7 @@ const productSchema = Yup.object().shape({
   categoryId: Yup.string().required('Category is required'),
   isActive: Yup.boolean().default(true),
   isFeatured: Yup.boolean().default(false),
+  isEventSetup: Yup.boolean().default(false),
   imageFile: Yup.mixed()
     .nullable()
     .test('fileSize', 'File is too large. Maximum size is 5MB', (value) => {
@@ -57,6 +58,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
       categoryId: '',
       isActive: true,
       isFeatured: false,
+      isEventSetup: false,
       imageFile: null,
     },
     validationSchema: productSchema,
@@ -137,6 +139,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
           categoryId: product.categoryId,
           isActive: product.isActive,
           isFeatured: product.isFeatured,
+          isEventSetup: Boolean(product.isEventSetup),
           imageFile: null,
         }
       });
@@ -152,6 +155,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
           categoryId: '',
           isActive: true,
           isFeatured: false,
+          isEventSetup: false,
           imageFile: null,
         }
       });
@@ -289,7 +293,7 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
               )}
             </div>
 
-            <div className="flex gap-6 mt-2">
+            <div className="flex flex-wrap gap-6 mt-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -309,6 +313,18 @@ export default function ProductModal({ isOpen, onClose, product = null }) {
                   onChange={formik.handleChange}
                 />
                 <span className="text-sm text-charcoal">Featured on Homepage</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  name="isEventSetup"
+                  className="accent-primary w-4 h-4" 
+                  checked={formik.values.isEventSetup}
+                  onChange={formik.handleChange}
+                />
+                <span className="text-sm text-charcoal font-medium text-primary">
+                  Event / Setup Item (Requires Quote)
+                </span>
               </label>
             </div>
           </form>

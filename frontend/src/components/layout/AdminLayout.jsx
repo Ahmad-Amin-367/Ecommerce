@@ -20,7 +20,8 @@ import {
   ExternalLink,
   Globe,
   ChevronDown,
-  Briefcase
+  Briefcase,
+  Truck
 } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import clsx from 'clsx';
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { href: '/admin/delivery', label: 'Delivery & Zones', icon: Truck },
   { href: '/admin/b2b-quotes', label: 'B2B Quotes', icon: Briefcase },
   { href: '/admin/testimonials', label: 'Reviews', icon: Star },
   { href: '/admin/users', label: 'Users', icon: Users },

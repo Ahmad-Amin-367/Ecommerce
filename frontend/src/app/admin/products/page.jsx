@@ -32,6 +32,9 @@ const ProductRow = memo(({ product, handleEdit, handleDeleteClick }) => {
           {product.isFeatured && (
             <Badge variant="primary">Featured</Badge>
           )}
+          {product.isEventSetup && (
+            <Badge variant="warning">Event Item</Badge>
+          )}
         </div>
       </td>
       <td className="px-6 py-4 text-right">

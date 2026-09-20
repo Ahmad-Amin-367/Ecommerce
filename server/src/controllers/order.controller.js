@@ -3,6 +3,7 @@ const ApiError = require('../utils/apiError');
 const { sendSuccess } = require('../utils/apiResponse');
 const orderService = require('../services/order.service');
 const cartService = require('../services/cart.service');
+const deliveryService = require('../services/delivery.service');
 const { sendOrderConfirmationEmail } = require('../services/email.service');
 
 // Generate unique order number (e.g. ORD-TIMESTAMP36-RAND4)
@@ -18,7 +19,7 @@ const generateOrderNumber = () => {
  * @access  Private (Authenticated User)
  */
 const createOrder = async (req, res) => {
-  const { items, shippingAddress, paymentMethod, notes, guestInfo } = req.body;
+  const { items, shippingAddress, paymentMethod, notes, guestInfo, fulfillmentType = 'DELIVERY' } = req.body;
 
   if (!items || items.length === 0) {
     throw ApiError.badRequest('No order items');
@@ -46,7 +47,29 @@ const createOrder = async (req, res) => {
     });
   }
 
-  const shippingFee = subtotal >= 500 ? 0 : 99; // Free shipping over $500 CAD, else flat $99
+  // Authoritative server-side delivery fee calculation
+  const deliveryCalc = await deliveryService.calculateDeliveryFee({
+    postalCode: shippingAddress?.postalCode,
+    fulfillmentType: fulfillmentType,
+    items,
+  });
+
+  if (deliveryCalc.requiresQuote || deliveryCalc.isEventSetup) {
+    throw ApiError.badRequest(
+      deliveryCalc.eventSetupMessage ||
+      'This order includes event setup items. Please contact us for a delivery and setup quote.'
+    );
+  }
+
+  if (!deliveryCalc.isAvailable) {
+    throw ApiError.badRequest(
+      deliveryCalc.unservicedAreaMessage ||
+      deliveryCalc.message ||
+      'Delivery is not available to this area. Please contact Hisna Gifts.'
+    );
+  }
+
+  const shippingFee = Number(deliveryCalc.fee) || 0;
   const totalAmount = subtotal + shippingFee;
 
   // Create Order in transaction to ensure stock is updated safely
@@ -56,15 +79,15 @@ const createOrder = async (req, res) => {
       let addressId = null;
       const userId = req.user ? req.user.id : null;
 
-      if (shippingAddress) {
+      if (shippingAddress && fulfillmentType === 'DELIVERY') {
         const address = await tx.address.create({
           data: {
             userId: userId,
             street: shippingAddress.address,
             city: shippingAddress.city,
-            state: shippingAddress.state || 'N/A',
+            state: shippingAddress.state || 'Ontario',
             country: shippingAddress.country || 'Canada',
-            postalCode: shippingAddress.postalCode || '00000',
+            postalCode: shippingAddress.postalCode || '',
           }
         });
         addressId = address.id;
@@ -83,6 +106,8 @@ const createOrder = async (req, res) => {
           subtotal,
           shippingFee,
           totalAmount,
+          fulfillmentType: deliveryCalc.fulfillmentType || fulfillmentType,
+          deliveryZone: deliveryCalc.zoneName || (fulfillmentType === 'PICKUP' ? 'Store Pickup' : null),
           notes,
           items: {
             create: orderItemsData
@@ -110,7 +135,7 @@ const createOrder = async (req, res) => {
   // Clear user DB cart after successful order creation
   const orderUserId = req.user ? req.user.id : null;
   if (orderUserId) {
-    await cartService.clearCart(orderUserId).catch(() => {});
+    await cartService.clearCart(orderUserId).catch(() => { });
   }
 
   // Send Order Confirmation Email immediately for COD / non-Stripe orders

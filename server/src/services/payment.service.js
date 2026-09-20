@@ -10,7 +10,7 @@ const { sendOrderConfirmationEmail } = require('./email.service');
  * @param {Array<{productId: string, quantity: number}>} items
  * @returns {Promise<{subtotal: number, shippingFee: number, totalAmount: number}>}
  */
-const calculateCartTotal = async (items) => {
+const calculateCartTotal = async (items, deliveryInfo = {}) => {
   if (!items || items.length === 0) {
     throw ApiError.badRequest('Cart is empty');
   }
@@ -29,7 +29,19 @@ const calculateCartTotal = async (items) => {
     subtotal += Number(product.price) * item.quantity;
   }
 
-  const shippingFee = subtotal >= 500 ? 0 : 99; // Flat $99 CAD or free over $500
+  let shippingFee = 0;
+  if (deliveryInfo.fulfillmentType === 'PICKUP') {
+    shippingFee = 0;
+  } else if (deliveryInfo.postalCode) {
+    const deliveryService = require('./delivery.service');
+    const deliveryCalc = await deliveryService.calculateDeliveryFee({
+      postalCode: deliveryInfo.postalCode,
+      fulfillmentType: deliveryInfo.fulfillmentType || 'DELIVERY',
+      items,
+    });
+    shippingFee = deliveryCalc.isAvailable ? Number(deliveryCalc.fee) || 0 : 0;
+  }
+
   const totalAmount = subtotal + shippingFee;
 
   return { subtotal, shippingFee, totalAmount };

@@ -12,6 +12,7 @@ const testimonialRoutes = require('./testimonial.routes');
 const uploadRoutes = require('./upload.routes');
 const b2bRoutes = require('./b2b.routes');
 const paymentRoutes = require('./payment.routes');
+const deliveryRoutes = require('./delivery.routes');
 const reviewController = require('../controllers/review.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
@@ -27,6 +28,7 @@ router.use('/testimonials', testimonialRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/b2b', b2bRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/delivery', deliveryRoutes);
 
 
 

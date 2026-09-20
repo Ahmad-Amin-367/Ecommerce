@@ -48,7 +48,30 @@ const placeOrder = async (userId, data) => {
     (sum, item) => sum + Number(item.product.price) * item.quantity,
     0
   );
-  const shippingFee = subtotal >= 500 ? 0 : 99; // Free shipping over $500
+  
+  const deliveryService = require('./delivery.service');
+  const deliveryCalc = await deliveryService.calculateDeliveryFee({
+    postalCode: address?.postalCode,
+    fulfillmentType: data.fulfillmentType || 'DELIVERY',
+    items: cart.items,
+  });
+
+  if (deliveryCalc.requiresQuote || deliveryCalc.isEventSetup) {
+    throw ApiError.badRequest(
+      deliveryCalc.eventSetupMessage ||
+        'This order includes event setup items. Please contact us for a delivery and setup quote.'
+    );
+  }
+
+  if (!deliveryCalc.isAvailable) {
+    throw ApiError.badRequest(
+      deliveryCalc.unservicedAreaMessage ||
+        deliveryCalc.message ||
+        'Delivery is not available to this area.'
+    );
+  }
+
+  const shippingFee = Number(deliveryCalc.fee) || 0;
   const totalAmount = subtotal + shippingFee;
 
   // Create order in a transaction
@@ -64,6 +87,8 @@ const placeOrder = async (userId, data) => {
           subtotal,
           shippingFee,
           totalAmount,
+          fulfillmentType: deliveryCalc.fulfillmentType || 'DELIVERY',
+          deliveryZone: deliveryCalc.zoneName || null,
           items: {
             create: cart.items.map((item) => ({
               productId: item.productId,

@@ -15,6 +15,7 @@ const create = Joi.object({
   }),
   isActive: Joi.boolean().default(true),
   isFeatured: Joi.boolean().default(false),
+  isEventSetup: Joi.boolean().default(false),
   images: Joi.array().items(Joi.string().uri()).default([]),
   tags: Joi.array().items(Joi.string()).default([]),
 });
@@ -27,6 +28,7 @@ const update = Joi.object({
   categoryId: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
   isFeatured: Joi.boolean().optional(),
+  isEventSetup: Joi.boolean().optional(),
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string()).optional(),
 });
