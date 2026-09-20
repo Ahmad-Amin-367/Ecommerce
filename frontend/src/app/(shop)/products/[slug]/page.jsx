@@ -37,7 +37,7 @@ function ProductDetailsInner({ slug }) {
         <h1 className="font-serif text-3xl text-charcoal mb-4">Product Not Found</h1>
         <p className="text-text-secondary mb-8">The product you are looking for does not exist or has been removed.</p>
         <Link href="/">
-          <Button variant="primary">Return to Shop</Button>
+          <Button variant="primary" rounded="none" className="rounded-none uppercase tracking-wider text-xs font-bold px-8 py-3">Return to Shop</Button>
         </Link>
       </div>
     );
@@ -160,16 +160,18 @@ function ProductDetailsInner({ slug }) {
                 {/* Add to Cart Button */}
                 <Button
                   variant="primary"
-                  className="w-full sm:flex-1 h-12 text-lg"
+                  rounded="none"
+                  className="w-full sm:flex-1 h-12 text-base font-bold uppercase tracking-wider rounded-none shadow-sm"
                   onClick={handleAddToCart}
                   disabled={isAdding}
                   isLoading={isAdding}
                 >
-                  <ShoppingCart size={20} className="mr-2" />
+                  <ShoppingCart size={18} className="mr-2" />
                   Add to Cart
                 </Button>
               </div>
             </div>
+
 
             {/* Additional Info */}
             <div className="mt-8 pt-8 border-t border-border flex flex-col gap-3 text-sm text-text-secondary">
@@ -223,7 +225,8 @@ function ProductDetailsInner({ slug }) {
             <Button
               variant="primary"
               size="md"
-              className="flex-1 sm:flex-none"
+              rounded="none"
+              className="flex-1 sm:flex-none rounded-none uppercase tracking-wider font-bold h-10 px-6 text-sm"
               onClick={handleAddToCart}
               disabled={isAdding}
               isLoading={isAdding}
@@ -231,6 +234,7 @@ function ProductDetailsInner({ slug }) {
               <ShoppingCart size={16} className="mr-1.5" />
               Add to Cart
             </Button>
+
           </div>
         </div>
       </div>
@@ -243,8 +247,10 @@ export default function ProductDetailsPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
 
   if (!mounted) {
     return (

@@ -14,11 +14,25 @@ export default function Button({
   isLoading = false,
   fullWidth = false,
   disabled,
-  className,
+  className = '',
   type = 'button',
+  rounded,
   ...props
 }) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-full font-semibold font-sans cursor-pointer border-none transition-all duration-200 whitespace-nowrap tracking-wide';
+  const hasCustomRounding = rounded !== undefined || (className && /\brounded(-\w+)?\b/.test(className));
+  const roundingClass =
+    rounded === 'none' || rounded === false
+      ? 'rounded-none'
+      : rounded
+      ? `rounded-${rounded}`
+      : hasCustomRounding
+      ? ''
+      : 'rounded-full';
+
+  const baseStyles = clsx(
+    'inline-flex items-center justify-center gap-2 font-semibold font-sans cursor-pointer border-none transition-all duration-200 whitespace-nowrap tracking-wide',
+    roundingClass
+  );
   const disabledStyles = 'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none';
   
   const variants = {
@@ -48,6 +62,7 @@ export default function Button({
       )}
       {...props}
     >
+
       {isLoading ? (
         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-slow-spin inline-block" aria-label="Loading" />
       ) : (

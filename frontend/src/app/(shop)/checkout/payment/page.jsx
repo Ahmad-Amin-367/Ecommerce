@@ -75,8 +75,10 @@ function PaymentContent() {
   }, [orderId, router]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrderAndPayment();
   }, [fetchOrderAndPayment]);
+
 
   // 2. Handle Payment Submission
   const handlePaymentSubmit = async (e) => {
@@ -182,13 +184,15 @@ function PaymentContent() {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full h-14 text-lg font-semibold shadow-md cursor-pointer flex items-center justify-center gap-2"
+                  rounded="none"
+                  className="w-full h-14 text-base font-bold uppercase tracking-widest shadow-sm cursor-pointer flex items-center justify-center gap-2 rounded-none transition-transform active:scale-[0.99] hover:bg-primary-dark"
                   isLoading={isProcessing}
                   disabled={isProcessing || !clientSecret}
                 >
                   <Lock size={18} />
                   <span>Pay Now ({formatCurrency(order.totalAmount)})</span>
                 </Button>
+
 
                 <div className="mt-4 text-center">
                   <p className="text-xs text-text-muted flex items-center justify-center gap-1.5">
@@ -208,7 +212,7 @@ function PaymentContent() {
                   <PackageCheck size={20} className="text-primary" />
                   Order Summary
                 </h2>
-                <span className="text-xs bg-amber-100 text-amber-800 font-semibold px-2.5 py-0.5 rounded-full">
+                <span className="text-xs bg-amber-100 text-amber-800 font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                   Pending Payment
                 </span>
               </div>
@@ -226,10 +230,11 @@ function PaymentContent() {
                           className="object-cover"
                           sizes="56px"
                         />
-                        <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm font-mono font-bold">
                           {item.quantity}
                         </span>
                       </div>
+
                       <div>
                         <p className="text-sm font-medium text-charcoal line-clamp-1">
                           {item.product?.name || 'Item'}

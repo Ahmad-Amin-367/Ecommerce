@@ -441,7 +441,7 @@ export default function CheckoutPage() {
                       }`}
                   >
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${fulfillmentType === 'DELIVERY'
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${fulfillmentType === 'DELIVERY'
                           ? 'bg-primary text-white shadow-xs'
                           : 'bg-cream text-charcoal'
                         }`}
@@ -471,7 +471,7 @@ export default function CheckoutPage() {
                         }`}
                     >
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${fulfillmentType === 'PICKUP'
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${fulfillmentType === 'PICKUP'
                             ? 'bg-primary text-white shadow-xs'
                             : 'bg-cream text-charcoal'
                           }`}
@@ -662,6 +662,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+
                   {/* Real-Time Postal Code Status Feedback */}
                   <div className="mb-6">
                     {deliveryStatus.isLoading ? (
@@ -683,14 +684,14 @@ export default function CheckoutPage() {
                         </div>
                         <Link
                           href="/contact"
-                          className="text-xs font-semibold px-3 py-1.5 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition-colors shrink-0 text-center"
+                          className="text-xs font-semibold px-4 py-2 bg-purple-700 text-white rounded-none hover:bg-purple-800 transition-colors shrink-0 text-center uppercase tracking-wider"
                         >
                           Request Setup Quote
                         </Link>
                       </div>
                     ) : deliveryStatus.isAvailable ? (
                       /* Serviced Area Match */
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
                           <div>
@@ -702,7 +703,7 @@ export default function CheckoutPage() {
                             </span>
                           </div>
                         </div>
-                        <span className="text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-900 rounded-full">
+                        <span className="text-xs font-bold px-2.5 py-1 bg-emerald-100 text-emerald-900 rounded-full uppercase tracking-wider">
                           {deliveryStatus.fee === 0 ? 'FREE DELIVERY' : `${formatCurrency(deliveryStatus.fee)} Delivery Fee`}
                         </span>
                       </div>
@@ -721,14 +722,14 @@ export default function CheckoutPage() {
                         <div className="flex flex-wrap gap-2 pt-1">
                           <Link
                             href="/contact"
-                            className="text-xs font-semibold px-3 py-1.5 bg-amber-800 text-white rounded-lg hover:bg-amber-900 transition-colors"
+                            className="text-xs font-semibold px-4 py-2 bg-amber-800 text-white rounded-none hover:bg-amber-900 transition-colors uppercase tracking-wider"
                           >
                             Contact Hisna Gifts
                           </Link>
                           <button
                             type="button"
                             onClick={() => setFulfillmentType('PICKUP')}
-                            className="text-xs font-semibold px-3 py-1.5 bg-white border border-amber-300 text-amber-900 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
+                            className="text-xs font-semibold px-4 py-2 bg-white border border-amber-300 text-amber-900 rounded-none hover:bg-amber-100 transition-colors cursor-pointer uppercase tracking-wider"
                           >
                             Switch to Free Store Pickup
                           </button>
@@ -862,10 +863,11 @@ export default function CheckoutPage() {
               <Button
                 type="submit"
                 variant="primary"
+                rounded="none"
                 disabled={isDeliveryBlocked || !isPhoneValid || isSubmitting}
-                className={`w-full h-14 text-lg font-semibold shadow-md flex items-center justify-center gap-2 ${isDeliveryBlocked || !isPhoneValid
+                className={`w-full h-14 text-base font-bold uppercase tracking-widest shadow-sm flex items-center justify-center gap-2 rounded-none transition-transform active:scale-[0.99] ${isDeliveryBlocked || !isPhoneValid
                     ? 'opacity-60 cursor-not-allowed'
-                    : 'cursor-pointer'
+                    : 'cursor-pointer hover:bg-primary-dark'
                   }`}
                 isLoading={isSubmitting}
               >
@@ -907,7 +909,7 @@ export default function CheckoutPage() {
                         className="object-cover"
                         sizes="64px"
                       />
-                      <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+                      <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm font-bold font-mono">
                         {item.quantity}
                       </span>
                     </div>
@@ -922,6 +924,7 @@ export default function CheckoutPage() {
                   </li>
                 ))}
               </ul>
+
 
               <div className="border-t border-cloud pt-4 flex flex-col gap-3">
                 <div className="flex justify-between text-sm text-text-secondary">
