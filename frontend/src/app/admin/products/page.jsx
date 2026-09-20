@@ -280,27 +280,29 @@ export default function AdminProductsPage() {
             Showing {totalCount === 0 ? 0 : (page - 1) * limit + 1} to {Math.min(page * limit, totalCount)} of {totalCount} records
           </div>
 
-          <ReactPaginate
-            previousLabel={<ChevronLeft size={16} />}
-            nextLabel={<ChevronRight size={16} />}
-            breakLabel="..."
-            breakClassName="w-8 h-8 flex items-center justify-center text-text-muted"
-            pageCount={totalPages}
-            marginPagesDisplayed={1}
-            pageRangeDisplayed={2}
-            forcePage={page - 1}
-            onPageChange={({ selected }) => setPage(selected + 1)}
-            containerClassName="flex items-center gap-1.5"
-            activeClassName="!bg-primary !text-white !border-primary hover:!bg-primary-dark"
-            pageClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
-            previousClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
-            nextClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
-            disabledClassName="!opacity-30 !cursor-not-allowed hover:!bg-white"
-            disabledLinkClassName="!cursor-not-allowed"
-            pageLinkClassName="w-full h-full flex items-center justify-center"
-            previousLinkClassName="w-full h-full flex items-center justify-center"
-            nextLinkClassName="w-full h-full flex items-center justify-center"
-          />
+          {totalPages > 1 && (
+            <ReactPaginate
+              previousLabel={<ChevronLeft size={16} />}
+              nextLabel={<ChevronRight size={16} />}
+              breakLabel="..."
+              breakClassName="w-8 h-8 flex items-center justify-center text-text-muted"
+              pageCount={Math.max(1, totalPages)}
+              marginPagesDisplayed={1}
+              pageRangeDisplayed={2}
+              forcePage={Math.max(0, Math.min(page - 1, Math.max(1, totalPages) - 1))}
+              onPageChange={({ selected }) => setPage(selected + 1)}
+              containerClassName="flex items-center gap-1.5"
+              activeClassName="!bg-primary !text-white !border-primary hover:!bg-primary-dark"
+              pageClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+              previousClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+              nextClassName="w-8 h-8 flex items-center justify-center border border-cloud rounded text-sm text-charcoal hover:bg-cloud transition-colors cursor-pointer bg-white"
+              disabledClassName="!opacity-30 !cursor-not-allowed hover:!bg-white"
+              disabledLinkClassName="!cursor-not-allowed"
+              pageLinkClassName="w-full h-full flex items-center justify-center"
+              previousLinkClassName="w-full h-full flex items-center justify-center"
+              nextLinkClassName="w-full h-full flex items-center justify-center"
+            />
+          )}
         </div>
       </div>
 
