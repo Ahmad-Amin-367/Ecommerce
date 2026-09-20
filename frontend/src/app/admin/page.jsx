@@ -41,8 +41,8 @@ export default function AdminDashboardPage() {
     setError(null);
     try {
       const [ordersRes, productsRes] = await Promise.allSettled([
-        api.get('/orders'),
-        api.get('/products'),
+        api.get('/orders?limit=1000'),
+        api.get('/products?limit=1000'),
       ]);
 
       if (ordersRes.status === 'fulfilled') {
