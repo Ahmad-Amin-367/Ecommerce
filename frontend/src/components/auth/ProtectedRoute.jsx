@@ -14,17 +14,17 @@ import { useEffect } from 'react';
 export default function ProtectedRoute({ children, requireAdmin = false }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, isAuthChecked } = useAuthStore();
+  const { user, isAuthenticated, isAuthChecked, isLoggingOut } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthChecked) return;
+    if (!isAuthChecked || isLoggingOut) return;
 
     if (!isAuthenticated) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     } else if (requireAdmin && user?.role !== 'ADMIN') {
       router.replace('/');
     }
-  }, [isAuthChecked, isAuthenticated, user, requireAdmin, router, pathname]);
+  }, [isAuthChecked, isAuthenticated, isLoggingOut, user, requireAdmin, router, pathname]);
 
   if (!isAuthChecked) {
     return (

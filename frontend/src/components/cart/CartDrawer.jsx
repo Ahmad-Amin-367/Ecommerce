@@ -76,7 +76,25 @@ export default function CartDrawer({ isOpen, onClose }) {
 
           <div className="mt-8">
             <div className="flow-root">
-              {items.length === 0 ? (
+              {isLoading && items.length === 0 ? (
+                <div className="flex flex-col gap-6 -my-6 divide-y divide-cloud/60 animate-pulse">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="flex py-6">
+                      <div className="h-24 w-24 flex-shrink-0 rounded-xl bg-cloud/50" />
+                      <div className="ml-4 flex flex-1 flex-col justify-between py-1">
+                        <div className="space-y-2">
+                          <div className="h-4 bg-cloud/60 rounded w-3/4" />
+                          <div className="h-3 bg-cloud/40 rounded w-1/3" />
+                        </div>
+                        <div className="flex justify-between items-center mt-4">
+                          <div className="h-7 w-20 bg-cloud/50 rounded-lg" />
+                          <div className="h-4 w-14 bg-cloud/60 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-center">
                   <ShoppingBag size={48} className="text-cloud mb-4" />
                   <h3 className="font-serif text-lg text-charcoal font-medium">Your cart is empty</h3>

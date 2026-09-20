@@ -11,11 +11,11 @@ export default function PortalPage() {
       <main className="flex-1 flex flex-col">
         {/* Header Section */}
         <div className="pt-2 pb-1 md:pt-4 md:pb-2 text-center px-4">
-          <div className="flex justify-center items-center gap-2 mb-1 text-primary font-serif">
+          {/* <div className="flex justify-center items-center gap-2 mb-1 text-primary font-serif">
             <Gift size={20} className="md:w-6 md:h-6" />
             <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Hisna Gifts</h1>
-          </div>
-          <p className="text-warm-gray text-[10px] sm:text-xs tracking-widest uppercase mb-1 md:mb-2">Crafted With Love, Made To Impress</p>
+          </div> */}
+          {/* <p className="text-warm-gray text-[10px] sm:text-xs tracking-widest uppercase mb-1 md:mb-2">Crafted With Love, Made To Impress</p> */}
 
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-charcoal mb-0.5 md:mb-1">
             Welcome to <span className="text-[#C67D5C]">Hisna Gifts</span>

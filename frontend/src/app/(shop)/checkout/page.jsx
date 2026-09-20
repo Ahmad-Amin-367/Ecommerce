@@ -32,8 +32,8 @@ import { postcodeValidator } from 'postcode-validator';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, clearCart } = useCart();
-  const { user, isAuthenticated, isAuthChecked } = useAuthStore();
+  const { cart, clearCart, isLoading } = useCart();
+  const { user, isAuthenticated, isAuthChecked, isLoggingOut } = useAuthStore();
 
   const items = useMemo(() => cart?.items || [], [cart?.items]);
   const subtotal = cart?.subtotal || 0;
@@ -97,12 +97,13 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Auth redirect
+  // Auth redirect: if unauthenticated on checkout, return to portal / root instead of login
   useEffect(() => {
+    if (isLoggingOut) return;
     if (isAuthChecked && !isAuthenticated) {
-      router.push('/login?redirect=/checkout');
+      router.replace('/');
     }
-  }, [isAuthChecked, isAuthenticated, router]);
+  }, [isAuthChecked, isAuthenticated, isLoggingOut, router]);
 
   // Load delivery settings
   useEffect(() => {
@@ -392,6 +393,15 @@ export default function CheckoutPage() {
   }
 
   if (items.length === 0) {
+    if (isLoading) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+          <Spinner size="lg" />
+          <p className="text-text-secondary font-medium">Loading your order details...</p>
+        </div>
+      );
+    }
+
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="font-serif text-3xl text-charcoal mb-4">Your Cart is Empty</h1>

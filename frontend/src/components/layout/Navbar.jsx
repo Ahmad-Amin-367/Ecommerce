@@ -61,6 +61,13 @@ function B2CNavbarContent() {
     setMounted(true);
   }, []);
 
+  // Track active storefront as B2C
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !pathname?.startsWith('/admin')) {
+      localStorage.setItem('hisna_active_storefront', 'b2c');
+    }
+  }, [pathname]);
+
   // Sync search input with URL search parameter
   useEffect(() => {
     const currentSearch = searchParams?.get('search');
@@ -439,15 +446,28 @@ function B2CNavbarContent() {
                 <div className="w-32 h-4 bg-cloud/60 rounded animate-pulse"></div>
               </li>
             ) : isAuthenticated ? (
-              <li>
-                <Link
-                  href="/profile"
-                  className="block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200"
-                  onClick={closeMobileMenu}
-                >
-                  My Account
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/profile"
+                    className="block px-6 py-3.5 text-sm font-medium text-warm-gray hover:bg-background-hover hover:text-primary transition-colors duration-200"
+                    onClick={closeMobileMenu}
+                  >
+                    My Account
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      logout();
+                    }}
+                    className="w-full text-left block px-6 py-3.5 text-sm font-medium text-error hover:bg-error/10 transition-colors duration-200 cursor-pointer"
+                  >
+                    Log Out
+                  </button>
+                </li>
+              </>
             ) : (
               <>
                 <li>

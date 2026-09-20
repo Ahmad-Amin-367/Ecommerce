@@ -268,7 +268,7 @@ export default function B2BPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           CREATIONS & TESTIMONIALS SECTION
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
+      <section id="creations-section" className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
         <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left Column: Glimpse of Creations */}
           <div className="lg:col-span-7 space-y-6">
@@ -330,7 +330,7 @@ export default function B2BPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           PROCESS SECTION — Simple 3-step timeline
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
+      <section id="process-section" className="py-16 lg:py-20 bg-white border-b border-[#e2ece5]">
         <div className="w-full max-w-7xl mx-auto px-6">
           <div className="text-center max-w-xl mx-auto mb-10">
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#325247]">

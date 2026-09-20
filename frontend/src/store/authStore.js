@@ -9,9 +9,12 @@ const useAuthStore = create((set, get) => ({
   isAuthenticated: false,
   isAuthChecked: false,
 
+  isLoggingOut: false,
+  setLoggingOut: (status) => set({ isLoggingOut: status }),
+
   // Set user after login
   setAuth: (user) =>
-    set({ user, isAuthenticated: true }),
+    set({ user, isAuthenticated: true, isLoggingOut: false }),
 
   // Set initialization status
   setAuthChecked: (status) => set({ isAuthChecked: status }),

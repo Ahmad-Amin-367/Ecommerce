@@ -1,7 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import authService from '@/services/authService';
@@ -9,6 +9,16 @@ import { SocketProvider } from '@/components/providers/SocketProvider';
 
 function AuthInitializer({ children }) {
   const { setAuth, setAuthChecked, logout } = useAuthStore();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const logoutMsg = sessionStorage.getItem('logout_toast');
+      if (logoutMsg) {
+        sessionStorage.removeItem('logout_toast');
+        toast.success(logoutMsg);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const verifyAuth = async () => {

@@ -24,8 +24,10 @@ import {
   AlertCircle,
   RefreshCw,
   Calendar,
-  Filter
+  Filter,
+  LogOut
 } from 'lucide-react';
+import useAuth from '@/hooks/useAuth';
 
 const STATUS_TABS = [
   { id: 'ALL', label: 'All Orders' },
@@ -85,7 +87,8 @@ const getStatusDetails = (status) => {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAuthChecked } = useAuthStore();
+  const { user, isAuthenticated, isAuthChecked, isLoggingOut } = useAuthStore();
+  const { logout } = useAuth();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -113,6 +116,8 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
+    if (isLoggingOut) return;
+
     if (isAuthChecked && !isAuthenticated) {
       router.push('/login?redirect=/profile');
       return;
@@ -121,7 +126,7 @@ export default function ProfilePage() {
     if (isAuthenticated) {
       fetchOrders();
     }
-  }, [isAuthenticated, isAuthChecked, router]);
+  }, [isAuthenticated, isAuthChecked, isLoggingOut, router]);
 
   const toggleOrderExpand = (orderId) => {
     setExpandedOrderId((prevId) => (prevId === orderId ? null : orderId));
@@ -191,14 +196,26 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <button
-              onClick={fetchOrders}
-              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-cloud text-text-secondary hover:text-charcoal hover:bg-cream/60 transition-all text-xs sm:text-sm font-medium shrink-0"
-            >
-              <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-              <span className="hidden sm:inline">Refresh Orders</span>
-              <span className="sm:hidden">Refresh</span>
-            </button>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <button
+                onClick={fetchOrders}
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-cloud text-text-secondary hover:text-charcoal hover:bg-cream/60 transition-all text-xs sm:text-sm font-medium"
+              >
+                <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+                <span className="hidden sm:inline">Refresh Orders</span>
+                <span className="sm:hidden">Refresh</span>
+              </button>
+
+              <button
+                onClick={() => logout()}
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-error/20 text-error hover:bg-error/10 transition-all text-xs sm:text-sm font-medium cursor-pointer"
+                title="Log Out"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Log Out</span>
+                <span className="sm:hidden">Exit</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Metrics Grid */}

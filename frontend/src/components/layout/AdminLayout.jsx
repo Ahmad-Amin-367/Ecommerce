@@ -147,7 +147,7 @@ export default function AdminLayout({ children }) {
               "flex items-center gap-2 text-sm font-medium text-error py-2.5 rounded-xl transition-all duration-200 hover:bg-error/10 cursor-pointer active:scale-95",
               isDesktopCollapsed ? "lg:justify-center px-0" : "px-4 w-full"
             )}
-            onClick={logout}
+            onClick={() => logout('/login')}
             title={isDesktopCollapsed ? "Sign Out" : undefined}
           >
             <LogOut size={18} className="shrink-0" />
@@ -235,7 +235,7 @@ export default function AdminLayout({ children }) {
                 <button
                   onClick={() => {
                     setIsProfileDropdownOpen(false);
-                    logout();
+                    logout('/login');
                   }}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-error hover:bg-error/10 transition-colors border-t border-cloud mt-1 pt-2 cursor-pointer"
                 >
