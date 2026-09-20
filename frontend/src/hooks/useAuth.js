@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
@@ -11,6 +12,7 @@ import cartService from '@/services/cartService';
  */
 const useAuth = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, isAuthenticated, setAuth, logout: logoutStore, isAdmin } = useAuthStore();
   const clearCart = useCartStore((s) => s.clearCart);
 
@@ -30,18 +32,26 @@ const useAuth = () => {
     if (localItems && localItems.length > 0) {
       try {
         const payload = localItems.map((item) => ({
-          productId: item.product.id,
+          productId: item.product?.id || item.productId || item.id,
           quantity: item.quantity,
         }));
         const syncRes = await cartService.syncCart(payload);
-        useCartStore.getState().setCart(syncRes.data.data);
+        const updatedCart = syncRes.data?.data;
+        if (updatedCart) {
+          useCartStore.getState().setCart(updatedCart);
+          queryClient.setQueryData(['cart'], updatedCart);
+        }
       } catch (err) {
         console.error('Failed to sync guest cart:', err);
       }
     } else {
       try {
         const cartRes = await cartService.getCart();
-        useCartStore.getState().setCart(cartRes.data.data);
+        const updatedCart = cartRes.data?.data;
+        if (updatedCart) {
+          useCartStore.getState().setCart(updatedCart);
+          queryClient.setQueryData(['cart'], updatedCart);
+        }
       } catch (err) {
         console.error('Failed to fetch user cart on login:', err);
       }
@@ -100,9 +110,12 @@ const useAuth = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('cart-storage');
     }
     logoutStore();
     clearCart();
+    queryClient.removeQueries({ queryKey: ['cart'] });
+    queryClient.setQueryData(['cart'], { items: [], subtotal: 0 });
     toast.success('Logged out successfully');
     router.push('/');
   };

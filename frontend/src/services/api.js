@@ -100,8 +100,11 @@ api.interceptors.response.use(
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
+          localStorage.removeItem('cart-storage');
           const { useAuthStore } = require('@/store/authStore');
+          const { useCartStore } = require('@/store/cartStore');
           useAuthStore.getState().logout();
+          useCartStore.getState().clearCart();
 
           if (window.location.pathname.startsWith('/admin')) {
             window.location.href = '/login';

@@ -108,7 +108,12 @@ const useCartStore = create(
       },
 
       // Clear local cart
-      clearCart: () => set({ items: [], subtotal: 0, itemCount: 0 }),
+      clearCart: () => {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('cart-storage');
+        }
+        set({ items: [], subtotal: 0, itemCount: 0 });
+      },
     }),
     {
       name: 'cart-storage',

@@ -195,13 +195,13 @@ function CategoryContent() {
       <div className="w-full max-w-7xl mx-auto px-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <p className="text-sm font-medium text-text-secondary">
+            <div className="text-sm font-medium text-text-secondary">
               {isLoading ? (
                 <div className="h-5 w-24 bg-cloud rounded animate-pulse" />
               ) : (
                 `${data?.data?.length || 0} Results`
               )}
-            </p>
+            </div>
             
             {/* Search Filter Tag */}
             {search && (

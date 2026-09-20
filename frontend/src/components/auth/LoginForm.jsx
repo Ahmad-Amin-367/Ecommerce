@@ -83,31 +83,35 @@ export default function LoginForm() {
           Sign In
         </Button>
 
-        <div className="flex items-center gap-3">
-          <hr className="flex-1 border-cloud" />
-          <span className="text-xs font-semibold text-warm-gray uppercase tracking-wider">Or continue with</span>
-          <hr className="flex-1 border-cloud" />
-        </div>
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <>
+            <div className="flex items-center gap-3">
+              <hr className="flex-1 border-cloud" />
+              <span className="text-xs font-semibold text-warm-gray uppercase tracking-wider">Or continue with</span>
+              <hr className="flex-1 border-cloud" />
+            </div>
 
-        <div className="w-full flex justify-center">
-          <GoogleLogin
-            onSuccess={async (credentialResponse) => {
-              try {
-                await googleLogin({ credential: credentialResponse.credential }, redirect);
-              } catch (err) {
-                toast.error(err.response?.data?.message || 'Google Login failed');
-              }
-            }}
-            onError={() => {
-              toast.error('Google Login failed');
-            }}
-            useOneTap
-            theme="outline"
-            size="large"
-            text="signin_with"
-            shape="rectangular"
-          />
-        </div>
+            <div className="w-full flex justify-center">
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  try {
+                    await googleLogin({ credential: credentialResponse.credential }, redirect);
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || 'Google Login failed');
+                  }
+                }}
+                onError={() => {
+                  toast.error('Google Login failed');
+                }}
+                useOneTap
+                theme="outline"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+              />
+            </div>
+          </>
+        )}
 
         <p className="text-center text-sm text-warm-gray">
           Don&apos;t have an account?{' '}
