@@ -390,14 +390,28 @@ async function main() {
   ];
 
   for (const prod of productsData) {
+    const prodData = {
+      name: prod.name,
+      slug: prod.slug,
+      description: prod.description || null,
+      price: prod.price,
+      comparePrice: prod.comparePrice || null,
+      categoryId: prod.categoryId,
+      isActive: prod.isActive !== undefined ? prod.isActive : true,
+      isFeatured: prod.isFeatured || false,
+      isEventSetup: prod.isEventSetup || false,
+      tags: prod.tags || [],
+      images: prod.images || [],
+    };
+
     await prisma.product.upsert({
-      where: { slug: prod.slug },
+      where: { slug: prodData.slug },
       update: { 
-        price: prod.price, 
-        comparePrice: prod.comparePrice || null,
-        images: prod.images 
+        price: prodData.price, 
+        comparePrice: prodData.comparePrice,
+        images: prodData.images 
       },
-      create: prod,
+      create: prodData,
     });
   }
   console.log(`✅ ${productsData.length} Products created or updated`);

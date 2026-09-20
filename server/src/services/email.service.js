@@ -161,7 +161,7 @@ const sendOrderConfirmationEmail = async (order) => {
       return;
     }
 
-    const itemsHtml = (order.items || [])
+    const itemsHtmlDesktop = (order.items || [])
       .map((item) => {
         const productName = item.product?.name || 'Gift Item';
         const qty = item.quantity;
@@ -180,93 +180,162 @@ const sendOrderConfirmationEmail = async (order) => {
       })
       .join('');
 
+    const itemsHtmlMobile = (order.items || [])
+      .map((item) => {
+        const productName = item.product?.name || 'Gift Item';
+        const qty = item.quantity;
+        const price = Number(item.unitPrice || 0).toFixed(2);
+        const total = Number(item.totalPrice || (Number(item.unitPrice || 0) * qty)).toFixed(2);
+        return `
+          <tr>
+            <td style="padding: 12px 4px; border-bottom: 1px solid #edf2f7; color: #2d3748;">
+              <div style="font-weight: bold; margin-bottom: 4px;">${productName}</div>
+              <div style="font-size: 13px; color: #718096;">Qty: ${qty} &times; $${price}</div>
+            </td>
+            <td style="padding: 12px 4px; border-bottom: 1px solid #edf2f7; text-align: right; font-weight: bold; color: #2d3748; vertical-align: top;">
+              $${total}
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    const stateStr = order.address?.state && order.address.state.toUpperCase() !== 'N/A' ? `${order.address.state} ` : '';
     const addressHtml = order.address
       ? `
-        <p style="margin: 3px 0; color: #4a5568;">${order.address.street}</p>
-        <p style="margin: 3px 0; color: #4a5568;">${order.address.city}, ${order.address.state || ''} ${order.address.postalCode}</p>
-        <p style="margin: 3px 0; color: #4a5568;">${order.address.country || 'Canada'}</p>
+        <p style="margin: 0; color: #4a5568; line-height: 1.6;">
+          ${order.address.street}<br>
+          ${order.address.city}, ${stateStr}${order.address.postalCode}<br>
+          ${order.address.country || 'Canada'}
+        </p>
       `
-      : '<p style="margin: 3px 0; color: #718096;">Provided at checkout</p>';
+      : '<p style="margin: 0; color: #718096;">Provided at checkout</p>';
 
     const paymentText =
       order.paymentMethod === 'STRIPE'
-        ? 'Credit / Debit Card (Stripe)'
-        : 'Cash on Delivery (COD)';
+        ? 'Credit / Debit Card'
+        : 'Cash on Delivery';
 
     const shippingText =
       Number(order.shippingFee) === 0 ? 'FREE' : `$${Number(order.shippingFee).toFixed(2)} CAD`;
 
     const html = `
-      <div style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #2d3748;">
-        <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #004D40;">
-          <h1 style="color: #004D40; margin: 0; font-size: 26px; letter-spacing: 1.5px; font-weight: 800;">HISNA GIFTS</h1>
-          <p style="color: #718096; font-size: 14px; margin-top: 6px;">Luxury Gifts & Premium Celebrations</p>
-        </div>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style type="text/css">
+          @media screen and (max-width: 600px) {
+            .desktop-only { display: none !important; }
+            .mobile-only { 
+              display: table !important; 
+              width: 100% !important; 
+              max-height: none !important; 
+              overflow: visible !important; 
+            }
+            .mobile-stack { 
+              display: block !important; 
+              width: 100% !important; 
+              padding-left: 0 !important; 
+              padding-right: 0 !important; 
+              padding-bottom: 16px !important; 
+              box-sizing: border-box !important;
+            }
+            .mobile-text-right { text-align: right !important; }
+            .email-container { padding: 12px !important; }
+          }
+        </style>
+      </head>
+      <body style="margin: 0; padding: 20px 0; background-color: #f7fafc;">
+        <div class="email-container" style="font-family: Arial, -apple-system, BlinkMacSystemFont, sans-serif; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #2d3748;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #004D40;">
+            <h1 style="color: #004D40; margin: 0; font-size: 26px; letter-spacing: 1.5px; font-weight: 800;">HISNA GIFTS</h1>
+            <p style="color: #718096; font-size: 14px; margin-top: 6px;">Luxury Gifts & Premium Celebrations</p>
+          </div>
 
-        <div style="padding: 24px 0 16px 0;">
-          <h2 style="color: #004D40; font-size: 20px; margin-top: 0; margin-bottom: 8px;">Order Confirmed: #${order.orderNumber}</h2>
-          <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Hi <strong>${customerName}</strong>,</p>
-          <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0;">Thank you for shopping with Hisna Gifts. We have received your order and our team is already preparing it with the utmost care.</p>
-        </div>
+          <div style="padding: 24px 0 16px 0;">
+            <h2 style="color: #004D40; font-size: 20px; margin-top: 0; margin-bottom: 8px;">Order Confirmed: #${order.orderNumber}</h2>
+            <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Hi <strong>${customerName}</strong>,</p>
+            <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0;">Thank you for shopping with Hisna Gifts. We have received your order and our team is already preparing it with the utmost care.</p>
+          </div>
 
-        <div style="background-color: #f7fafc; border-radius: 8px; padding: 18px; margin-bottom: 22px; border: 1px solid #edf2f7;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-            <thead>
-              <tr style="border-bottom: 2px solid #cbd5e0; color: #4a5568; text-align: left;">
-                <th style="padding: 8px 10px;">Item</th>
-                <th style="padding: 8px 10px; text-align: center;">Qty</th>
-                <th style="padding: 8px 10px; text-align: right;">Price</th>
-                <th style="padding: 8px 10px; text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
+          <div style="background-color: #f7fafc; border-radius: 8px; padding: 18px; margin-bottom: 22px; border: 1px solid #edf2f7;">
+            <!-- Desktop Table -->
+            <table class="desktop-only" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #cbd5e0; color: #4a5568; text-align: left;">
+                  <th style="padding: 8px 10px;">Item</th>
+                  <th style="padding: 8px 10px; text-align: center;">Qty</th>
+                  <th style="padding: 8px 10px; text-align: right;">Price</th>
+                  <th style="padding: 8px 10px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtmlDesktop}
+              </tbody>
+            </table>
+            
+            <!-- Mobile Table (Hidden on Desktop) -->
+            <!--[if !mso]><!-->
+            <table class="mobile-only" style="display: none; width: 0; max-height: 0; overflow: hidden; mso-hide: all; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #cbd5e0; color: #4a5568; text-align: left;">
+                  <th style="padding: 8px 4px;">Item Details</th>
+                  <th style="padding: 8px 4px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtmlMobile}
+              </tbody>
+            </table>
+            <!--<![endif]-->
+
+            <div style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+              <table style="width: 100%; font-size: 14px; line-height: 1.8;">
+                <tr>
+                  <td style="color: #718096;">Subtotal:</td>
+                  <td style="text-align: right; font-weight: 600; color: #2d3748;">$${Number(order.subtotal).toFixed(2)} CAD</td>
+                </tr>
+                <tr>
+                  <td style="color: #718096;">Shipping:</td>
+                  <td style="text-align: right; font-weight: 600; color: #2d3748;">${shippingText}</td>
+                </tr>
+                <tr style="font-size: 16px; border-top: 2px solid #004D40;">
+                  <td style="padding-top: 8px; font-weight: bold; color: #004D40;">Total Amount:</td>
+                  <td style="padding-top: 8px; text-align: right; font-weight: bold; color: #004D40;">$${Number(order.totalAmount).toFixed(2)} CAD</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+            <tr>
+              <td class="mobile-stack" style="width: 50%; vertical-align: top; padding-right: 8px;">
+                <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; height: 100%; min-height: 110px; box-sizing: border-box;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Shipping Address</h3>
+                  ${addressHtml}
+                </div>
+              </td>
+              <td class="mobile-stack" style="width: 50%; vertical-align: top; padding-left: 8px;">
+                <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; height: 100%; min-height: 110px; box-sizing: border-box;">
+                  <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Payment Details</h3>
+                  <p style="margin: 3px 0; color: #4a5568;"><strong>Method:</strong> ${paymentText}</p>
+                  <p style="margin: 3px 0; color: #4a5568;"><strong>Status:</strong> ${order.paymentStatus || 'PENDING'}</p>
+                </div>
+              </td>
+            </tr>
           </table>
 
-          <div style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
-            <table style="width: 100%; font-size: 14px; line-height: 1.8;">
-              <tr>
-                <td style="color: #718096;">Subtotal:</td>
-                <td style="text-align: right; font-weight: 600; color: #2d3748;">$${Number(order.subtotal).toFixed(2)} CAD</td>
-              </tr>
-              <tr>
-                <td style="color: #718096;">Shipping:</td>
-                <td style="text-align: right; font-weight: 600; color: #2d3748;">${shippingText}</td>
-              </tr>
-              <tr style="font-size: 16px; border-top: 2px solid #004D40;">
-                <td style="padding-top: 8px; font-weight: bold; color: #004D40;">Total Amount:</td>
-                <td style="padding-top: 8px; text-align: right; font-weight: bold; color: #004D40;">$${Number(order.totalAmount).toFixed(2)} CAD</td>
-              </tr>
-            </table>
-          </div>
+          <p style="color: #718096; font-size: 13px; line-height: 1.6; text-align: center; margin: 0 0 16px 0;">
+            Need assistance or want to customize your order? Reply directly to this email or reach us at <a href="mailto:info@hisnagifts.com" style="color: #004D40; text-decoration: underline;">info@hisnagifts.com</a>.
+          </p>
+
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">&copy; ${new Date().getFullYear()} Hisna Gifts. All rights reserved.</p>
         </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-          <tr>
-            <td style="width: 50%; vertical-align: top; padding-right: 8px;">
-              <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; min-height: 110px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Shipping Address</h3>
-                ${addressHtml}
-              </div>
-            </td>
-            <td style="width: 50%; vertical-align: top; padding-left: 8px;">
-              <div style="background-color: #f7fafc; padding: 14px; border-radius: 8px; border: 1px solid #edf2f7; min-height: 110px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #004D40; text-transform: uppercase; letter-spacing: 0.5px;">Payment Details</h3>
-                <p style="margin: 3px 0; color: #4a5568;"><strong>Method:</strong> ${paymentText}</p>
-                <p style="margin: 3px 0; color: #4a5568;"><strong>Status:</strong> ${order.paymentStatus || 'PENDING'}</p>
-              </div>
-            </td>
-          </tr>
-        </table>
-
-        <p style="color: #718096; font-size: 13px; line-height: 1.6; text-align: center; margin: 0 0 16px 0;">
-          Need assistance or want to customize your order? Reply directly to this email or reach us at <a href="mailto:info@hisnagifts.com" style="color: #004D40; text-decoration: underline;">info@hisnagifts.com</a>.
-        </p>
-
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-        <p style="color: #a0aec0; font-size: 12px; text-align: center; margin: 0;">&copy; ${new Date().getFullYear()} Hisna Gifts. All rights reserved.</p>
-      </div>
+      </body>
+      </html>
     `;
 
     await sendMail({
