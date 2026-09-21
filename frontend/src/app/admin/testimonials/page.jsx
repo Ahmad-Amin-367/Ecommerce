@@ -4,11 +4,13 @@ import { useTestimonials, useDeleteTestimonial, useUpdateTestimonial } from '@/h
 import { Plus, Edit2, Trash2, Star, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import TestimonialModal from '@/components/admin/TestimonialModal';
 
 export default function AdminTestimonialsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
 
   // Admin query fetches all testimonials (including inactive)
   const { data: testimonials = [], isLoading } = useTestimonials({ admin: true });
@@ -33,9 +35,10 @@ export default function AdminTestimonialsPage() {
     });
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this home review?')) {
-      await deleteMutation.mutateAsync(id);
+  const handleDelete = async () => {
+    if (reviewToDelete) {
+      await deleteMutation.mutateAsync(reviewToDelete.id);
+      setReviewToDelete(null);
     }
   };
 
@@ -133,7 +136,7 @@ export default function AdminTestimonialsPage() {
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(review.id)}
+                          onClick={() => setReviewToDelete(review)}
                           className="p-1.5 text-text-muted hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                           title="Delete Review"
                         >
@@ -153,6 +156,16 @@ export default function AdminTestimonialsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         testimonial={editingTestimonial}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(reviewToDelete)}
+        onClose={() => setReviewToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Home Review"
+        message={`Are you sure you want to delete the review by "${reviewToDelete?.name}"? It will be permanently removed from the home page slider.`}
+        confirmText="Delete Review"
+        isLoading={deleteMutation.isPending}
       />
     </div>
   );

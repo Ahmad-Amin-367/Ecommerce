@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import b2bService from '@/services/b2bService';
 import {
   Briefcase,
@@ -24,6 +25,7 @@ import {
   Loader2,
   RefreshCw,
 } from 'lucide-react';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'REVIEWED', 'QUOTED', 'APPROVED', 'FULFILLED', 'REJECTED'];
 
@@ -43,6 +45,11 @@ export default function AdminB2BQuotesPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ totalPages: 1, total: 0 });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Modal State
   const [selectedQuote, setSelectedQuote] = useState(null);
@@ -51,6 +58,7 @@ export default function AdminB2BQuotesPage() {
   const [editStatus, setEditStatus] = useState('');
   const [editAdminNotes, setEditAdminNotes] = useState('');
   const [editEstimatedAmount, setEditEstimatedAmount] = useState('');
+  const [quoteToDelete, setQuoteToDelete] = useState(null);
 
   const fetchQuotes = async () => {
     setLoading(true);
@@ -110,12 +118,13 @@ export default function AdminB2BQuotesPage() {
     }
   };
 
-  const handleDeleteQuote = async (id) => {
-    if (!confirm('Are you sure you want to delete this B2B quote request?')) return;
+  const handleDeleteQuote = async () => {
+    if (!quoteToDelete) return;
     try {
-      await b2bService.deleteQuote(id);
-      setQuotes((prev) => prev.filter((q) => q.id !== id));
-      if (selectedQuote?.id === id) setModalOpen(false);
+      await b2bService.deleteQuote(quoteToDelete.id);
+      setQuotes((prev) => prev.filter((q) => q.id !== quoteToDelete.id));
+      if (selectedQuote?.id === quoteToDelete.id) setModalOpen(false);
+      setQuoteToDelete(null);
     } catch (err) {
       alert('Failed to delete quote');
     }
@@ -260,7 +269,7 @@ export default function AdminB2BQuotesPage() {
                         <Eye size={15} />
                       </button>
                       <button
-                        onClick={() => handleDeleteQuote(quote.id)}
+                        onClick={() => setQuoteToDelete(quote)}
                         className="p-1.5 rounded-lg bg-red-50 hover:bg-red-600 hover:text-white text-red-600 transition-colors cursor-pointer"
                         title="Delete Quote"
                       >
@@ -276,8 +285,8 @@ export default function AdminB2BQuotesPage() {
       </div>
 
       {/* Detail / Update Modal */}
-      {modalOpen && selectedQuote && (
-        <div className="fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
+      {mounted && modalOpen && selectedQuote && createPortal(
+        <div className="fixed inset-0 z-[100] bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl border border-cloud shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="px-6 py-4 bg-primary text-white flex items-center justify-between">
@@ -413,7 +422,17 @@ export default function AdminB2BQuotesPage() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(quoteToDelete)}
+        onClose={() => setQuoteToDelete(null)}
+        onConfirm={handleDeleteQuote}
+        title="Delete Quote Request"
+        message={`Are you sure you want to delete the quote request from "${quoteToDelete?.companyName || quoteToDelete?.contactName}"? This action cannot be undone.`}
+        confirmText="Delete Quote"
+      />
     </div>
   );
 }
