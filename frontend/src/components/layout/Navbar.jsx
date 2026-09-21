@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ShoppingCart, User, Menu, X, Search, Gift, Cake, Heart, Moon, Sparkles, Briefcase, HandHeart, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -151,7 +152,7 @@ function B2CNavbarContent() {
 
       {/* ─── Main Navigation ──────────────────────────────────────────── */}
       <nav className="relative z-50 bg-white/95 backdrop-blur-md border-b border-cloud">
-        <div className="w-full max-w-8xl mx-auto px-2 sm:px-6 flex items-center justify-between h-[68px] gap-0 sm:gap-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-[68px] gap-2 sm:gap-4">
           {/* Mobile menu toggle */}
           <button
             className="flex lg:hidden w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-lg text-charcoal hover:bg-background-hover hover:text-primary transition-colors duration-200 cursor-pointer"
@@ -166,13 +167,17 @@ function B2CNavbarContent() {
           {/* Logo */}
           <Link
             href="/"
-            className="absolute left-[42%] sm:left-[45%] md:left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center gap-1.5 sm:gap-2 shrink-0 group"
+            className="absolute left-[42%] sm:left-[45%] md:left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 flex items-center shrink-0 group py-1"
             onClick={closeMobileMenu}
           >
-            <Gift size={22} className="hidden sm:block text-primary transition-transform duration-300 group-hover:rotate-12" />
-            <span className="font-serif text-lg sm:text-2xl font-bold tracking-tight text-charcoal">
-              Hisna <span className="text-primary">Gifts</span>
-            </span>
+            <Image
+              src="/hisna-logo.jpeg"
+              alt="Hisna Gifts"
+              width={120}
+              height={56}
+              priority
+              className="h-11 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
 

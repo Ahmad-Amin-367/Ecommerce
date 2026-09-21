@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -168,10 +169,10 @@ export default function B2BNavbar() {
             {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          {/* B2B Logo & Tagline */}
+          {/* B2B Logo */}
           <Link
             href="/b2b"
-            className="flex items-center group shrink-0"
+            className="flex items-center group shrink-0 py-1"
             onClick={(e) => {
               if (pathname === '/b2b') {
                 e.preventDefault();
@@ -179,14 +180,14 @@ export default function B2BNavbar() {
               }
             }}
           >
-            <div className="flex flex-col">
-              <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-charcoal leading-none">
-                Hisna <span className="text-[#325247]">Gifts</span>
-              </span>
-              <span className="text-[8px] sm:text-[9px] font-medium text-warm-gray mt-0.5 leading-none font-sans whitespace-nowrap">
-                Weddings, Events & Corporate
-              </span>
-            </div>
+            <Image
+              src="/hisna-logo.jpeg"
+              alt="Hisna Gifts Corporate & Bulk Orders"
+              width={120}
+              height={56}
+              priority
+              className="h-11 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop B2B Links: Clean, distinct sections */}

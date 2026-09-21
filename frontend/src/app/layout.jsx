@@ -23,6 +23,14 @@ export const metadata = {
   description:
     'A perfect gift for your perfect occasion. Customize your edible fruit arrangements or personalize your gift the way you want. Delivery across Pakistan.',
   keywords: ['gifts', 'gift shop', 'edible arrangements', 'custom gifts', 'personalized gifts', 'Pakistan', 'Hisna Gifts'],
+  icons: {
+    icon: [
+      { url: '/hisna-logo.jpeg' },
+      { url: '/hisna-logo.jpeg', type: 'image/jpeg' },
+    ],
+    shortcut: '/hisna-logo.jpeg',
+    apple: '/hisna-logo.jpeg',
+  },
   openGraph: {
     title: 'Hisna Gifts — Perfect Gifts for Every Occasion',
     description: 'Customize your edible fruit arrangements or personalize your gift the way you want.',
